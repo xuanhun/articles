@@ -731,7 +731,7 @@ function App() {
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NgFhbZ1l5oygH7xs5LscIwF6nhf.gif' alt='' width='1000' height='auto'>
 
-[模拟飞书人员卡片](https://react-vtable-component-demo.gf-boe.bytedance.net/user-profile)
+
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XhtCbb6BooheKFx5oRmcb9zencc.gif' alt='' width='1000' height='auto'>
 
@@ -760,7 +760,8 @@ Discord：[discord.gg/3wPyxVyH6m](https://discord.gg/3wPyxVyH6m)
 飞书群：
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/JWBBbE58Bo5pKOxaNGNcYweMnqb.gif' alt='' width='1000' height='auto'>
 
-微信公众号：<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/weixin.jpg' alt='' width='1000' height='auto'>
+微信公众号：
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/weixin.jpg' alt='' width='1000' height='auto'>
 
 Twiter：[twitter.com/xuanhun1](https://twitter.com/xuanhun1)
 
