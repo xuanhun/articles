@@ -9,7 +9,7 @@ VTable是一款基于可视化渲染引擎VRender的高性能表格组件库，�
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/M4TPbKgdpo2nSaxB4SNcOPycnBh.gif' alt='' width='1000' height='auto'>
 
-介绍文档：[VTable——不只是高性能的多维数据分析表格，开源，免费，百万数据秒级渲染](https%3A%2F%2Fjuejin.cn%2Fpost%2F7287214029449805836)
+介绍文档：[VTable——不只是高性能的多维数据分析表格，开源，免费，百万数据秒级渲染](https://juejin.cn/post/7287214029449805836)
 
 站点：https://visactor.com/vtable
 
@@ -713,25 +713,25 @@ function App() {
 
 
 
-[自定义外部组件——VisActor/VTable react demo](https%3A%2F%2Fwww.visactor.com%2Fvtable%2Fdemo-react%2Fcomponent%2Fcustom-component)
+[自定义外部组件——VisActor/VTable react demo](https://www.visactor.com/vtable/demo-react/component/custom-component)
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/PuiKbUCc7oHsztxZWlKcbVrJn4c.gif' alt='' width='762' height='auto'>
 
-[自定义组件——VisActor/VTable react demo](https%3A%2F%2Fwww.visactor.com%2Fvtable%2Fdemo-react%2Fcomponent%2Fcustom-component)
+[自定义组件——VisActor/VTable react demo](https://www.visactor.com/vtable/demo-react/component/custom-component)
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/M1MNbzpW5oTpthxFmy7cF8HqnRf.gif' alt='' width='1000' height='auto'>
 
-[单元格自定义组件+dom组件——VisActor/VTable react demo](https%3A%2F%2Fwww.visactor.com%2Fvtable%2Fdemo-react%2Fcustom-layout%2Fcell-custom-layout-dom)
+[单元格自定义组件+dom组件——VisActor/VTable react demo](https://www.visactor.com/vtable/demo-react/custom-layout/cell-custom-layout-dom)
 
 
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/EHi8bYaMro3CrCxo9Icc3EkNn9c.gif' alt='' width='1000' height='auto'>
 
-[单元格内dom组件——VisActor/VTable react demo](https%3A%2F%2Fwww.visactor.com%2Fvtable%2Fdemo-react%2Fcustom-layout%2Fcell-custom-dom)
+[单元格内dom组件——VisActor/VTable react demo](https://www.visactor.com/vtable/demo-react/custom-layout/cell-custom-dom)
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NgFhbZ1l5oygH7xs5LscIwF6nhf.gif' alt='' width='1000' height='auto'>
 
-[模拟飞书人员卡片](https%3A%2F%2Freact-vtable-component-demo.gf-boe.bytedance.net%2Fuser-profile)
+[模拟飞书人员卡片](https://react-vtable-component-demo.gf-boe.bytedance.net/user-profile)
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XhtCbb6BooheKFx5oRmcb9zencc.gif' alt='' width='1000' height='auto'>
 
@@ -745,25 +745,26 @@ function App() {
 
 # 欢迎交流
 
-欢迎更多使用[VisActor](https%3A%2F%2Fwww.visactor.io%2F)的用户联系我们，给我们投稿，交流业务场景，提建议，贡献代码，谢谢大家！
+欢迎更多使用[VisActor](https://www.visactor.io/)的用户联系我们，给我们投稿，交流业务场景，提建议，贡献代码，谢谢大家！
 
-**VChart**：[VChart 官网](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fvisactor.io%252Fvchart)、[VChart Github（感谢 Star）](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fgithub.com%252FVisActor%252FVChart)
+**VChart**：[VChart 官网](https://www.visactor.io/vchart)
 
-**VTable**：[VTable 官网](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fvisactor.io%252Fvtable)、[VTable Github（感谢 Star）](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fgithub.com%252FVisActor%252FVTable)
+**VTable**：[VTable 官网](https://www.visactor.io/vtable)
 
-**VMind**：[VMind 官网](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fvisactor.io%252Fvmind)、[VMind Github（感谢 Star）](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fgithub.com%252FVisActor%252FVMind)
+**VMind**：[VMind 官网](https://www.visactor.io/vmind)
 
-官方网站：[www.visactor.io/](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fwww.visactor.io%252F)
+官方网站：[www.visactor.io/](https://www.visactor.io)
 
-Discord：[discord.gg/3wPyxVyH6m](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fdiscord.gg%252F3wPyxVyH6m)
+Discord：[discord.gg/3wPyxVyH6m](https://discord.gg/3wPyxVyH6m)
 
-飞书群：[打开链接扫码](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fp3-juejin.byteimg.com%252Ftos-cn-i-k3u1fbpfcp%252F40dcf4e6722d4925804361a2269991d8~tplv-k3u1fbpfcp-jj-mark%253A0%253A0%253A0%253A0%253Aq75.image%2523%253Fw%253D264%2526h%253D277%2526s%253D35808%2526e%253Dpng%2526b%253Dfdfdfd)
+飞书群：
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/JWBBbE58Bo5pKOxaNGNcYweMnqb.gif' alt='' width='1000' height='auto'>
 
-微信公众号：[打开链接扫码](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fp3-juejin.byteimg.com%252Ftos-cn-i-k3u1fbpfcp%252Ff28519302ee94940a8159fc52d375aaa~tplv-k3u1fbpfcp-jj-mark%253A0%253A0%253A0%253A0%253Aq75.image%2523%253Fw%253D258%2526h%253D258%2526s%253D8552%2526e%253Dwebp%2526b%253Dfefefe)
+微信公众号：<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/weixin.jpg' alt='' width='1000' height='auto'>
 
-Twiter：[twitter.com/xuanhun1](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Ftwitter.com%252Fxuanhun1)
+Twiter：[twitter.com/xuanhun1](https://twitter.com/xuanhun1)
 
-github：[github.com/VisActor](https%3A%2F%2Flink.juejin.cn%3Ftarget%3Dhttps%253A%252F%252Fgithub.com%252FVisActor)
+github：[github.com/VisActor](https://github.com/VisActor)
 
 
 
