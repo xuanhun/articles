@@ -461,6 +461,11 @@ github：https://github.com/Wangjing991
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/PmHZbF6xZo8NhuxaQX7cT4UtnKd.gif' alt='' width='1000' height='auto'>
 
+# 快来领奖
+
+我们会在github 给以上同学私信，搜集联系方式，发放奖品。
+推荐大家加入飞书交流群，留言联系管理员领奖。
+
 # 第四季度活动预告
 
 针对第三季度收集到反馈，以及VisActor的发展规划，我们第四季度活动会在以下几个方面重点发力：
