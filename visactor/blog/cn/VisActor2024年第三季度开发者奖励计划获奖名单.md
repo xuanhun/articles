@@ -164,8 +164,9 @@ github：https://github.com/mengxi-ream
 
 
 ### 奖品
+1. 开源之夏活动奖金 XXX 元
 
-【筋膜枪】
+2. 【筋膜枪】
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/S2xlbdaq6oD545x6InGcj7bynye.gif' alt='' width='488' height='auto'>
 
