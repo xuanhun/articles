@@ -7,7 +7,7 @@ key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,C
 
 第三季度我们只发了7个issue，但是最终收获60多个pr，50多个额外任务被完成。最终 ，共评选出16位有效pr贡献者，贡献pr57个。
 
-下面我们是本次活动的获奖名单。
+下面是本次活动的获奖名单。
 
 # 获奖情况
 
