@@ -103,7 +103,7 @@ github：https://github.com/666haiwen
 
 烛光灯香薰机
 
-<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NYKgblGhZohfn2x2DXUc5PWQnOd.gif' alt='' width='1000' height='auto'>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/xiangxunji.png' alt='' width='1000' height='auto'>
 
 ## zMengXi
 
