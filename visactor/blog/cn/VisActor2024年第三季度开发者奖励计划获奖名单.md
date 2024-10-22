@@ -362,7 +362,7 @@ github：https://github.com/wdzyy
 
 ## ziqiang
 
-github：https://github.com/wdzyy
+github：https://github.com/ziqiangai
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/GFUlbuRmhoFmGsxERyvceR2CnSc.gif' alt='' width='460' height='auto'>
 
