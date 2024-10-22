@@ -274,25 +274,7 @@ github：https://github.com/AntonPolyakin
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XVQVb3gudob9Rcx7nWMcK5cSnXb.gif' alt='' width='1000' height='auto'>
 
-## Ikko Eltociear Ashimine
 
-github：https://github.com/eltociear
-
-<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/APqrbM8glo3P5XxD4RwclAxJnGb.gif' alt='' width='460' height='auto'>
-
-### 完成的issue
-
-1. https://github.com/VisActor/VTable/pull/2617/
-
-贡献项目：VTable
-
-贡献功能：docs: add Japanese README.md and CONTRIBUTING.md
-
-### 奖品
-
-字节跳动定制水杯
-
-<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ScffbnxqfoIPdbxV8DqciyWunoc.gif' alt='' width='869' height='auto'>
 
 ## YEL!neee
 
