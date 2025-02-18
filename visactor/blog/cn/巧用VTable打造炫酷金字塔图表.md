@@ -332,3 +332,18 @@ title: {
 通过合理地运用VTable中的各种单元格类型，我们能够打造出功能丰富、形式多样的表格图表。无论是直观的人口金字塔，还是其他复杂的数据可视化需求，VTable都能为我们提供强大的支持。赶快去尝试一下吧，让你的表格也能“绘”出精彩纷呈的图表世界！
 
 
+# 联系我们
+
+github ：[github.com/VisActor](https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2FVisActor)
+
+VisActor 微信订阅号留言（可以通过订阅号菜单加入微信群）：
+
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VyPsbaIz8offShxlv0ZcqqD8nfd.gif' alt='' width='258' height='auto'>
+
+VisActor 官网：[www.visactor.io/](https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable)  ； [www.visactor.](https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable)com
+
+飞书群：
+
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NAQhbtdelofTIyxk9pgcE3hqnQG.gif' alt='' width='264' height='auto'>
+
+discord：https://discord.com/invite/3wPyxVyH6m

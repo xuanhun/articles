@@ -223,3 +223,19 @@ Below is a screenshot of the demo list showing various types from the official w
 ## Summary
 
 By reasonably using various cell types in VTable, we can create feature-rich and diverse table charts. Whether it's an intuitive population pyramid or other complex data visualization needs, VTable can provide powerful support. Go ahead and try it out, let your tables also "draw" a wonderful world of charts! 
+
+# Contact Us
+
+GitHub: [github.com/VisActor](https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2FVisActor)
+
+Follow our WeChat Official Account (join WeChat group through menu):
+
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VyPsbaIz8offShxlv0ZcqqD8nfd.gif' alt='' width='258' height='auto'>
+
+VisActor Website: [www.visactor.io/](https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable) ; [www.visactor.](https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable)com
+
+Feishu Group:
+
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NAQhbtdelofTIyxk9pgcE3hqnQG.gif' alt='' width='264' height='auto'>
+
+Discord: https://discord.com/invite/3wPyxVyH6m
