@@ -138,72 +138,106 @@ rush docs
 
 在各个包目录下，你可以执行以下命令：
 
+<table><colgroup><col style="width: 365px"><col style="width: 365px"></colgroup><tbody><tr><td rowspan="1" colspan="1">
+
 命令
+</td><td rowspan="1" colspan="1">
 
 说明
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rushx demo`
+</td><td rowspan="1" colspan="1">
 
 启动本地示例服务
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rushx build`
+</td><td rowspan="1" colspan="1">
 
 构建库文件
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rushx dev`
+</td><td rowspan="1" colspan="1">
 
 开发模式构建（监听文件变化）
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rushx test`
+</td><td rowspan="1" colspan="1">
 
 运行单元测试
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rushx test-cov`
+</td><td rowspan="1" colspan="1">
 
 运行测试覆盖率分析
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rushx eslint`
+</td><td rowspan="1" colspan="1">
 
 执行代码风格检查
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rushx compile`
+</td><td rowspan="1" colspan="1">
 
 仅执行 TypeScript 类型检查
-
+</td></tr></tbody></table>
 在项目根目录，你可以使用以下 Rush 命令：
 
+<table><colgroup><col style="width: 365px"><col style="width: 365px"></colgroup><tbody><tr><td rowspan="1" colspan="1">
+
 命令
+</td><td rowspan="1" colspan="1">
 
 说明
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rush start`
+</td><td rowspan="1" colspan="1">
 
 启动核心包VTable目录下的demo
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rush update`
+</td><td rowspan="1" colspan="1">
 
 安装或更新所有依赖
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rush build`
+</td><td rowspan="1" colspan="1">
 
 构建所有项目
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rush rebuild`
+</td><td rowspan="1" colspan="1">
 
 清理并重新构建所有项目
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rush test`
+</td><td rowspan="1" colspan="1">
 
 运行所有项目的测试
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rush change-all`
+</td><td rowspan="1" colspan="1">
 
 在提交代码后更新所有变更日志
+</td></tr><tr><td rowspan="1" colspan="1">
 
 `rush docs`
+</td><td rowspan="1" colspan="1">
 
 启动文档站点
-
+</td></tr></tbody></table>
 ## 5. 项目结构说明
 
 VTable 项目采用 Rush 管理的 Monorepo 结构，主要由以下部分组成：
@@ -280,7 +314,7 @@ packages/vtable/
 
 1. **提交 PR**：向主仓库提交拉取请求
 
-具体过程可以参考官网教程：[贡献者指南](https://visactor.bytedance.net/vtable/guide/Contribution_Guide)
+具体过程可以参考官网教程：[贡献者指南](https://www.visactor.io/vtable/contributing/)
 
 ### 版本管理
 
@@ -333,7 +367,7 @@ rush build
 
 我们欢迎所有形式的贡献，包括但不限于提交问题、改进文档、修复 Bug 或添加新功能。
 
-参与贡献前，请务必阅读[贡献者指南](https://visactor.bytedance.net/vtable/guide/Contribution_Guide)，了解贡献流程和规范。
+参与贡献前，请务必阅读[贡献者指南](https://www.visactor.io/vtable/contributing/)，了解贡献流程和规范。
 
 ## 9. 资源链接
 
@@ -346,3 +380,11 @@ rush build
 *  [示例集合](https://visactor.io/vtable/example)
 
 *  [教程](https://visactor.io/vtable/guide/Getting_Started/Getting_Started)
+
+
+
+本文档由以下人员参与编辑：
+
+[玄魂](https://github.com/xuanhun)
+
+
