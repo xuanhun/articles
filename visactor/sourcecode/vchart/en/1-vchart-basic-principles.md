@@ -1,5 +1,5 @@
 ---
-title: 1 VChart Basic Principles    
+title: 1 Basic Principles of VChart    
 
 key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM
 ---
@@ -7,17 +7,17 @@ key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,C
 
 ## Terminology
 
-1. Mark: Basic graphic elements (basic primitives), such as lines, points, rectangles, etc.
+1. Mark: Basic graphical elements (basic primitives), such as lines, points, rectangles, etc.    
 
-1. Series: Responsible for the visual representation of specific types of data, including a set of primitives and their corresponding chart logic, such as a series of lines in a line chart
+1. Series: Responsible for the visual representation of a specific type of data, containing a set of primitives and their corresponding chart logic, such as a series of lines in a line chart    
 
-1. Region: Defines the spatial area of the chart, associates one or more series, handles interaction and animation, provides coordinate systems
+1. Region: Defines the spatial area of the chart, associates one or more series, handles interactions and animations, and provides coordinate systems    
 
-1. Component: Elements that assist in reading and interacting with the chart, such as legends, axes, tips, etc.
+1. Component: Components that assist in chart reading and interaction, such as legends, axes, tooltips, etc.    
 
-1. Layout: Manages the layout of the chart, including the position and size of regions and components
+1. Layout: Manages the layout of the chart, including the position and size of regions and components    
 
-1. Chart: The abstract concept of the entire chart, including elements on the view such as layout, components, and regions, as well as data and all elements needed to form a table
+1. Chart: The abstract concept of the entire chart, containing elements on the view such as layout, components, and regions, as well as data and all elements required to form a chart    
 
 ## Structural Relationships
 
@@ -28,23 +28,24 @@ key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,C
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/S64ebNauBobOOJxwIalcq8E9ncf.gif' alt='' width='1000' height='auto' />
 
-## Combination Chart Example
+## Combined Chart Example
 
 ### Same Region
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GAGOb6NrBoGdMrxHbt9cvDXNndb.gif' alt='' width='1000' height='auto' />
 
-The above image is a combination chart, which simply means there are multiple series groups, with bar and line being the two series above.
+The above image is a composite chart, simply put, it has multiple series groups, with bar and line series groups above.
 
 1. If we do not configure specifically, all series will be associated with one region, so they will overlap and share certain coordinates.
 
-1. Each series can have its own data source, or the data source can be configured directly on the chart, with the series associated through `fromDataId` or `fromDataIndex`. In the current example, we choose to configure it on the chart.
+1. Each series can have its own data source, or the data source can be configured directly on the chart. In the series, it is associated through `fromDataId` or `fromDataIndex`. In the current example, we choose to configure it on the chart.
 
-### Different Region
+### Different Regions
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/FdZebrNhWo3MqTxoqOfcAyYJnh6.gif' alt='' width='1000' height='auto' />
 
-In this example, it is also a combination chart, but its two series appear in different regions. As mentioned above, we use layout to manage the layout of regions. In this example, we used the following code:
+In this example, it is also a combined chart, but its two series appear in different regions. As mentioned above, we use layout to manage the layout of regions. In this example, we use the following code:    
+
 
 ```Typescript
   layout: {
@@ -83,7 +84,7 @@ In this example, it is also a combination chart, but its two series appear in di
   },    
 
 ```
-The above uses a grid-like method to manage the layout of regions and components. We use these `modelId` to associate the configuration of the corresponding region and component:
+Above, the layout of regions and components was managed in a manner similar to a grid. We use these `modelId`s to associate the corresponding configurations of regions and components:
 
 
 ```Typescript
@@ -111,56 +112,55 @@ The above uses a grid-like method to manage the layout of regions and components
 ```
 # 1.2 VChart Architecture and Source Code Structure
 
-## 1.2.1 Relationship between VChart, VGrammar, and VRender
+## 1.2.1 The Relationship Among VChart, VGrammar, and VRender
 
-These three are the core components of the VisActor visualization system, and their relationship is hierarchical, from bottom to top:
+These three are the core components in the VisActor visualization system, and their relationship is hierarchical, from the bottom layer to the top layer as follows:    
 
 ### VRender (Bottom Layer)
 
-VRender is a low-level visualization rendering engine responsible for the most basic graphic drawing and rendering tasks:
+VRender is a low-level visualization rendering engine responsible for the most basic graphic drawing and rendering tasks:    
 
-* It provides rich visualization rendering features, including custom animations, element combinations, and narrative arrangements
+*  It provides rich visualization rendering capabilities, including custom animations, element composition, and narrative arrangement    
 
-* It is the foundation of the VisActor visualization system, providing rendering capabilities for upper-level libraries
+*  It is the foundation of the VisActor visualization system, providing rendering capabilities for upper-level libraries    
 
-* VRender offers a plugin system for flexible extensions
+*  VRender offers a plugin system for flexible extension    
 
-* It can seamlessly switch between 2D/3D effects
+*  It can seamlessly switch between 2D/3D effects    
 
-* It handles low-level Canvas operations, graphic drawing, scene management, etc.
+*  It handles low-level Canvas operations, graphic drawing, scene management, etc.    
 
 ### VGrammar (Middle Layer)
 
-VGrammar is a visualization grammar library based on VRender:
+VGrammar is a visualization grammar library based on VRender:    
 
-* It uses declarative syntax to describe data visualization
+*  It uses declarative syntax to describe data visualization    
 
-* VGrammar maps data to visual elements, handling data transformations, marks, scales, etc.
+*  VGrammar maps data to visual elements, handling data transformation, marks, scales, etc.    
 
-* It provides more advanced APIs, simplifying the process of creating complex visualizations
+*  It provides more advanced APIs to simplify the process of creating complex visualizations    
 
-* VGrammar is responsible for chart syntax definition, data mapping, automatic layout, etc.
+*  VGrammar is responsible for chart grammar definition, data mapping, automatic layout, etc.    
 
-* It is essentially a further encapsulation of VRender, adding more visualization grammar concepts
+*  It is essentially a further encapsulation of VRender, adding more visualization grammar concepts    
 
 ### VChart (Top Layer)
 
-VChart is the top-level chart component library:
+VChart is the top-level chart component library:    
 
-* It is built on VGrammar, encapsulating common chart types (bar charts, pie charts, line charts, etc.)
+*  It is built on VGrammar and encapsulates common chart types (bar charts, pie charts, line charts, etc.)    
 
-* VChart provides ready-to-use chart components, so users do not need to understand the underlying graphic syntax
+*  VChart provides ready-to-use chart components, so users do not need to understand the underlying graphic grammar    
 
-* It has cross-platform features, automatically adapting to desktop, H5, and various mini-program environments
+*  It features cross-platform capabilities, automatically adapting to desktop, H5, and various mini-program environments    
 
-* VChart offers complete data narrative capabilities, including comprehensive annotations, animations, flow control, and narrative templates
+*  VChart offers comprehensive data narrative capabilities, including extensive annotations, animations, flow control, and narrative templates    
 
-* It is aimed at end-users, providing the most user-friendly visualization interface and API
+*  It is aimed at end users, providing the most user-friendly visualization interface and APIs    
 
-### Summary of Relationships
+### Summary of the Relationship
 
-The architectural relationship of these three can be understood as:
-
+The architectural relationship among these three can be understood as:    
 
 ```Typescript
 VChart (图表组件库)
@@ -172,45 +172,46 @@ VRender (渲染引擎)
 浏览器/Canvas/WebGL    
 
 ```
-From the code implementation perspective:
+From the code implementation perspective:    
 
-* VChart uses VGrammar to define and build charts
+*  VChart uses VGrammar to define and construct charts    
 
-* VGrammar uses VRender for actual drawing and rendering
+*  VGrammar uses VRender for actual drawing and rendering    
 
-* Finally, VRender controls the underlying Canvas/WebGL to draw graphics
+*  Ultimately, VRender controls the underlying Canvas/WebGL to draw graphics    
 
-This layered architecture allows developers to choose different levels of tools as needed: if highly customized visualization is required, VRender or VGrammar can be used directly; if quick creation of standard charts is needed, VChart can be used.
+This layered architecture allows developers to choose tools at different levels according to their needs: if highly customized visualizations are required, VRender or VGrammar can be used directly; if quick creation of standard charts is needed, VChart can be used.    
 
-## 1.2.2 Relationship and Source Code Structure of Internal Components in VChart
+## 1.2.2 Relationships Between Internal Components of VChart and Source Code Structure
 
-The overall architecture adopts a modular design, with the core divided into the following main parts:
+The overall architecture adopts a modular design, with the core divided into the following main parts:    
 
-1. Core Engine (Core): The central controller of VChart, responsible for organizing the collaboration of various modules
+1. Core Engine (Core): The central controller of VChart, responsible for organizing the collaboration of various modules    
 
-1. Chart: Specific implementations of various chart types
+1. Chart: Specific implementations of various chart types    
 
-1. Series: Responsible for mapping data to graphics in the chart
+1. Series: Responsible for mapping data to graphics in charts    
 
-1. Mark: Basic graphic elements
+1. Mark: Basic graphic elements    
 
-1. Region: Defines the area for chart rendering
+1. Region: Defines the rendering area of the chart    
 
-1. Component: Additional components such as axes, legends, etc.
+1. Component: Additional components such as axes, legends, etc.    
 
-1. Layout: Handles the position calculation of various elements in the chart
+1. Layout: Handles the position calculation of chart elements    
 
-1. Event: Handles user interactions
+1. Event: Handles user interactions    
 
-1. Scale: Related to data mapping and scales
+1. Scale: Related to data mapping and scales    
 
-1. Data Processing (Data): Data transformation and processing
+1. Data: Data transformation and processing    
 
 ### Core Module
 
 #### VChart Core Class
 
-The VChart class is the entry point of the entire chart library, responsible for instantiating and managing the entire chart lifecycle.
+The VChart class is the entry point of the entire chart library, responsible for instantiating and managing the lifecycle of the entire chart.    
+
 
 ```Typescript
 // packages/vchart/src/core/vchart.ts
@@ -236,23 +237,23 @@ export class VChart implements IVChart {
 }    
 
 ```
-The lifecycle of VChart mainly includes:
+The lifecycle of VChart mainly includes:    
 
-1. Initialization of configuration and data
+1. Initialization of configuration and data    
 
-1. Creating chart instance
+1. Creation of chart instance    
 
-1. Layout calculation
+1. Layout calculation    
 
-1. Rendering
+1. Rendering    
 
-1. Interaction event handling
+1. Interaction event handling    
 
-1. Update and destruction
+1. Updating and destruction    
 
-#### Module Chart Class (Chart)
+#### Modular Chart Class (Chart)
 
-The chart module implements various types of charts, such as bar charts, line charts, pie charts, etc., all inheriting from BaseChart.
+The chart module implements various types of charts, such as bar charts, line charts, pie charts, etc., all inheriting from BaseChart.    
 
 ```Typescript
 // packages/vchart/src/chart/base/base-chart.ts
@@ -274,6 +275,7 @@ export class BaseChart<T extends IChartSpec> extends CompilableBase implements I
 ```
 For example, BarChart inherits from BaseChart    
 
+
 ```Typescript
 export class BarChart<T extends IBarChartSpec = IBarChartSpec> extends BaseChart<T> {
   static readonly type: string = ChartTypeEnum.bar;
@@ -287,15 +289,16 @@ export class BarChart<T extends IBarChartSpec = IBarChartSpec> extends BaseChart
 ```
 The chart module is responsible for:    
 
-*  Determining the chart type and layout    
+*  Determining chart types and layouts    
 
-*  Managing the contained areas, series, and components    
+*  Managing included areas, series, and components    
 
 *  Handling the overall mapping from data to visual elements    
 
 #### Series Module (Series)
 
-The series module is the core mapping from data to visual representation, with different series types corresponding to different graphical representations.    
+The series module is the core mapping from data to visual representation, with different series types corresponding to different graphical forms.    
+
 
 ```Typescript
 // packages/vchart/src/series/base/base-series.ts
@@ -316,124 +319,124 @@ export abstract class BaseSeries<T extends ISeriesSpec> extends BaseModel<T> imp
 }    
 
 ```
-The series module is responsible for:
+Series modules are responsible for:    
 
-* Converting data to graphical marks
+*  Converting data to graphical marks    
 
-* Handling data mapping for specific chart types
+*  Handling data mapping for specific chart types    
 
-* Managing the style and state of marks
+*  Managing the style and state of marks    
 
-#### Mark Module
+#### Mark Module (Mark)
 
-Marks are the most basic visual elements, such as lines, rectangles, points, etc., which are the basic units that make up a chart. The corresponding code is implemented in the `packages/vchart/src/mark` directory.
+Marks are the most basic visual elements, such as lines, rectangles, points, etc., which are the fundamental units that make up charts. Corresponding code implementations can be found in the `packages/vchart/src/mark` directory.    
 
-The mark is responsible for:
+Marks are responsible for:    
 
-* Implementing specific graphic rendering
+*  Implementing specific graphic rendering    
 
-* Handling interaction states (such as highlighting, selection)
+*  Handling interaction states (such as highlight, selection)    
 
-* Binding with data
+*  Binding with data    
 
-#### Region Module
+#### Region Module (Region)
 
-A region defines the rendering position of a chart on the canvas and can contain multiple series. The corresponding code is in the `packages/vchart/src/region` directory.
+Regions define the rendering positions of charts on the canvas and can contain multiple series. Corresponding code is in `packages/vchart/src/region`    
 
-The region module is responsible for:
+The region module is responsible for:    
 
-* Determining the position and size of each sub-region in the chart
+*  Determining the position and size of each sub-region in the chart    
 
-* Managing the series contained within
+*  Managing the series contained within    
 
-* Handling layout relationships between regions
+*  Handling layout relationships between regions    
 
-#### Component Module
+#### Component Module (Component)
 
-Components are auxiliary elements in the chart other than data graphics, such as axes, legends, titles, etc. Various component implementations are in the `packages/vchart/src/component` directory.
+Components are auxiliary elements in charts besides data graphics, such as axes, legends, titles, etc. Various component implementations are in the `packages/vchart/src/component` directory    
 
-The component module is responsible for:
+The component module is responsible for:    
 
-* Rendering various auxiliary elements
+*  Rendering various auxiliary elements    
 
-* Interacting with users (such as legend clicks)
+*  Interacting with users (such as legend clicks)    
 
-* Collaborating with the main chart
+*  Collaborating with the main chart    
 
-#### Layout Module
+#### Layout Module (Layout)
 
-The layout module is responsible for calculating the position and size of each element in the chart. The corresponding code is in the `packages/vchart/src/layout` directory, specifically including:
+The layout module is responsible for calculating the position and size of each chart element. Corresponding code is in `packages/vchart/src/layout`. Specifically, it includes:    
 
-* Calculating element positions
+*  Calculating element positions    
 
-* Adjusting to fit container size
+*  Adjusting container size adaptively    
 
-* Handling hierarchical relationships between elements
+*  Handling layering relationships between elements    
 
-#### Event Module
+#### Event Module (Event)
 
-The event module handles user interactions and internal events, specifically including:
+The event module handles user interactions and internal events. Specifically, it includes:    
 
-* Handling user interaction events (such as clicks, hover)
+*  Handling user interaction events (such as clicks, hover)    
 
-* Distributing internal events
+*  Dispatching internal events    
 
-* Triggering data updates and rendering updates
+*  Triggering data updates and rendering updates    
 
-#### Scale Module
+#### Scale Module (Scale)
 
-The scale module is responsible for mapping conversions from data to visual attributes, specifically including:
+The scale module is responsible for mapping data to visual attributes. Specifically, it includes:    
 
-* Handling the mapping of data to visual space
+*  Handling the mapping between data and visual space    
 
-* Managing various scales (linear, discrete, color, etc.)
+*  Managing various scales (linear, discrete, color, etc.)    
 
-* Calculating the range and ticks of axes
+*  Calculating axis ranges and ticks    
 
-#### Data Module
+#### Data Module (Data)
 
-The data module handles the conversion and processing of raw data, specifically including:
+The data module handles the transformation and processing of raw data. Specifically, it includes:    
 
-* Parsing and converting data
+*  Parsing and transforming data    
 
-* Statistical calculations
+*  Statistical calculations    
 
-* Handling missing and outlier values
+*  Handling missing and abnormal values    
 
 ## Rendering Process
 
-The rendering process of VChart mainly includes the following steps:
+The rendering process of VChart mainly includes the following steps:    
 
-1. Initialization: Create a VChart instance through spec configuration
+1. Initialization: Create a VChart instance through the spec configuration    
 
-1. Compilation: Parse the configuration, create various components and series
+1. Compilation: Parse the configuration and create various components and series    
 
-1. Layout: Calculate the position and size of each element
+1. Layout: Calculate the position and size of each element    
 
-1. Data Processing: Process and convert data
+1. Data processing: Process and transform data    
 
-1. Rendering Preparation: Bind data to marks
+1. Rendering preparation: Bind data to marks    
 
-1. Actual Rendering: Draw marks on the canvas
+1. Actual rendering: Draw marks onto the canvas    
 
-1. Interaction Binding: Bind various interaction events
+1. Interaction binding: Bind various interaction events    
 
 ## Data Update Process
 
-When data or configuration changes:
+When data or configuration changes:    
 
-1. Call the updateData or updateSpec method
+1. Call updateData or updateSpec methods    
 
-1. Reprocess affected data
+1. Reprocess affected data    
 
-1. Update related scales
+1. Update related scales    
 
-1. Relayout (if needed)
+1. Re-layout (if needed)    
 
-1. Update affected marks
+1. Update affected marks    
 
-1. Trigger re-rendering
+1. Trigger re-rendering    
 
 
-# This document was revised and organized by
-[玄魂](https://github.com/xuanhun)
+ # This document was revised and organized by  
+ [Xuanhun](https://github.com/xuanhun)
