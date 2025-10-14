@@ -4,6 +4,10 @@ title: VChart Official Website Launches AI Assistant and Sharing Features
 key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM
 ---
 
+## Abstract
+
+VChart's official website welcomes a major update, launching AI Assistant and brand new sharing features. The sharing functionality supports three methods: Playground link sharing (with real-time interactive debugging), iframe embed code (easy website integration), and image export (one-click high-definition screenshot generation), fully compatible with three mainstream frameworks: native JavaScript, React, and OpenInula. Meanwhile, the AI Assistant has been upgraded with an integrated AI Q&A system in the search box for quick technical support, and the AI editing feature has been optimized with drawer-style interaction for a more immersive editing experience. These new features significantly enhance chart shareability and development efficiency, making data visualization work more efficient and convenient.
+
 ## 1 🚀 VChart Official Website's New Sharing Features Are Live, Bringing Your Charts to Life!
 
 Still struggling with how to share and showcase your data visualization work? Now, VChart brings you a series of powerful sharing features that bring your charts to life in unprecedented ways, easily embedding them into any application scenario!
@@ -110,4 +114,3 @@ WeChat Official Account: [Open Link to Scan QR Code](https://link.juejin.cn?targ
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/W1ohbqWZxoGLQuxEyTvcmJLbnuc.gif' alt='' width='258' height='auto' />
 
 GitHub: [github.com/VisActor](https://github.com/VisActor/)
-

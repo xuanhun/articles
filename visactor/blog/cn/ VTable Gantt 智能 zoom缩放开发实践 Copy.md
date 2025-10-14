@@ -3,6 +3,11 @@ title:  VTable Gantt 智能 zoom缩放开发实践 Copy
 
 key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM
 ---
+
+## 摘要
+
+本文详细介绍了 VTable Gantt 图表智能缩放系统的完整开发实践。项目实现了基于 millisecondsPerPixel 的多级别智能缩放系统和 VRender DataZoom 组件的深度集成，成功解决了 Gantt 图表缺乏灵活缩放交互的问题。核心技术包括：ZoomScaleManager 智能缩放管理器、DataZoom 双向同步机制、动态边界计算算法等。支持 Ctrl+滚轮、触摸板双指缩放等多种交互方式，实现了从宏观到微观的无缝缩放体验。作者赖景康作为华中师范大学计算机专业大三学生，在开源之夏项目中完成了该功能的完整开发，并分享了平衡学业、实习与开源的经验，以及"在没有发现问题原因之前，不要尝试解决问题"的重要开发原则。
+
 本文作者，**赖景康（****https://github.com/shufufufu****）**：    
 
 就读于华中师范大学计算机学院计算机科学与技术专业，是一名刚刚升入大三学年的学生。对前端技术和图形化充满兴趣，渴求技术上的进步，时常关注开源社区，愿意在实践中打磨自己的工程能力。    
