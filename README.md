@@ -20,19 +20,19 @@
 
 **visactor/blog/cn/** (13 篇)
 
-- [ VTable Gantt 智能 zoom缩放开发实践 Copy.md](visactor/blog/cn/ VTable Gantt 智能 zoom缩放开发实践 Copy.md)
 - [10分钟完成一个动态信息图.md](visactor/blog/cn/10分钟完成一个动态信息图.md)
 - [OpenManus_重磅能力升级_快速打造你的数据分析助手.md](visactor/blog/cn/OpenManus_重磅能力升级_快速打造你的数据分析助手.md)
-- [VChart 官网上线 智能助手与分享功能.md](visactor/blog/cn/VChart 官网上线 智能助手与分享功能.md)
-- [VTable-Sheet：重新定义Web电子表格的开源解决方案 .md](visactor/blog/cn/VTable-Sheet：重新定义Web电子表格的开源解决方案 .md)
+- [VChart_官网上线_智能助手与分享功能.md](visactor/blog/cn/VChart_官网上线_智能助手与分享功能.md)
+- [VTable-Sheet_重新定义Web电子表格的开源解决方案_.md](visactor/blog/cn/VTable-Sheet_重新定义Web电子表格的开源解决方案_.md)
+- [VTable_Gantt_智能_zoom缩放开发实践_Copy.md](visactor/blog/cn/VTable_Gantt_智能_zoom缩放开发实践_Copy.md)
 - [VTable表格自定义渲染_技术实践与案例.md](visactor/blog/cn/VTable表格自定义渲染_技术实践与案例.md)
 - [VisActor2024年第三季度开发者奖励计划获奖名单.md](visactor/blog/cn/VisActor2024年第三季度开发者奖励计划获奖名单.md)
-- [利用cursor结合deepseek，使用自定义doc功能快速上手陌生组件.md](visactor/blog/cn/利用cursor结合deepseek，使用自定义doc功能快速上手陌生组件.md)
+- [利用cursor结合deepseek_使用自定义doc功能快速上手陌生组件.md](visactor/blog/cn/利用cursor结合deepseek_使用自定义doc功能快速上手陌生组件.md)
 - [巧用VTable打造炫酷金字塔图表.md](visactor/blog/cn/巧用VTable打造炫酷金字塔图表.md)
-- [报表优化实战：组件库Table升级VTable.md](visactor/blog/cn/报表优化实战：组件库Table升级VTable.md)
-- [有了Marscode上下文doc功能 ，快速上手陌生组件，再也不用提oncall了.md](visactor/blog/cn/有了Marscode上下文doc功能 ，快速上手陌生组件，再也不用提oncall了.md)
-- [有了Trae 上下文doc功能 ，快速上手陌生组件，再也不用提oncall了.md](visactor/blog/cn/有了Trae 上下文doc功能 ，快速上手陌生组件，再也不用提oncall了.md)
-- [程序员成长第一步，从成为开源社区贡献者开始.md](visactor/blog/cn/程序员成长第一步，从成为开源社区贡献者开始.md)
+- [报表优化实战_组件库Table升级VTable.md](visactor/blog/cn/报表优化实战_组件库Table升级VTable.md)
+- [有了Marscode上下文doc功能_快速上手陌生组件_再也不用提oncall了.md](visactor/blog/cn/有了Marscode上下文doc功能_快速上手陌生组件_再也不用提oncall了.md)
+- [有了Trae_上下文doc功能_快速上手陌生组件_再也不用提oncall了.md](visactor/blog/cn/有了Trae_上下文doc功能_快速上手陌生组件_再也不用提oncall了.md)
+- [程序员成长第一步_从成为开源社区贡献者开始.md](visactor/blog/cn/程序员成长第一步_从成为开源社区贡献者开始.md)
 
 
 #### 🇬🇧 English
@@ -69,10 +69,10 @@
 **visactor/contributing/en/** (5 篇)
 
 - [1-Setting-Up-the-Development-Environment.md](visactor/contributing/en/1-Setting-Up-the-Development-Environment.md)
-- [2-Howto Submit an Issue.md](visactor/contributing/en/2-Howto Submit an Issue.md)
-- [3-How to Contribute Documentation.md](visactor/contributing/en/3-How to Contribute Documentation.md)
-- [4-How to Contribute to a Demo.md](visactor/contributing/en/4-How to Contribute to a Demo.md)
-- [5-How to Contribute Code.md](visactor/contributing/en/5-How to Contribute Code.md)
+- [2-Howto_Submit_an_Issue.md](visactor/contributing/en/2-Howto_Submit_an_Issue.md)
+- [3-How_to_Contribute_Documentation.md](visactor/contributing/en/3-How_to_Contribute_Documentation.md)
+- [4-How_to_Contribute_to_a_Demo.md](visactor/contributing/en/4-How_to_Contribute_to_a_Demo.md)
+- [5-How_to_Contribute_Code.md](visactor/contributing/en/5-How_to_Contribute_Code.md)
 
 
 ### 🔍 源码解析 (Source Code Analysis)
@@ -84,8 +84,8 @@
 
 - [0-vchart-engineering.md](visactor/sourcecode/vchart/cn/0-vchart-engineering.md)
 - [1-vchart-basic-principles.md](visactor/sourcecode/vchart/cn/1-vchart-basic-principles.md)
-- [10.1 动画的概念和类型(未完成).md](visactor/sourcecode/vchart/cn/10.1 动画的概念和类型(未完成).md)
 - [10.1-animation-concepts-and-types.md](visactor/sourcecode/vchart/cn/10.1-animation-concepts-and-types.md)
+- [10.1_动画的概念和类型(未完成).md](visactor/sourcecode/vchart/cn/10.1_动画的概念和类型(未完成).md)
 - [10.2-global-morphing-animation.md](visactor/sourcecode/vchart/cn/10.2-global-morphing-animation.md)
 - [10.3-state-change-animation.md](visactor/sourcecode/vchart/cn/10.3-state-change-animation.md)
 - [10.4-data-update-animation.md](visactor/sourcecode/vchart/cn/10.4-data-update-animation.md)
@@ -118,7 +118,7 @@
 - [1.2_VTable_的基本架构和源码结构.md](visactor/sourcecode/vtable/cn/1.2_VTable_的基本架构和源码结构.md)
 - [1.3_VTable_生命周期.md](visactor/sourcecode/vtable/cn/1.3_VTable_生命周期.md)
 - [11_数据编辑.md](visactor/sourcecode/vtable/cn/11_数据编辑.md)
-- [2.1场景树（Scenegraph）概念解读.md](visactor/sourcecode/vtable/cn/2.1场景树（Scenegraph）概念解读.md)
+- [2.1场景树(Scenegraph)概念解读.md](visactor/sourcecode/vtable/cn/2.1场景树(Scenegraph)概念解读.md)
 - [2.2_VTable元素与场景树的表达关系.md](visactor/sourcecode/vtable/cn/2.2_VTable元素与场景树的表达关系.md)
 - [2.3_VTable_场景树渲染.md](visactor/sourcecode/vtable/cn/2.3_VTable_场景树渲染.md)
 - [2.4不同图元类型渲染流程.md](visactor/sourcecode/vtable/cn/2.4不同图元类型渲染流程.md)
@@ -127,16 +127,16 @@
 
 **visactor/sourcecode/vtable/en/** (27 篇)
 
-- [0 VTable Engineering.md](visactor/sourcecode/vtable/en/0 VTable Engineering.md)
-- [1.1 Basic Concepts of Vtable.md](visactor/sourcecode/vtable/en/1.1 Basic Concepts of Vtable.md)
-- [1.2 Basic Architecture and Source Code Structure of VTable\r.md](visactor/sourcecode/vtable/en/1.2 Basic Architecture and Source Code Structure of VTable\r.md)
-- [1.3 VTable Lifecycle.md](visactor/sourcecode/vtable/en/1.3 VTable Lifecycle.md)
-- [11 Data Editing.md](visactor/sourcecode/vtable/en/11 Data Editing.md)
-- [2.1 Scenegraph Concept Interpretation.md](visactor/sourcecode/vtable/en/2.1 Scenegraph Concept Interpretation.md)
-- [2.2 VTable Elements and the Expression Relationship with the Scene Tree.md](visactor/sourcecode/vtable/en/2.2 VTable Elements and the Expression Relationship with the Scene Tree.md)
-- [2.3 VTable Scene Tree Rendering.md](visactor/sourcecode/vtable/en/2.3 VTable Scene Tree Rendering.md)
-- [2.4 Rendering Process of Different Primitive Types.md](visactor/sourcecode/vtable/en/2.4 Rendering Process of Different Primitive Types.md)
-- [2.5 Scene Tree Update.md](visactor/sourcecode/vtable/en/2.5 Scene Tree Update.md)
+- [0_VTable_Engineering.md](visactor/sourcecode/vtable/en/0_VTable_Engineering.md)
+- [1.1_Basic_Concepts_of_Vtable.md](visactor/sourcecode/vtable/en/1.1_Basic_Concepts_of_Vtable.md)
+- [1.2_Basic_Architecture_and_Source_Code_Structure_of_VTable\r.md](visactor/sourcecode/vtable/en/1.2_Basic_Architecture_and_Source_Code_Structure_of_VTable\r.md)
+- [1.3_VTable_Lifecycle.md](visactor/sourcecode/vtable/en/1.3_VTable_Lifecycle.md)
+- [11_Data_Editing.md](visactor/sourcecode/vtable/en/11_Data_Editing.md)
+- [2.1_Scenegraph_Concept_Interpretation.md](visactor/sourcecode/vtable/en/2.1_Scenegraph_Concept_Interpretation.md)
+- [2.2_VTable_Elements_and_the_Expression_Relationship_with_the_Scene_Tree.md](visactor/sourcecode/vtable/en/2.2_VTable_Elements_and_the_Expression_Relationship_with_the_Scene_Tree.md)
+- [2.3_VTable_Scene_Tree_Rendering.md](visactor/sourcecode/vtable/en/2.3_VTable_Scene_Tree_Rendering.md)
+- [2.4_Rendering_Process_of_Different_Primitive_Types.md](visactor/sourcecode/vtable/en/2.4_Rendering_Process_of_Different_Primitive_Types.md)
+- [2.5_Scene_Tree_Update.md](visactor/sourcecode/vtable/en/2.5_Scene_Tree_Update.md)
 - ... 还有 17 篇文档
 
 
@@ -147,29 +147,29 @@
 
 **visactor/vchart/faq/en/** (209 篇)
 
-- [1- Does the tooltip support changing the background color.md](visactor/vchart/faq/en/1- Does the tooltip support changing the background color.md)
-- [10- How to change the color of the legend.md](visactor/vchart/faq/en/10- How to change the color of the legend.md)
-- [100-How can Tooltip achieve multi column display in VChart.md](visactor/vchart/faq/en/100-How can Tooltip achieve multi column display in VChart.md)
-- [101- How to configure nested pie charts in VChart.md](visactor/vchart/faq/en/101- How to configure nested pie charts in VChart.md)
-- [102-How to automatically update chart data in React components.md](visactor/vchart/faq/en/102-How to automatically update chart data in React components.md)
-- [103-How to change the hover display content when the mouse is moved into the chart area.md](visactor/vchart/faq/en/103-How to change the hover display content when the mouse is moved into the chart area.md)
-- [104- Issues with x-axis data overlapping and y-axis data not displaying when using the vchart library.md](visactor/vchart/faq/en/104- Issues with x-axis data overlapping and y-axis data not displaying when using the vchart library.md)
-- [105- How to customize Tooltip shapes.md](visactor/vchart/faq/en/105- How to customize Tooltip shapes.md)
-- [106- How to set a default selection for a sector in a VChart pie chart.md](visactor/vchart/faq/en/106- How to set a default selection for a sector in a VChart pie chart.md)
-- [107-How can we still make data points respond to hover events without displaying point graphics in area chart.md](visactor/vchart/faq/en/107-How can we still make data points respond to hover events without displaying point graphics in area chart.md)
+- [1-Does_the_tooltip_support_changing_the_background_color.md](visactor/vchart/faq/en/1-Does_the_tooltip_support_changing_the_background_color.md)
+- [10-How_to_change_the_color_of_the_legend.md](visactor/vchart/faq/en/10-How_to_change_the_color_of_the_legend.md)
+- [100-How_can_Tooltip_achieve_multi_column_display_in_VChart.md](visactor/vchart/faq/en/100-How_can_Tooltip_achieve_multi_column_display_in_VChart.md)
+- [101-How_to_configure_nested_pie_charts_in_VChart.md](visactor/vchart/faq/en/101-How_to_configure_nested_pie_charts_in_VChart.md)
+- [102-How_to_automatically_update_chart_data_in_React_components.md](visactor/vchart/faq/en/102-How_to_automatically_update_chart_data_in_React_components.md)
+- [103-How_to_change_the_hover_display_content_when_the_mouse_is_moved_into_the_chart_area.md](visactor/vchart/faq/en/103-How_to_change_the_hover_display_content_when_the_mouse_is_moved_into_the_chart_area.md)
+- [104-Issues_with_x-axis_data_overlapping_and_y-axis_data_not_displaying_when_using_the_vchart_library.md](visactor/vchart/faq/en/104-Issues_with_x-axis_data_overlapping_and_y-axis_data_not_displaying_when_using_the_vchart_library.md)
+- [105-How_to_customize_Tooltip_shapes.md](visactor/vchart/faq/en/105-How_to_customize_Tooltip_shapes.md)
+- [106-How_to_set_a_default_selection_for_a_sector_in_a_VChart_pie_chart.md](visactor/vchart/faq/en/106-How_to_set_a_default_selection_for_a_sector_in_a_VChart_pie_chart.md)
+- [107-How_can_we_still_make_data_points_respond_to_hover_events_without_displaying_point_graphics_in_area_chart.md](visactor/vchart/faq/en/107-How_can_we_still_make_data_points_respond_to_hover_events_without_displaying_point_graphics_in_area_chart.md)
 - ... 还有 199 篇文档
 
 **visactor/vchart/faq/zh/** (124 篇)
 
-- [0._如何实现柱形图同维度数据前后重叠而不是堆叠效果？.md](visactor/vchart/faq/zh/0._如何实现柱形图同维度数据前后重叠而不是堆叠效果？.md)
-- [1._如何实现多分组柱状图以及按照分组维度高亮的交互？.md](visactor/vchart/faq/zh/1._如何实现多分组柱状图以及按照分组维度高亮的交互？.md)
+- [0._如何实现柱形图同维度数据前后重叠而不是堆叠效果.md](visactor/vchart/faq/zh/0._如何实现柱形图同维度数据前后重叠而不是堆叠效果.md)
+- [1._如何实现多分组柱状图以及按照分组维度高亮的交互.md](visactor/vchart/faq/zh/1._如何实现多分组柱状图以及按照分组维度高亮的交互.md)
 - [10._怎么让图在canvas的最左边?.md](visactor/vchart/faq/zh/10._怎么让图在canvas的最左边?.md)
 - [100._如何修改_tooltip_内容项的标记图形.md](visactor/vchart/faq/zh/100._如何修改_tooltip_内容项的标记图形.md)
 - [100_问模板.md](visactor/vchart/faq/zh/100_问模板.md)
-- [101.折线图展示内容目前默认是全部选择展示，是否可以有渠道反选（例如有个按钮一键不展示）.md](visactor/vchart/faq/zh/101.折线图展示内容目前默认是全部选择展示，是否可以有渠道反选（例如有个按钮一键不展示）.md)
+- [101.折线图展示内容目前默认是全部选择展示_是否可以有渠道反选(例如有个按钮一键不展示).md](visactor/vchart/faq/zh/101.折线图展示内容目前默认是全部选择展示_是否可以有渠道反选(例如有个按钮一键不展示).md)
 - [102.条形图数值标签右对齐展示.md](visactor/vchart/faq/zh/102.条形图数值标签右对齐展示.md)
 - [103.tooltip_和_legend_shape如何配置为带圆角的矩形.md](visactor/vchart/faq/zh/103.tooltip_和_legend_shape如何配置为带圆角的矩形.md)
-- [104.如何去除轴刻度值？.md](visactor/vchart/faq/zh/104.如何去除轴刻度值？.md)
+- [104.如何去除轴刻度值.md](visactor/vchart/faq/zh/104.如何去除轴刻度值.md)
 - [105.hover_超长label时候上方显示的这个tip能否配置修改背景颜色和文字颜色.md](visactor/vchart/faq/zh/105.hover_超长label时候上方显示的这个tip能否配置修改背景颜色和文字颜色.md)
 - ... 还有 114 篇文档
 
@@ -181,16 +181,16 @@
 
 **visactor/vtable/faq/cn/** (38 篇)
 
-- [23._VTable编辑表格如何修改触发时机？.md](visactor/vtable/faq/cn/23._VTable编辑表格如何修改触发时机？.md)
-- [24._VTable使用问题：如何显示表格行号.md](visactor/vtable/faq/cn/24._VTable使用问题：如何显示表格行号.md)
-- [25._VTable透视分析表聚合值怎么自动计算并显示？.md](visactor/vtable/faq/cn/25._VTable透视分析表聚合值怎么自动计算并显示？.md)
-- [26._VTable怎么通过右键菜单来实现复制粘贴删除单元格能力？.md](visactor/vtable/faq/cn/26._VTable怎么通过右键菜单来实现复制粘贴删除单元格能力？.md)
-- [27._VTable使用问题：如何设置树形结构展开收起状态.md](visactor/vtable/faq/cn/27._VTable使用问题：如何设置树形结构展开收起状态.md)
-- [28._VTable如何实现类似Excel填充柄能力来批量修改单元格？.md](visactor/vtable/faq/cn/28._VTable如何实现类似Excel填充柄能力来批量修改单元格？.md)
-- [29._VTable使用问题：如何获取表格总行数和内容实际高度.md](visactor/vtable/faq/cn/29._VTable使用问题：如何获取表格总行数和内容实际高度.md)
-- [30._VTable集成VChart图表场景下，边缘处的圆点被截断怎么处理？.md](visactor/vtable/faq/cn/30._VTable集成VChart图表场景下，边缘处的圆点被截断怎么处理？.md)
-- [31._VTable使用问题：如何实现hover到单元格显示或隐藏部分内容.md](visactor/vtable/faq/cn/31._VTable使用问题：如何实现hover到单元格显示或隐藏部分内容.md)
-- [32._VTable使用问题：如何实现滚动条贴DOM容器边界展示.md](visactor/vtable/faq/cn/32._VTable使用问题：如何实现滚动条贴DOM容器边界展示.md)
+- [23._VTable编辑表格如何修改触发时机.md](visactor/vtable/faq/cn/23._VTable编辑表格如何修改触发时机.md)
+- [24._VTable使用问题_如何显示表格行号.md](visactor/vtable/faq/cn/24._VTable使用问题_如何显示表格行号.md)
+- [25._VTable透视分析表聚合值怎么自动计算并显示.md](visactor/vtable/faq/cn/25._VTable透视分析表聚合值怎么自动计算并显示.md)
+- [26._VTable怎么通过右键菜单来实现复制粘贴删除单元格能力.md](visactor/vtable/faq/cn/26._VTable怎么通过右键菜单来实现复制粘贴删除单元格能力.md)
+- [27._VTable使用问题_如何设置树形结构展开收起状态.md](visactor/vtable/faq/cn/27._VTable使用问题_如何设置树形结构展开收起状态.md)
+- [28._VTable如何实现类似Excel填充柄能力来批量修改单元格.md](visactor/vtable/faq/cn/28._VTable如何实现类似Excel填充柄能力来批量修改单元格.md)
+- [29._VTable使用问题_如何获取表格总行数和内容实际高度.md](visactor/vtable/faq/cn/29._VTable使用问题_如何获取表格总行数和内容实际高度.md)
+- [30._VTable集成VChart图表场景下_边缘处的圆点被截断怎么处理.md](visactor/vtable/faq/cn/30._VTable集成VChart图表场景下_边缘处的圆点被截断怎么处理.md)
+- [31._VTable使用问题_如何实现hover到单元格显示或隐藏部分内容.md](visactor/vtable/faq/cn/31._VTable使用问题_如何实现hover到单元格显示或隐藏部分内容.md)
+- [32._VTable使用问题_如何实现滚动条贴DOM容器边界展示.md](visactor/vtable/faq/cn/32._VTable使用问题_如何实现滚动条贴DOM容器边界展示.md)
 - ... 还有 28 篇文档
 
 **visactor/vtable/faq/en/** (38 篇)
@@ -244,7 +244,9 @@ VisActor 是一个开源的数据可视化解决方案，包含多个强大的�
 - [VTable GitHub](https://github.com/VisActor/VTable)
 - [Discord 社区](https://discord.gg/3wPyxVyH6m)
 
+## 📝 文档贡献
 
+欢迎为本文档仓库贡献内容！请参考[贡献指南](visactor/contributing/cn/)了解如何参与。
 
 ## 📄 许可证
 
