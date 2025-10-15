@@ -1,5 +1,5 @@
 ---
-title:  VTable Gantt 智能 zoom缩放开发实践 Copy    
+title:  VTable Gantt 智能 zoom（缩放）功能介绍与开发实践 
 
 key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM
 ---
@@ -8,7 +8,7 @@ key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,C
 
 本文详细介绍了 VTable Gantt 图表智能缩放系统的完整开发实践。项目实现了基于 millisecondsPerPixel 的多级别智能缩放系统和 VRender DataZoom 组件的深度集成，成功解决了 Gantt 图表缺乏灵活缩放交互的问题。核心技术包括：ZoomScaleManager 智能缩放管理器、DataZoom 双向同步机制、动态边界计算算法等。支持 Ctrl+滚轮、触摸板双指缩放等多种交互方式，实现了从宏观到微观的无缝缩放体验。作者赖景康作为华中师范大学计算机专业大三学生，在开源之夏项目中完成了该功能的完整开发，并分享了平衡学业、实习与开源的经验，以及"在没有发现问题原因之前，不要尝试解决问题"的重要开发原则。
 
-本文作者，**赖景康（****https://github.com/shufufufu****）**：    
+## 本文作者，***赖景康***（<https://github.com/shufufufu>)
 
 就读于华中师范大学计算机学院计算机科学与技术专业，是一名刚刚升入大三学年的学生。对前端技术和图形化充满兴趣，渴求技术上的进步，时常关注开源社区，愿意在实践中打磨自己的工程能力。    
 
@@ -134,6 +134,15 @@ DataZoom 集成是项目中最具挑战性的部分，需要将 VRender 的 Data
 
 所有成果都已成功合入 VTable 主分支，成为正式功能特性，为 VTable Gantt 图表的功能完善做出了重要贡献。    
 
+# 在线demo & 教程
+
+<https://visactor.com/vtable/demo/gantt/gantt-zoom>
+
+<https://visactor.com/vtable/demo/gantt/gantt-datazoom>
+
+<https://visactor.com/vtable/guide/gantt/gantt_zoom_scale>
+
+<https://visactor.com/vtable/guide/gantt/gantt_datazoom>
 
 
 # 个人随访
@@ -219,3 +228,22 @@ DataZoom 集成是项目中最具挑战性的部分，需要将 VRender 的 Data
 开源不仅是完成一个项目，更是一段学习和成长的旅程。只要勇敢迈出第一步，就会发现开源的世界比想象中更有趣，也更能带来收获。    
 
 
+# 欢迎交流
+
+最后，我们诚挚的欢迎所有对数据可视化感兴趣的朋友参与进来，参与 VisActor 的开源建设：    
+
+**VTable**：[VTable 官网](https://www.visactor.io/vtable)、[VTable Github（欢迎 Star）](https://github.com/VisActor/VTable)    
+
+VisActor 官方网站：[www.visactor.io/](http://www.visactor.io/) 或 www.viactor.com    
+
+Discord：[discord.gg/3wPyxVyH6m](http://discord.gg/3wPyxVyH6m)    
+
+飞书群（外网）：[打开链接扫码](https://link.juejin.cn?target=https%3A%2F%2Fp3-juejin.byteimg.com%2Ftos-cn-i-k3u1fbpfcp%2F40dcf4e6722d4925804361a2269991d8~tplv-k3u1fbpfcp-jj-mark%3A0%3A0%3A0%3A0%3Aq75.image%23%3Fw%3D264%26h%3D277%26s%3D35808%26e%3Dpng%26b%3Dfdfdfd)    
+
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/EkT5bpvbOoMh8pxgPu0cV3R3nsc.gif' alt='' width='264' height='auto' />
+
+微信公众号：[打开链接扫码](https://link.juejin.cn?target=https%3A%2F%2Fp3-juejin.byteimg.com%2Ftos-cn-i-k3u1fbpfcp%2Ff28519302ee94940a8159fc52d375aaa~tplv-k3u1fbpfcp-jj-mark%3A0%3A0%3A0%3A0%3Aq75.image%23%3Fw%3D258%26h%3D258%26s%3D8552%26e%3Dwebp%26b%3Dfefefe)    
+
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WzmlbItMnoe0SIxCfRNcbS60nqg.gif' alt='' width='258' height='auto' />
+
+github：[github.com/VisActor](https://github.com/VisActor/)    

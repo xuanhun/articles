@@ -1,5 +1,5 @@
 ---
-title: VTable Gantt Intelligent Zoom Scaling Development Practice
+title: VTable Gantt Intelligent Zoom Feature Introduction and Development Practice
 
 key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM
 ---
@@ -8,7 +8,7 @@ key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,C
 
 This article provides a detailed introduction to the complete development practice of the VTable Gantt chart intelligent zoom system. The project implements a multi-level intelligent zoom system based on millisecondsPerPixel and deep integration of the VRender DataZoom component, successfully solving the problem of Gantt charts lacking flexible zoom interaction. Core technologies include: ZoomScaleManager intelligent zoom manager, DataZoom bidirectional synchronization mechanism, dynamic boundary calculation algorithm, etc. It supports multiple interaction methods such as Ctrl+scroll wheel and trackpad pinch-to-zoom, achieving seamless zoom experience from macro to micro views. The author, Lai Jingkang, as a junior student majoring in Computer Science at Central China Normal University, completed the full development of this feature in the Summer of Open Source project, and shares his experience in balancing studies, internship and open source, as well as the important development principle "don't try to solve the problem before finding its cause."
 
-Author of this article, **Lai Jingkang (https://github.com/shufufufu)**:
+Author of this article, ***shufufufu*** (<https://github.com/shufufufu>):
 
 A student majoring in Computer Science and Technology at the School of Computer Science, Central China Normal University, who has just entered the third year of undergraduate studies. I am passionate about frontend technology and graphics, eager for technical progress, often follow the open source community, and willing to hone my engineering skills in practice.
 
@@ -128,6 +128,16 @@ I wrote a complete Chinese and English technical documentation system, including
 * **Options Documentation**: Complete API documentation and TypeScript type definitions, ensuring development experience
 
 All achievements have been successfully merged into the VTable main branch, becoming official feature characteristics, making important contributions to the functional improvement of VTable Gantt charts.
+
+# Online Demo & Tutorials
+
+https://visactor.com/vtable/demo/gantt/gantt-zoom
+
+https://visactor.com/vtable/demo/gantt/gantt-datazoom
+
+https://visactor.com/vtable/guide/gantt/gantt_zoom_scale
+
+https://visactor.com/vtable/guide/gantt/gantt_datazoom
 
 # Personal Interview
 
