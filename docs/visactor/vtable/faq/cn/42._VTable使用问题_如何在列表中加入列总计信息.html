@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20. VTable使用问题：如何在列表中加入列总计信息</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何在列表中加入列总计信息</br></p>
+<h2 id="_2">问题描述</h2>
+<p>在列表中，希望可以显示一列的总计信息，如求和、平均等。</br></p>
+<h2 id="_3">解决方案</h2>
+<p>VTable提供了<code>aggregation</code>配置，用于配置表格中的数据聚合规则和展示位置，可以在option中配置<code>aggregation</code>指定聚合的全局规则，也可以在每个column中配置<code>aggregation</code>指定该列的聚合规则。<code>aggregation</code>中需要配置以下属性：</br>
+*  aggregationType: </br>
+*  求和，设置<code>aggregationType</code>为<code>AggregationType.SUM</code></br>
+*  平均，设置<code>aggregationType</code>为<code>AggregationType.AVG</code></br>
+*  最大值，设置<code>aggregationType</code>为<code>AggregationType.MAX</code></br>
+*  最小值，设置<code>aggregationType</code>为<code>AggregationType.MIN</code></br>
+*  计数，设置<code>aggregationType</code>为<code>AggregationType.COUNT</code></br>
+*  自定义函数，设置<code>aggregationType</code>为<code>AggregationType.CUSTOM</code>，通过<code>aggregationFun</code>来设置自定义的聚合逻辑</br>
+*  aggregationFun: <code>aggregationType</code>为<code>AggregationType.CUSTOM</code>时自定义聚合逻辑</br>
+*  showOnTop: 控制聚合结果的展示位置，默认为<code>false</code>，即聚合结果展示在 body 的底部。如果设置为<code>true</code>，则聚合结果展示在 body 的顶部。</br>
+*  formatFun: 设置聚合值的格式化函数，可以自定义聚合值的展示格式。</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const options = {
+    //......
+    columns: [
+      {
+        aggregation: [
+          {
+            aggregationType: VTable.TYPES.AggregationType.MAX,
+            // showOnTop: true,
+            formatFun(value) {
+              return '最高薪资:' + Math.round(value) + '元';
+            }
+          }
+        ]
+      },
+      // ......
+    ]
+};&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/MoaBbenpUo981mx39BbcMXwKnbR.gif' alt='' width='1690' height='1064'></p>
+<p>示例代码：https://www.visactor.io/vtable/demo/list-table-data-analysis/list-table-aggregation-multiple</br></p>
+<h2 id="_6">相关文档</h2>
+<p>基础表格数据分析教程：https://www.visactor.io/vtable/guide/data_analysis/list_table_dataAnalysis</br>
+相关api：https://www.visactor.io/vtable/option/ListTable#aggregation</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

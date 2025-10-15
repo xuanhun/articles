@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>102-How_to_automatically_update_chart_data_in_React_components</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-automatically-update-chart-data-in-react-components">How to automatically update chart data in React components?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>How can we achieve automatic updating of chart data in a chart component wrapped with React?</p>
+<h2 id="solution">Solution</h2>
+<p>In VChart, you can update the chart by calling either updateSpec or updateData.</p>
+<p>To update the chart data, you can save the chart instance using ref when initializing the chart instance in a React component. Then, use useEffect to set the dependencies to the data that needs to be updated, and call the chart instance's updateData method in the callback function.</p>
+<p>VChart also provides a React-VChart wrapper:
+https://www.visactor.io/vchart/guide/tutorial_docs/Cross-terminal_and_Developer_Ecology/react</p>
+<p>You can refer to the code example below to update the chart data using React-VChart.</p>
+<h2 id="code-example">Code Example</h2>
+<p>Clicking the "Update the data of bar chart" button allows for the updating of the chart's data.</p>
+<pre class="codehilite"><code class="language-javascript">import &quot;./styles.css&quot;;
+import { BarChart } from &quot;./BarChart&quot;;
+import { LineChart } from &quot;./LineChart&quot;;
+import { AreaChart } from &quot;./AreaChart&quot;;
+import { getBarData } from &quot;./bar-data&quot;;
+import { useState } from &quot;react&quot;;
+
+const colorMaps = {
+  default: [
+    &quot;#6690F2&quot;,
+    &quot;#70D6A3&quot;,
+    &quot;#B4E6E2&quot;,
+    &quot;#63B5FC&quot;,
+    &quot;#FF8F62&quot;,
+    &quot;#FFDC83&quot;,
+    &quot;#BCC5FD&quot;,
+    &quot;#A29BFE&quot;,
+    &quot;#63C4C7&quot;,
+    &quot;#F68484&quot;
+  ],
+  red: [
+    &quot;#c12e34&quot;,
+    &quot;#e6b600&quot;,
+    &quot;#0098d9&quot;,
+    &quot;#2b821d&quot;,
+    &quot;#005eaa&quot;,
+    &quot;#339ca8&quot;,
+    &quot;#cda819&quot;,
+    &quot;#32a487&quot;
+  ]
+};
+
+export default function App() {
+  const [barData, setBarData] = useState&lt;any[]&gt;(getBarData());
+  const [colors, setColors] = useState&lt;string[]&gt;(colorMaps.default);
+  const handleUpdateBarData = () =&gt; {
+    setBarData(getBarData());
+  };
+
+  const handleUpdateColors = () =&gt; {
+    if (colors === colorMaps.default) {
+      setColors(colorMaps.red);
+    } else {
+      setColors(colorMaps.default);
+    }
+  };
+
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;div&gt;
+        &lt;img src=&quot;https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/logo_500_200_light.png&quot; /&gt;
+      &lt;/div&gt;
+      &lt;button onClick={handleUpdateBarData}&gt;
+        Update the data of bar chart
+      &lt;/button&gt;
+
+      &lt;button onClick={handleUpdateColors}&gt;update colors&lt;/button&gt;
+
+      &lt;h2&gt;A Bar Chart&lt;/h2&gt;
+
+      &lt;BarChart data={barData} colors={colors} /&gt;
+
+      &lt;h2&gt;A Line Chart&lt;/h2&gt;
+      &lt;LineChart colors={colors} /&gt;
+
+      &lt;h2&gt;A Area Chart&lt;/h2&gt;
+      &lt;AreaChart colors={colors} /&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+
+<h2 id="results">Results</h2>
+<ul>
+<li><a href="https://codesandbox.io/s/visactor-vchart-react-demo-forked-jsqqjj">Online demo</a></li>
+</ul>
+<h2 id="quote">Quote</h2>
+<ul>
+<li>
+<p><a href="https://www.visactor.io/vchart/guide/tutorial_docs/Cross-terminal_and_Developer_Ecology/react">react-vchart Tutorial</a></p>
+</li>
+<li>
+<p><a href="https://github.com/VisActor/VChart">github</a></p>
+</li>
+</ul>
+</body>
+</html>

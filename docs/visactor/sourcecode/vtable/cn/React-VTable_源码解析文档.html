@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React-VTable 源码解析文档</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="1">1. 整体架构</h1>
+<p>React-VTable 是一个基于 <a href="https://github.com/VisActor/VTable">@visactor/vtable</a> 封装的 React 组件库，提供了声明式的表格渲染能力。该库主要由以下几个部分组成：    </p>
+<ul>
+<li>
+<p><strong>表格组件</strong>：包括 ListTable、PivotTable、PivotChart 等主要表格类型    </p>
+</li>
+<li>
+<p><strong>表格内部元素组件</strong>：如 ListColumn、PivotDimension 等表格内部配置组件    </p>
+</li>
+<li>
+<p><strong>事件处理系统</strong>：统一管理表格交互事件    </p>
+</li>
+<li>
+<p><strong>容器与上下文管理模块</strong>：处理表格的渲染容器和生命周期，提供表格状态共享机制    </p>
+</li>
+<li>
+<p><strong>自定义组件</strong>：使用封装的react组件或使用外部的react组件实现自定义渲染功能    </p>
+</li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/VsJvwOhk0hLD5ybWoO0cLzScnFc.gif" /></p>
+<h1 id="2">2. 核心组件</h1>
+<h2 id="21-basetable">2.1 基础表格 (BaseTable)</h2>
+<p><code>BaseTable</code> 是所有表格类型的基础组件，定义在 <code>src/tables/base-table.tsx</code> 中。它负责：    </p>
+<ul>
+<li>
+<p>创建并管理表格实例    </p>
+</li>
+<li>
+<p>处理表格option和相关配置    </p>
+</li>
+<li>
+<p>管理表格的生命周期    </p>
+</li>
+<li>
+<p>绑定事件处理函数    </p>
+</li>
+</ul>
+<p>BaseTable 组件使用 React 的 forwardRef 将表格实例暴露给父组件，并通过 React 的 Context API 提供表格上下文。    </p>
+<p>关键实现：    </p>
+<pre class="codehilite"><code class="language-xml">const BaseTable: React.FC&lt;Props&gt; = React.forwardRef((props, ref) =&gt; {
+  // 状态管理和引用
+  const [updateId, setUpdateId] = useState&lt;number&gt;(0);
+  const tableContext = useRef&lt;TableContextType&gt;({});
+  useImperativeHandle(ref, () =&gt; tableContext.current?.table);
+
+  // 创建表格实例的方法
+  const createTable = useCallback(
+    (props: Props) =&gt; {
+      const vtable = new props.vtableConstrouctor(props.container, parseOption(props));
+      // ... 设置表格属性
+      tableContext.current = { ...tableContext.current, table: vtable };
+      // ... 其他初始化逻辑
+    },
+    [/* 依赖项 */]
+  );
+
+  // 更新表格逻辑与生命周期处理
+  // ...
+});    
+</code></pre>
+
+<p>每一次props变化，获取到变化后的table option，对比判断是否需要更新table，如果需要则对table实例进行创建或更新。    </p>
+<p>关键实现：    </p>
+<pre class="codehilite"><code class="language-Typescript">const BaseTable: React.FC&lt;Props&gt; = React.forwardRef((props, ref) =&gt; {
+  // ...
+  // 
+    useEffect(() =&gt; {
+    const newOptionFromChildren = hasOption ? null : parseOptionFromChildren(props);
+
+    if (!tableContext.current?.table) {
+      // ... 创建table实例
+      createTable(props);
+      // ...
+      return;
+    }
+
+    if (hasOption) {
+      // ... 有option prop时只对比option和record两个props
+      if (!isEqual(eventsBinded.current.option, props.option, { skipFunction: skipFunctionDiff })) {
+        // ... option发生变化，更新表格实例option
+        tableContext.current.table.updateOption(option as any);
+      } else if (
+        hasRecords &amp;&amp;
+        !isEqual(eventsBinded.current.records, props.records, { skipFunction: skipFunctionDiff })
+      ) {
+        // ... record发生变化，更新表格实例option
+        tableContext.current.table.setRecords(props.records as any[]);
+      }
+      return;
+    }
+
+    // ... 从props及children中提取出option
+    const newOption = pickWithout(props, notOptionKeys);
+    if (
+      !isEqual(newOption, prevOption.current, { skipFunction: skipFunctionDiff }) ||
+      !isEqual(newOptionFromChildren, optionFromChildren.current, { skipFunction: skipFunctionDiff })
+    ) {
+      // ... option发生变化，更新表格实例option
+      tableContext.current.table.updateOption(option as any);
+    } else if (hasRecords &amp;&amp; !isEqual(props.records, prevRecords.current, { skipFunction: skipFunctionDiff })) {
+      // ... record发生变化，更新表格实例option
+      tableContext.current.table.setRecords(props.records);
+    }
+
+    // ......
+  }, [createTable, hasOption, hasRecords, parseOption, handleTableRender, renderTable, skipFunctionDiff, props]);
+});    
+</code></pre>
+
+<h2 id="22">2.2 具体表格类型</h2>
+<p>与VTable相同React-VTable提供了几种主要表格类型：    </p>
+<ul>
+<li>
+<p><strong>ListTable</strong>: 列表表格    </p>
+</li>
+<li>
+<p><strong>PivotTable</strong>: 透视表    </p>
+</li>
+<li>
+<p><strong>PivotChart</strong>: 透视表    </p>
+</li>
+<li>
+<p><strong>简化版表格</strong>: ListTableSimple 和 PivotTableSimple，为了包体积优化拆分出的简单版本，只包含基础文字渲染，可以按需注册需要使用的组件    </p>
+</li>
+</ul>
+<p>这些组件都是通过 <code>createTable</code> 工厂函数创建的，例如：    </p>
+<pre class="codehilite"><code class="language-xml">export const ListTable = createTable&lt;React.PropsWithChildren&lt;ListTableProps&gt;&gt;('ListTable', {
+  type: 'list-table',
+  vtableConstrouctor: ListTableConstrouctor as any
+});    
+</code></pre>
+
+<h1 id="3">3. 组件体系</h1>
+<h2 id="31">3.1 基础组件创建</h2>
+<p>React-VTable 使用 <code>createComponent</code> 工厂函数（在 <code>src/table-components/base-component.tsx</code> 中定义）来创建各种表格内部元素组件：    </p>
+<pre class="codehilite"><code class="language-xml">export const createComponent = &lt;T extends ComponentProps&gt;(
+  componentName: string,
+  optionName: string,
+  supportedEvents?: Record&lt;string, string&gt; | null,
+  isSingle?: boolean
+) =&gt; {
+  // ...组件实现
+};    
+</code></pre>
+
+<p>这个模式使得组件可以：    </p>
+<ul>
+<li>
+<p>统一处理事件绑定    </p>
+</li>
+<li>
+<p>处理组件更新和卸载    </p>
+</li>
+<li>
+<p>解析子组件结构    </p>
+</li>
+<li>
+<p>管理组件在表格上下文中的状态    </p>
+</li>
+</ul>
+<h2 id="32">3.2 组件类型</h2>
+<p>主要组件类型包括：    </p>
+<ul>
+<li>
+<p><strong>列表组件</strong>: 如 <code>ListColumn</code>    </p>
+</li>
+<li>
+<p><strong>透视表组件</strong>: 如 <code>PivotColumnDimension</code>, <code>PivotRowDimension</code>,  <code>PivotIndicator</code>,  <code>PivotColumnHeaderTitle</code>    </p>
+</li>
+<li>
+<p><strong>UI组件</strong>: 如 <code>Menu</code>, <code>Tooltip</code>, <code>EmptyTip</code>    </p>
+</li>
+<li>
+<p><strong>自定义组件</strong>: 如 <code>CustomComponent</code>    </p>
+</li>
+</ul>
+<p>这些组件主要配置表格option中的各个部分，例如列的属性、透视表的维度等；它不负责渲染内容，最终会被转换为表格实例option中的属性值。    </p>
+<h1 id="4">4. 事件处理系统</h1>
+<p>事件处理系统定义在 <code>src/eventsUtils.ts</code> 中，提供了：    </p>
+<ul>
+<li>
+<p>事件类型定义    </p>
+</li>
+<li>
+<p>事件回调函数类型    </p>
+</li>
+<li>
+<p>事件绑定和解绑逻辑    </p>
+</li>
+</ul>
+<p>事件绑定核心代码：    </p>
+<pre class="codehilite"><code class="language-xml">export const bindEventsToTable = &lt;T extends EventsProps&gt;(
+  table: IVTable,
+  newProps?: T | null,
+  prevProps?: T | null,
+  supportedEvents: Record&lt;string, string&gt; = TABLE_EVENTS
+) =&gt; {
+  // ... 事件处理逻辑
+  // 获取新旧props中的事件
+  const prevEventProps: EventsProps = prevProps ? findEventProps(prevProps, supportedEvents) : null;
+  const newEventProps: EventsProps = newProps ? findEventProps(newProps, supportedEvents) : null;
+
+  if (prevEventProps) {
+    // ... 解绑旧事件
+  }
+
+  if (newEventProps) {
+    // ... 绑定新事件
+  }
+};    
+</code></pre>
+
+<p>事件系统中的表格事件与VTable相同，事件回调的名称安装react组件的规范做了一定修改，对应关系如下：    </p>
+<table><colgroup><col style="width: 181px"><col style="width: 160px"></colgroup><tbody><tr><td rowspan="1" colspan="1">
+
+React-VTable 事件回调    
+</td><td rowspan="1" colspan="1">
+
+VTable事件名称    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onClickCell    
+</td><td rowspan="1" colspan="1">
+
+click_cell    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onSelectedCell    
+</td><td rowspan="1" colspan="1">
+
+selected_cell    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onMouseMoveCell    
+</td><td rowspan="1" colspan="1">
+
+mousemove_cell    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onResizeColumn    
+</td><td rowspan="1" colspan="1">
+
+resize_column    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onSortClick    
+</td><td rowspan="1" colspan="1">
+
+sort_click    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onScroll    
+</td><td rowspan="1" colspan="1">
+
+scroll    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+...    
+</td><td rowspan="1" colspan="1">
+
+...    
+</td></tr></tbody></table>
+
+<h1 id="5">5. 上下文与容器</h1>
+<h2 id="51">5.1 表格上下文</h2>
+<p>表格上下文定义在 <code>src/context/table.tsx</code> 中，提供了表格实例和配置的共享机制。    </p>
+<h2 id="52">5.2 容器组件</h2>
+<p><code>withContainer</code> 是一个高阶组件，定义在 <code>src/containers/withContainer.tsx</code> 中，负责：    </p>
+<ul>
+<li>
+<p>创建和管理表格的 DOM 容器    </p>
+</li>
+<li>
+<p>处理表格尺寸的设置与更新    </p>
+</li>
+<li>
+<p>管理容器的生命周期    </p>
+</li>
+</ul>
+<h1 id="6">6. 自定义渲染</h1>
+<h2 id="61">6.1 核心文件结构</h2>
+<p><code>custom</code> 目录包含以下关键文件：    </p>
+<ul>
+<li>
+<p><code>custom-layout.tsx</code>: CustomLayout组件    </p>
+</li>
+<li>
+<p><code>vtable-react-attribute-plugin.ts</code>: VRender 渲染 React 组件插件    </p>
+</li>
+<li>
+<p><code>vtable-browser-env-contribution.ts</code>: VRender 浏览器环境适配插件    </p>
+</li>
+<li>
+<p><code>reconciler.ts</code>: React 渲染协调器    </p>
+</li>
+<li>
+<p><code>graphic.ts</code>:自定义布局 图元组件    </p>
+</li>
+</ul>
+<h2 id="62-customlayout">6.2 CustomLayout 组件</h2>
+<p>CustomLayout 组件是对于VTable提供的自定义渲染能力的提升，用户可以使用CustomLayout 组件功能封装自己的React组件，并可以在组件中使用原生的DOM React组件。    </p>
+<p>CustomLayout组件通常作为列、维度或指标的子组件，一个CustomLayout组件会对应多个单元格，也就是对应多个实际渲染的组件实例，因此在CustomLayout组件内主要处理这样的对应关系。    </p>
+<p><code>custom-layout.tsx</code> 实现了CustomLayout核心组件：    </p>
+<pre class="codehilite"><code class="language-xml">export const CustomLayout: React.FC&lt;CustomLayoutProps&gt; = ({ children, componentId }) =&gt; {
+  // ... 创建Map，存储该CustomLayout对应所有单元格的组件实例
+  const container = useRef&lt;Map&lt;string, FiberRoot&gt;&gt;(new Map());
+
+  const createGraphic: ICustomLayoutFuc = useCallback(
+    args =&gt; {
+      // ... 使用reconcilor创建自定义组件
+    },
+    [children]
+  );
+
+  const removeContainer = useCallback((col: number, row: number) =&gt; {
+     // ... 使用reconcilor删除自定义组件
+  }, []);
+
+  useLayoutEffect(() =&gt; {
+    // ...
+    if (table &amp;&amp; !table.reactCustomLayout?.hasReactCreateGraphic(componentId, isHeaderCustomLayout)) {
+      // ... 如果该组件没有在表格中，记录创建与删除方法，并更新表格
+      table.reactCustomLayout?.setReactCreateGraphic(
+        componentId,
+        createGraphic,
+        isHeaderCustomLayout
+      );
+      table.reactCustomLayout?.setReactRemoveGraphic(componentId, removeContainer, isHeaderCustomLayout);
+      table.reactCustomLayout?.updateCustomCell(componentId, isHeaderCustomLayout); // update cell content
+    } else if (table) {
+      // ... 如果该组件在表格中，更新创建方法，并更新以创建的组件
+      table.reactCustomLayout?.setReactCreateGraphic(
+        componentId,
+        createGraphic,
+        isHeaderCustomLayout
+      );
+
+      container.current.forEach((value, key) =&gt; {
+        // 更新所有已创建的组件
+      });
+    }
+  });
+
+  return null;
+};    
+</code></pre>
+
+<h2 id="63-reconciler">6.3 渲染协调器 Reconciler</h2>
+<p><code>reconciler.ts</code> 基于<code>react-reconciler</code>实现了 React 渲染协调器，负责 React 组件与 VTable 渲染系统的协调。使用Reconciler可以将VTable自定义渲染中的图元用React的方式封装为组件，详细的<code>react-reconciler</code>配置可以参考https://github.com/facebook/react/tree/main/packages/react-reconciler    </p>
+<h2 id="64-react">6.4 React 属性处理插件</h2>
+<p>VRender支持用户在图元的react attribute中配置React DOM组件，VTable的自定义渲染使用了这个功能，使用户在封装的自定义组件中可以使用React DOM组件。    </p>
+<p><code>vtable-react-attribute-plugin.ts</code> 实现了 VRender 渲染 React 组件插件，是对VRender提供的ReactAttributePlugin插件的继承，针对表格场景进行了部分定制：    </p>
+<pre class="codehilite"><code class="language-xml">export class VTableReactAttributePlugin extends ReactAttributePlugin {
+  // ... 渲染graphic对应的HTMLElement
+  renderGraphicHTML(graphic: IGraphic) {
+    // ... 获取正确的HTML容器
+    if (container) {
+      container = checkFrozenContainer(graphic);
+    }
+
+    // 如果container变化，移除之前渲染过的组件
+    if (this.htmlMap &amp;&amp; this.htmlMap[id] &amp;&amp; container &amp;&amp; container !== this.htmlMap[id].container) {
+      this.removeElement(id);
+    }
+
+    if (!this.htmlMap || !this.htmlMap[id]) {
+      // 创建容器
+      const { wrapContainer, nativeContainer } = this.getWrapContainer(stage, container);
+
+      if (wrapContainer) {
+        if (!this.htmlMap) {
+          this.htmlMap = {};
+        }
+
+        // ... 实例化组件并缓存
+      }
+    } else {
+      // ... 更新组件
+    }
+
+    // ...
+  }
+
+  updateStyleOfWrapContainer(
+    graphic: IGraphic,
+    stage: IStage,
+    wrapContainer: HTMLElement,
+    nativeContainer: HTMLElement,
+    options: SimpleDomStyleOptions &amp; CommonDomOptions
+  ) {
+    // ... 更新graphic对应的HTMLElement style
+  }
+}    
+</code></pre>
+
+<h2 id="65-browserenvcontribution">6.5 浏览器环境适配 BrowserEnvContribution</h2>
+<p><code>vtable-browser-env-contribution.ts</code> 提供了浏览器环境的适配层，同样是对VRender提供的BrowserEnvContribution 插件的继承，针对表格场景进行了部分定制：    </p>
+<pre class="codehilite"><code class="language-xml">class VTableBrowserEnvContribution extends BrowserEnvContribution {
+  // 更新HTMLElement
+  updateDom(dom: HTMLElement, params: CreateDOMParamsTypeForVTable): boolean {
+    const tableDiv = dom.parentElement;
+    if (tableDiv &amp;&amp; params.graphic) {
+      // 获取该HTMLElement在表格中的位置和范围
+      const top = parseInt(params.style.top, 10);
+      const left = parseInt(params.style.left, 10);
+
+      let domWidth;
+      let domHeight;
+      if ((dom.style.display = 'none')) {
+        const cellGroup = getTargetCell(params.graphic);
+        domWidth = cellGroup.attribute.width ?? 1;
+        domHeight = cellGroup.attribute.height ?? 1;
+      } else {
+        domWidth = dom.offsetWidth;
+        domHeight = dom.offsetHeight;
+      }
+      if (top + domHeight &lt; 0 || left + domWidth &lt; 0 || top &gt; tableDiv.offsetHeight || left &gt; tableDiv.offsetWidth) {
+        // 如果超过表格显示范围，将style.display置为'none'，提升交互性能
+        dom.style.display = 'none';
+        return false;
+      }
+    }
+
+    // ... 更新style
+
+    return true;
+  }
+}    
+</code></pre>
+
+<h2 id="66">6.6 图元组件</h2>
+<p><code>graphic.ts</code> 提供了VTable中的自定义渲染图元的组件化封装，用户可以从@visactor/react-vtable的仓容中直接引用这些图元组件。    </p>
+<h1 id="7">7. 工作流程</h1>
+<ol>
+<li>
+<p>用户创建表格组件并配置属性    </p>
+</li>
+<li>
+<p>内部组件（如 ListColumn）通过 <code>parseOption</code> 方法解析配置    </p>
+</li>
+<li>
+<p>BaseTable 创建 VTable 实例并应用配置    </p>
+</li>
+<li>
+<p>事件系统绑定用户提供的事件处理函数    </p>
+</li>
+<li>
+<p>处理自定义组件    </p>
+</li>
+</ol>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ujqcwmt3mhcO1ObYXGCcHFainRb.gif" /></p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

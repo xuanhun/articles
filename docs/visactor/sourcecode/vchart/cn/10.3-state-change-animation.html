@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10.3 状态变更动画</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="103">10.3 状态变更动画</h2>
+<p>分数：5    </p>
+<ol>
+<li>
+<p>状态动画：    </p>
+</li>
+<li>
+<p>代码入口：<code>packages/vchart/src/animation/</code>    </p>
+</li>
+<li>
+<p>解读重点：    </p>
+</li>
+<li>
+<p>状态动画的实现    </p>
+</li>
+<li>
+<p>其他参考文档：    </p>
+</li>
+</ol>
+<p>https://www.visactor.io/vchart/guide/tutorial_docs/Animation/Animation_Types    </p>
+<p>https://www.visactor.io/vrender/guide/asd/Basic_Tutorial/Animate    </p>
+<p>https://visactor.io/vgrammar/guide/guides/animation    </p>
+<p><a href="https://juejin.cn/post/7275270809777520651">魔力之帧(上):前端图表库动画实现原理一幅生动的可视化作品往往少不了动画的参与。无论是各色各样的图表还是叙事作品，组织周 - 掘金</a>    </p>
+<p>往往在图表呈现的时候，不同的图元有各自所代表的含义，信息展示中需要强调或者对比某些元素，通过切换图元的状态来展示数据，这一过程也需要注重视觉效果，当状态变更时有较为自然的视觉体验。    </p>
+<h3 id="normal">状态动画（包括 <code>normal</code> 动画）的实现解读</h3>
+<p>state和normal    </p>
+<p><strong>状态变更动画、任意时机触发的动画</strong>    </p>
+<p>状态动画是指图表元素根据其当前状态变化时触发的动画效果。在VChart中，状态动画的设计允许开发者为不同的状态（如进入、更新、退出等）定义特定的动画行为。特别地，<code>normal</code> 状态动画指的是那些循环播放或持续存在的动画效果，它们可以在图表渲染完成后一直运行，直到被显式停止。    </p>
+<h4 id="1">1. 动画配置结构</h4>
+<p><strong>IAnimationSpec 接口</strong>    </p>
+<p><code>IAnimationSpec</code>接口定义了动画配置的基本结构，其中包含了针对不同状态的动画设置。对于<code>normal</code>动画来说，它可以通过<code>animationNormal</code>属性来指定：    </p>
+<pre class="codehilite"><code class="language-xml">interface IAnimationSpec&lt;MarkName extends string, Preset extends string&gt; {
+  // ... 其他状态 ...
+  animationNormal?: IMarkAnimateSpec&lt;MarkName&gt;;
+}    
+</code></pre>
+
+<p>这里，<code>IMarkAnimateSpec</code>是一个泛型接口，用于描述具体图元（如柱状图中的每个柱子）的动画配置。通过这种方式，开发者可以为每个图元定义个性化的<code>normal</code>动画效果。    </p>
+<h4 id="2">2. 动画管理器</h4>
+<p><strong>AnimateManager 类</strong>    </p>
+<p><code>AnimateManager</code>类负责管理和协调所有动画的状态。它实现了<code>IAnimate</code>接口，并提供了方法来更新和检索动画状态。对于<code>normal</code>动画而言，<code>AnimateManager</code>会确保这些动画在图表渲染完成后自动启动，并且可以根据需要暂停或恢复。    </p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.normal) {
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; state
+          }
+        },
+        noRender
+      );
+    }
+  }
+}    
+</code></pre>
+
+<p>当图表元素进入<code>normal</code>状态时，<code>updateAnimateState</code>方法会被调用，并将状态传递给内部的状态管理逻辑。这使得所有符合条件的元素都能够执行对应的<code>normal</code>动画。    </p>
+<h4 id="3">3. 动画配置生成</h4>
+<p><strong>animationConfig 函数</strong>    </p>
+<p>为了简化用户配置和默认配置之间的合并过程，VChart提供了一个名为<code>animationConfig</code>的辅助函数。该函数遍历所有可能的动画状态，并根据用户提供的配置或默认配置构建出最终的动画配置对象。    </p>
+<pre class="codehilite"><code class="language-xml">function animationConfig&lt;Preset extends string&gt;(
+  defaultConfig: MarkAnimationSpec = {},
+  userConfig?: Partial&lt;Record&lt;IAnimationState, boolean | IStateAnimateSpec&lt;Preset&gt; | IAnimationConfig | IAnimationConfig[]&gt;&gt;,
+  params?: { dataIndex: (datum: any, params: any) =&gt; number; dataCount: () =&gt; number; }
+): MarkAnimationSpec {
+  const config = {} as MarkAnimationSpec;
+
+  for (let i = 0; i &lt; AnimationStates.length; i++) {
+    const state = AnimationStates[i];
+    const userStateConfig = userConfig ? userConfig[state] : undefined;
+
+    if (userStateConfig === false) continue;
+
+    if (state === 'normal') {
+      userStateConfig &amp;&amp; (config.normal = userStateConfig as IAnimationTypeConfig);
+      continue;
+    }
+
+    let defaultStateConfig: IAnimationConfig[];
+    if (isArray(defaultConfig[state])) {
+      defaultStateConfig = defaultConfig[state] as IAnimationConfig[];
+    } else {
+      defaultStateConfig = [{ ...DEFAULT_ANIMATION_CONFIG[state], ...defaultConfig[state] } as any];
+    }
+
+    config[state] = defaultStateConfig;
+  }
+
+  return config;
+}    
+</code></pre>
+
+<p>此函数处理了<code>normal</code>状态下的动画配置合并，确保用户提供的配置能够正确应用到具体的图元上。如果用户没有提供自定义的<code>normal</code>动画配置，则使用默认配置。    </p>
+<h4 id="4-normal">4. <code>normal</code> 动画的具体实现</h4>
+<p>以散点图为例，假设我们希望为每个数据点添加一个轻微的脉冲效果作为<code>normal</code>动画。以下是详细的实现步骤：    </p>
+<ul>
+<li><strong>定义动画配置</strong>：首先，在图表配置中为散点图系列指定<code>animationNormal</code>配置。这里我们可以选择内置的<code>pulse</code>动画类型，并调整其持续时间和缓动函数。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'scatter',
+      data: [/* 数据数组 */],
+      animationNormal: {
+        type: 'pulse', // 使用脉冲效果
+        duration: 800,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<ul>
+<li><strong>注册动画</strong>：接下来，我们需要确保<code>pulse</code>动画已经被正确注册到系统中。这一步骤通常在项目启动时完成，或者在需要的地方显式调用。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { pulseAnimation } from './series/scatter/animation';
+
+Factory.registerAnimation('pulse', pulseAnimation);    
+</code></pre>
+
+<p>这里的<code>pulseAnimation</code>函数定义了脉冲动画的具体逻辑，例如如何改变图形元素的透明度或尺寸。    </p>
+<ul>
+<li><strong>初始化图表实例</strong>：有了上述配置之后，我们可以初始化一个<code>VChart</code>实例，并将配置传递给它。这会触发图表的渲染过程，并应用相应的动画效果。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/vchart';
+
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});    
+</code></pre>
+
+<ul>
+<li><strong>触发动画</strong>：一旦图表被渲染出来，所有的数据点都会自动开始执行<code>normal</code>动画。这种动画会在图表存在期间持续循环，除非被显式停止。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// 如果需要暂停所有正在进行的 normal 动画
+chart.pauseAnimation();
+
+// 恢复之前暂停的 normal 动画
+chart.resumeAnimation();    
+</code></pre>
+
+<h4 id="5">5. 动画任务的执行</h4>
+<p><strong>IAnimationTask 接口</strong>    </p>
+<p>对于复杂的动画序列，VChart引入了<code>IAnimationTask</code>接口来描述动画任务的数据结构。每个任务包含时间偏移、动作队列和后继任务列表，形成了一种链式动画执行机制。    </p>
+<pre class="codehilite"><code class="language-xml">interface IAnimationTask {
+  timeOffset: number;
+  actionList: Action[];
+  nextTaskList: IAnimationTask[];
+}    
+</code></pre>
+
+<p>这种设计使得多个动画任务可以按顺序或并发执行，从而实现更加复杂和细腻的动画效果。对于<code>normal</code>动画而言，它可以作为一个独立的任务链的一部分，与其他动画任务一起协同工作。    </p>
+<h4 id="6-normal">6. 示例：创建一个带有 <code>normal</code> 动画的散点图</h4>
+<p>下面以创建一个带有<code>normal</code>动画的散点图为例，说明如何使用VChart的状态动画系统来实现基础流程。    </p>
+<h5 id="1_1">步骤 1: 定义动画配置</h5>
+<p>首先，我们需要定义散点图的基本配置，包括数据源和其他视觉属性。同时，在这里我们也会指定<code>normal</code>动画配置，以确保每个数据点都能执行脉冲效果。    </p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'scatter',
+      data: [
+        { x: 10, y: 20 },
+        { x: 20, y: 30 },
+        { x: 30, y: 40 }
+      ],
+      animationNormal: {
+        type: 'pulse',
+        duration: 800,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<h5 id="2_1">步骤 2: 注册动画</h5>
+<p>确保所需的<code>pulse</code>动画已经被正确注册到系统中。这一步骤通常在项目启动时完成，或者在需要的地方显式调用。    </p>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { pulseAnimation } from './series/scatter/animation';
+
+Factory.registerAnimation('pulse', pulseAnimation);    
+</code></pre>
+
+<h5 id="3_1">步骤 3: 初始化图表实例</h5>
+<p>有了上述配置之后，我们可以初始化一个<code>VChart</code>实例，并将配置传递给它。这一步骤会触发图表的渲染过程，并应用相应的动画效果。    </p>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/vchart';
+
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});    
+</code></pre>
+
+<h5 id="4-normal_1">步骤 4: 触发 <code>normal</code> 动画</h5>
+<p>一旦图表被渲染出来，所有的数据点都会自动开始执行<code>normal</code>动画。这种动画会在图表存在期间持续循环，除非被显式停止。    </p>
+<pre class="codehilite"><code class="language-xml">// 如果需要暂停所有正在进行的 normal 动画
+chart.pauseAnimation();
+
+// 恢复之前暂停的 normal 动画
+chart.resumeAnimation();    
+</code></pre>
+
+<h5 id="5_1">步骤 5: 动态控制动画</h5>
+<p>在某些情况下，你可能想要动态地控制<code>normal</code>动画的行为，比如更改动画的速度或样式。VChart提供了灵活的方法来实现这一点。    </p>
+<pre class="codehilite"><code class="language-xml">// 更新某个系列的 normal 动画配置
+chart.updateSeriesOptions(0, {
+  animationNormal: {
+    duration: 1200, // 更改持续时间
+    easing: 'linear' // 更改缓动函数
+  }
+});
+
+// 重新应用新的动画配置
+chart.render();    
+</code></pre>
+
+<h4 id="7">7. 动画状态管理</h4>
+<p><strong>状态切换与更新</strong>    </p>
+<p><code>AnimateManager</code>不仅管理<code>normal</code>动画，还负责处理其他状态下的动画切换。例如，当有新数据加入时，<code>enter</code>状态的动画会被触发；当数据更新时，<code>update</code>状态的动画生效；而当数据被移除时，则是<code>exit</code>状态的动画起作用。    </p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.update) {
+      // 更新状态下的动画逻辑
+    } else if (state === AnimationStateEnum.appear) {
+      // 出现状态下的动画逻辑
+    } else if (state === AnimationStateEnum.normal) {
+      // normal 状态下的动画逻辑
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; state
+          }
+        },
+        noRender
+      );
+    }
+  }
+}    
+</code></pre>
+
+<p>在这个例子中，当元素进入<code>normal</code>状态时，<code>updateAnimateState</code>方法会更新元素的状态，并触发相应的动画逻辑。这意味着每个数据点都将按照预设的<code>normal</code>动画配置执行动画，直到状态再次发生变化。    </p>
+<h4 id="8">8. 动画生命周期管理</h4>
+<p><strong>事件监听与钩子</strong>    </p>
+<p>为了更好地管理动画的生命周期，VChart提供了一系列事件监听器和钩子函数。例如，<code>VGRAMMAR_HOOK_EVENT.AFTER_DO_RENDER</code>事件可以在图表首次渲染完成后触发，而<code>VGRAMMAR_HOOK_EVENT.ANIMATION_END</code>则会在动画结束时触发。    </p>
+<pre class="codehilite"><code class="language-xml">this._event.on(VGRAMMAR_HOOK_EVENT.AFTER_DO_RENDER, () =&gt; {
+  this.runAnimationByState(AnimationStateEnum.normal);
+});
+
+this._event.on(VGRAMMAR_HOOK_EVENT.ANIMATION_END, ({ event }) =&gt; {
+  if (event.animationState === AnimationStateEnum.appear) {
+    this.runAnimationByState(AnimationStateEnum.normal);
+  }
+});    
+</code></pre>
+
+<p>这段代码展示了如何在图表渲染完成后立即启动<code>normal</code>动画，以及如何在入场动画结束后无缝切换到<code>normal</code>动画。这种设计保证了动画之间的平滑过渡，提升了用户体验。    </p>
+<h3 id="_1">总结</h3>
+<p>通过上述步骤，我们详细解读了VChart中<code>normal</code>状态动画的实现原理。<code>normal</code>动画作为状态动画的一种，主要用于描述图表元素在稳定状态下持续存在的动画效果。VChart通过模块化设计、工厂模式、状态管理器模式以及事件驱动机制，确保了<code>normal</code>动画的灵活性和可维护性。开发者可以根据实际需求轻松地定制不同类型的<code>normal</code>动画效果，从而增强图表的视觉吸引力和交互体验。    </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

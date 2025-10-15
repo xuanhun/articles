@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>91. 连续轴的刻度范围可以通过配置尽量的贴近数据范围吗</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>连续轴的刻度范围可以通过配置尽量的贴近数据范围吗</br></p>
+<h2 id="_2">问题描述</h2>
+<p>下面的线图中，连续轴的刻度范围比实际数据的范围大比较多，可以通过配置，让刻度的范围更加接近数据的范围吗？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WyuibTs0BoP3LZxSNrdccbrvn5b.gif' alt='' width='1496' height='1040'></p>
+<h2 id="_3">解决方案</h2>
+<p>连续轴的刻度算法是根据一些列规则计算而来的，其中轴刻度范围和实际数据的范围也是衡量指标之一，如果还需要进一步优化轴刻度的范围，有两个优化点：</br>
+*  刻度可以通过<code>zero: false</code>调整为不强制从0开始</br>
+*  刻度算法可以考虑切换成d3的算法，d3刻度算法在保证数据范围上更好</br></p>
+<pre class="codehilite"><code>axes: [{
+    orient: 'left',
+    tick: {
+      tickMode: 'd3'
+    },
+    zero: false
+  }]&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'line',
+  data: {
+    values: [
+      {
+        time: '2:00',
+        value: 8
+      },
+      {
+        time: '4:00',
+        value: 9
+      },
+      {
+        time: '6:00',
+        value: 11
+      },
+      {
+        time: '8:00',
+        value: 14
+      },
+      {
+        time: '10:00',
+        value: 16
+      },
+      {
+        time: '12:00',
+        value: 17
+      },
+      {
+        time: '14:00',
+        value: 17
+      },
+      {
+        time: '16:00',
+        value: 16
+      },
+      {
+        time: '18:00',
+        value: 15
+      }
+    ]
+  },
+  xField: 'time',
+  yField: 'value',
+  axes: [{
+    orient: 'left',
+    tick: {
+      tickMode: 'd3'
+    },
+    zero: false
+  }]
+};&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/G4jMbhVskoZpKAxqQNzcG8etnnC.gif' alt='' width='1486' height='1066'></p>
+<h2 id="_6">相关文档</h2>
+<ul>
+<li><a href="https%3A%2F%2Fgithub.com%2FVisActor%2FVChart">github</a></br></li>
+<li><a href="https%3A%2F%2Fvisactor.com%2Fvchart%2Foption%2FlineChart-axes-linear%23tick.tickMode(" title="average'%257C'd3">轴配置文档</a>%2520%3D%2520'average')</br></li>
+</ul>
+</body>
+</html>

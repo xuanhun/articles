@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.1 PivotTable 概念和能力定义</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>鉴于本节其实跟代码没什么关系，并且 和 <a href="https://www.visactor.io/vtable/guide/table_type/Pivot_table/pivot_table_overview">官方文档</a> 已经写的很清楚了，这里写一些自己的理解    </p>
+<h2 id="pivottable">PivotTable 基础概念</h2>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">多维分析表又名数据透视表、交叉表、Pivot Table，指的是可以在**行维度**和**列维度**放入一个或**多个维度**，显示**维度之间相互关系**的一种表格。用户可以一目了然地分析出各种场景指标以及对比，旨在帮助业务分析推动决策    
+</div>
+
+<p>这么说有点抽象，有些读者可能会疑惑：有多个行维度 + 多个列维度的表格，长什么样子？举个🌰：    </p>
+<p>一个营销同学<strong>每天</strong>要统计某款扫地机器人在<strong>各个线上店铺</strong>的<strong>价格</strong>。我们分析下他面临的场景：    </p>
+<ol>
+<li>“各个线上店铺”，我们可以总结为<code>渠道</code>这个<strong>维度（Dimension）</strong>。根据他的日常工作，有以下这棵<code>渠道树</code>：    </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OfNfbYOVbotVR7xn5hgcpBGunof.gif' alt='' width='1000' height='auto'></p>
+<ol>
+<li>根据<code>渠道</code>这个维度的不同层级，划分为：<code>渠道 | 平台 | 店铺</code> 三个<strong>维度层级 (Dimension Level)</strong>。以“平台”这个维度层级为例，有三个值：淘宝、京东、抖音，我们称其为<strong>维度成员（Dimension Value）</strong>    </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TbISbGYb1oA9Qvx4HiZcXzPcnhc.gif' alt='' width='1000' height='auto'></p>
+<p>用 <code>TypeScript</code> 我们可以很容易地写出<code>渠道</code>的类型定义，以及<code>渠道树</code>：    </p>
+<pre class="codehilite"><code class="language-xml">enum IChannel {
+  Channel = 'channel',     // 渠道
+  Platform = 'platfrom',   // 平台
+  Shop = 'shop'            // 店铺
+}
+
+const channelTree = [
+  {
+    nodeType: IChannel.Channel,
+    value: '线上',
+    children: [
+      {
+        nodeType: IChannel.Platform,
+        value: '淘宝',
+        children: [
+          {
+            nodeType: IChannel.Shop,
+            value: '淘宝旗舰店'
+          },
+          {
+            nodeType: IChannel.Shop,
+            value: '淘宝三方店'
+          }
+        ]
+      },
+      {
+        nodeType: IChannel.Platform,
+        value: '京东',
+        children: [
+          {
+            nodeType: IChannel.Shop,
+            value: '京东旗舰店'
+          },
+          {
+            nodeType: IChannel.Shop,
+            value: '京东三方店'
+          }
+        ]
+      },
+      {
+        nodeType: IChannel.Platform,
+        value: '抖音',
+        children: [
+          {
+            nodeType: IChannel.Shop,
+            value: '抖音旗舰店'
+          },
+          {
+            nodeType: IChannel.Shop,
+            value: '抖音三方店'
+          }
+        ]
+      }
+    ]
+  }
+];    
+</code></pre>
+
+<ol>
+<li>由于“每天”都统计这些数据，久而久之，也有<code>时间</code>这个<strong>维度</strong>和<code>时间树</code>：    </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CWtObUweho18DfxgrHBci8SpnNc.gif' alt='' width='656' height='auto'></p>
+<pre class="codehilite"><code class="language-xml">enum ITime {
+    Month = 'month',
+    Week = 'week',
+    Day = 'day'
+}
+
+const timeTree = [
+  {
+    nodeType: ITime.Month,
+    value: '3',
+    children: [
+      {
+        nodeType: ITime.Week,
+        value: '1',
+        children: [
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-03'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-04'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-05'
+          },
+          ...
+        ]
+      },
+      {
+        nodeType: ITime.Week,
+        value: '2',
+        children: [
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-10'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-11'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-12'
+          },
+          ...
+        ]
+      },
+      {
+        nodeType: ITime.Week,
+        value: '3',
+        children: [
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-17'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-18'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-19'
+          },
+          ...
+        ]
+      }
+    ]
+  }
+];    
+</code></pre>
+
+<ol>
+<li>这个营销同学具体在统计什么数据 —— 价格。可能分为原价、券后价 等，这些具体的数据我们称为 <strong>指标</strong>（Indicator）。结合上述的渠道树和价格树，我们可以得到这样一个多维表格    </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ucehb8ZHtoSpLXxTCFUcDjf7nsc.gif' alt='' width='1000' height='auto'></p>
+<h2 id="_1">数据概念</h2>
+<p>看到这里，恭喜你已经掌握多维表格的概念了！    </p>
+<p>我们把上面的多维表格进一步抽象，可以得知，展示一个多维表格，需要以下数据：    </p>
+<ol>
+<li>
+<p>行表头树 (rowTree)：以树状结构表示行维度层级关系的表头。即上述例子的 <code>timeTree</code>    </p>
+</li>
+<li>
+<p>列表头树 (columnTree)：以树状结构表示列维度层级关系的表头。即上述例子的 <code>channelTree</code>    </p>
+</li>
+<li>
+<p>一般来说，为了方便展示，指标 (indicator) 会是 columnTree 的叶子节点    </p>
+</li>
+<li>
+<p>角头 (cornHeader)：位于行表头和列表头交叉区域的单元格，用于显示指标标题和其他辅助信息    </p>
+</li>
+<li>
+<p>具体的数据 (records): 即在 <strong>各个维度下</strong>、<strong>各个指标</strong> 的具体数据，会展示在数据单元格中（我们称这个区域为body）    </p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/W3lVbn6VyoRBH7xT7yyc2Ov9nmC.gif' alt='' width='1000' height='auto'></p>
+<h2 id="_2">目标</h2>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">实现一个高性能，具备数据转换、统计、排序、钻取、可视化等能力的多维分析表格    
+</div>
+
+<h2 id="_3">能力</h2>
+<p>具体能力梳理如下：基础能力（对齐 ListTable 的功能），以及 PivotTable 特有的功能点    </p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/H7phwoISahq5TWbzVswchvrVnbG.gif" /></p>
+<h2 id="_4">相关资料</h2>
+<ul>
+<li></li>
+<li>
+<p><a href="https://visactor.io/vtable/guide/table_type/Pivot_table/pivot_table_overview">官方文档</a>    </p>
+</li>
+</ul>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

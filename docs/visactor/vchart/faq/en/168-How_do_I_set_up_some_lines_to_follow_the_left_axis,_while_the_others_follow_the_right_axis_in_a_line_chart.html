@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>168-How_do_I_set_up_some_lines_to_follow_the_left_axis,_while_the_others_follow_the_right_axis_in_a_line_chart</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-do-i-set-up-some-lines-to-follow-the-left-axis-while-the-others-follow-the-right-axis-in-a-line-chart">How do I set up some lines to follow the left axis, while the others follow the right axis in a line chart?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>I have a line chart with multiple lines.
+What chart tools can explicitly specify that the graph follows the left or right axis?
+After careful consideration, I found a line chart often has a bottom axis.
+Complex usage scenarios: Some of lines follow the left axis. The others follow the right axis. At the same time, all the lines follow the bottom axis.
+In abstract terms, it means that each line can correspond to multiple lines.</p>
+<h2 id="solution">Solution</h2>
+<p>VChart charts have already provided the corresponding functionality. VChart supports the following:</p>
+<ul>
+<li>Binding dataId on series to maintain a one-to-one relationship between data and series.</li>
+<li>Binding seriesId on axis to maintain a one-to-many relationship between axis and series.</li>
+</ul>
+<p><a href="https://visactor.io/vchart/option/commonChart#series-line.type">LineChart Series Spec Documents</a></p>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const spec = {
+  type: 'common',
+  data: [
+    {
+      id: 'profit',
+      values: [
+        { time: '2019', value: 100000 },
+        { time: '2020', value: 200000 },
+        { time: '2021', value: 300000 },
+        { time: '2022', value: 400000 },
+        { time: '2023', value: 500000 }
+      ]
+    },
+    {
+      id: 'saleDiscount',
+      values: [
+        { time: '2019', value: 0.2 },
+        { time: '2020', value: 0.35 },
+        { time: '2021', value: 0.25 },
+        { time: '2022', value: 0.2 },
+        { time: '2023', value: 0.1 }
+      ]
+    }
+  ],
+  axes: [
+    {
+      orient: 'left',
+      seriesId: ['profit'],
+      id: 'left'
+    },
+    {
+      sync: {
+        axisId: 'left',
+        tickAlign: true,
+        zeroAlign: true
+      },
+      id: 'right',
+      label: {
+        formatMethod: v =&gt; parseFloat(v).toFixed(2)
+      },
+      orient: 'right',
+      seriesId: ['saleDiscount']
+    },
+    {
+      orient: 'bottom',
+      seriesId: ['saleDiscount', 'profit']
+    }
+  ],
+  series: [
+    {
+      id: 'profit',
+      type: 'line',
+      xField: 'time',
+      yField: 'value',
+      dataId: 'profit'
+    },
+    {
+      id: 'saleDiscount',
+      type: 'line',
+      xField: 'time',
+      yField: 'value',
+      dataId: 'saleDiscount'
+    }
+  ]
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+<li><a href="http://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Axes">Axes Tutorial</a></li>
+<li><a href="http://visactor.io/vchart/guide/tutorial_docs/Chart_Types/Combination">Combination Chart Tutorial</a></li>
+<li><a href="https://visactor.io/vchart/option/commonChart#series-line.type">Line Chart Spec Documents</a></li>
+<li><a href="http://visactor.io/vchart/demo/combination/dual-axis">Dual Axis Chart Demo</a></li>
+</ul>
+</body>
+</html>

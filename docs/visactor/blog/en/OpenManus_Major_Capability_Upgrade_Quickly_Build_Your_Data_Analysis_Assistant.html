@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenManus Major Capability Upgrade: Quickly Build Your Data Analysis Assistant</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>Author: VisActor Open Source Team</p>
+<h1 id="openmanus-introduction"><a href="https://github.com/mannaandpoem/OpenManus">OpenManus</a> Introduction</h1>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XaQVbLx1rocDiQxBe5Gc2tHKn30.gif' alt='' width='504' height='auto'></p>
+<p>OpenManus (https://github.com/FoundationAgents/OpenManus) is a concise and versatile Agent framework that supports various tool invocation capabilities such as Computer Use, Browser Use, and Planning Use through a pluggable design of Tools and Prompts.</p>
+<p>In OpenManus, you can use the basic manus agent to try completing various tasks and interesting explorations. You can also use OpenManus as a platform to unleash your creativity by writing unique tools and prompts to create one-of-a-kind agents.</p>
+<p><strong>Raise your hand 🙋, so the question is, any examples?</strong></p>
+<p><strong>Hello, yes! Here comes the example! 🌰</strong></p>
+<h1 id="dataanalysis-agent">🌰: DataAnalysis Agent</h1>
+<h2 id="data-analysis-tasks">Data Analysis Tasks</h2>
+<p>Our lives are filled with massive amounts of data from various industries such as economics, tourism, internet, retail, and more. If you ask DeepSeek how much data we generate in a day, DeepSeek will tell you: According to International Data Corporation (IDC) predictions, global annual data volume will reach <strong>175ZB (Zettabytes)</strong> by 2025, equivalent to <strong>approximately 479EB (Exabytes)</strong> per day (1EB=10^18 bytes).</p>
+<p>Among such vast amounts of data, data analysis, data visualization, and final data consumption have always been hot topics, and how to use AI tools to assist in analysis, or even analyze for you, is a focal point. Manus's impressive data analysis capabilities have left a deep impression on everyone. Looking at OpenManus, can it achieve what Manus can do?</p>
+<p><strong>The answer is: No, but also yes.</strong></p>
+<p>Perhaps using OpenManus directly cannot achieve Manus's effects, because OpenManus is a very concise and versatile Agent framework, and its tool library doesn't yet have powerful data analysis tools. But precisely because OpenManus is a simple and versatile Agent framework, as long as you dare to add to its tool library, OpenManus will dare to use it, ultimately achieving a 1 + 1 &gt; 2 effect.</p>
+<p>Therefore, we at <a href="https://www.visactor.com/">VisActor</a> (https://www.visactor.com/) collaborated with the OpenManus team to integrate the open-source intelligent visualization solution <a href="https://www.visactor.com/vmind">VMind</a> to add a DataAnalysis Agent to OpenManus.</p>
+<h2 id="vmind-introduction">VMind Introduction</h2>
+<p>VMind, as an open-source intelligent visualization solution from <a href="https://visactor.com/">Visactor</a>, already possesses certain intelligent capabilities and can very conveniently complete tasks such as data visualization and data insights. For more details, see VMind (<a href="https://visactor.com/vmind">Official Website</a>, <a href="https://github.com/VisActor/VMind">github</a>). VMind currently supports intelligent generation of <a href="https://www.visactor.com/vchart">VChart</a> and <a href="https://www.visactor.com/VTable">VTable</a>.</p>
+<p>Adding VMind to OpenManus can well complement data visualization and data analysis capabilities. Additionally, advanced intelligent capabilities that require backend service support are still on the path to open source. If you feel that the current VMind SDK capabilities cannot meet your needs, you can contact them to accelerate the open-source progress with community demands.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Y9iTbg20KokcFwx1sNFcqLyZnOh.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/FCCFbJJg7oJQgVxozhgcqLOGn6d.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Ebb6b0RIUoD0p4xP0gKcy408nub.gif' alt='' width='820' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ZlIDbLhFyoog2XxjV5jcGnrdnLC.gif' alt='' width='1000' height='auto'></p>
+<h2 id="integration-method">Integration Method</h2>
+<p>Now that we have the right tools, we just need to put them into OpenManus's tool library. Compared to the application approach of general-purpose Agents for data analysis scenarios, we made some minor modifications, as follows:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Z3wybkPgLoQmb0xkDmNcKtZVnuh.gif' alt='' width='1000' height='auto'></p>
+<p>The general-purpose OpenManus uses general-purpose Python tools to implement various Python code generation tasks in data analysis scenarios, including but not limited to: data processing, data reporting, data visualization, etc.</p>
+<p>Our modification is to extract the data visualization part into a separate tool, making this tool's usage scenarios more focused and in-depth. This tool's functions include: data visualization, data insights, and adding data insights to charts. For details, see <a href="https://github.com/FoundationAgents/OpenManus/blob/main/app/tool/chart_visualization/README_zh.md">ReadMe</a> (https://github.com/FoundationAgents/OpenManus/blob/main/app/tool/chart_visualization/README_zh.md):</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HzbWb6yn1oIsV2xHzoKcNGP9nnf.gif' alt='' width='1000' height='auto'></p>
+<p>The original Python tool will focus more on data processing/data reporting tasks.</p>
+<h3 id="python-tool-modification">Python Tool Modification</h3>
+<p>Thanks to the existing manus architecture, adding a dedicated Python tool becomes very smooth and simple. Looking at the original Python tool, we can see that its structure is also very simple and clear, as follows:</p>
+<ul>
+<li>
+<p>name/description/parameters directly correspond to the prompt parameters for function calls in large models.</p>
+</li>
+<li>
+<p>execute is the corresponding function executed when the current Python tool is called, and the execution will ultimately call the _run_code function to get results</p>
+</li>
+</ul>
+<pre class="codehilite"><code>class PythonExecute(BaseTool):
+    &quot;&quot;&quot;A tool for executing Python code with timeout and safety restrictions.&quot;&quot;&quot;
+
+    name: str = &quot;python_execute&quot;
+    description: str = &quot;Executes Python code string. Note: Only print outputs are visible, function return values are not captured. Use print statements to see results.&quot;
+    parameters: dict = {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+            &quot;code&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;description&quot;: &quot;The Python code to execute.&quot;,
+            },
+        },
+        &quot;required&quot;: [&quot;code&quot;],
+    }
+
+    def _run_code(self, code: str, result_dict: dict, safe_globals: dict) -&gt; None
+
+
+    async def execute(
+        self,
+        code: str,
+        timeout: int = 5,
+    ) -&gt; Dict:
+        &quot;&quot;&quot;
+        Executes the provided Python code with a timeout.
+
+        Args:
+            code (str): The Python code to execute.
+            timeout (int): Execution timeout in seconds.
+
+        Returns:
+            Dict: Contains 'output' with execution output or error message and 'success' status.
+        &quot;&quot;&quot;
+</code></pre>
+
+<p>What we do is very simple. We just need to inherit this function and modify the existing prompt to guide it into a tool suitable for data analysis! The result is as follows, mainly clarifying the following points in the prompt:</p>
+<ul>
+<li>
+<p>In the prompt, clearly state that the main tasks are: data analysis, data reporting, and other normal code writing tasks</p>
+</li>
+<li>
+<p>Hope the large model can provide: dataset overview, dataset column details, basic statistical information, derived metrics, time series comparison, outliers, key insights, etc.</p>
+</li>
+<li>
+<p>Guide the large model to perform multiple analyses based on existing analyses to form in-depth and meaningful analysis data</p>
+</li>
+</ul>
+<pre class="codehilite"><code>from app.config import config
+from app.tool.python_execute import PythonExecute
+
+class NormalPythonExecute(PythonExecute):
+    &quot;&quot;&quot;A tool for executing Python code with timeout and safety restrictions.&quot;&quot;&quot;
+
+    name: str = &quot;python_execute&quot;
+    description: str = &quot;&quot;&quot;Execute Python code for in-depth data analysis / data report(task conclusion) / other normal task without direct visualization.&quot;&quot;&quot;
+    parameters: dict = {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+            &quot;code_type&quot;: {
+                &quot;description&quot;: &quot;code type, data process / data report / others&quot;,
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;default&quot;: &quot;process&quot;,
+                &quot;enum&quot;: [&quot;process&quot;, &quot;report&quot;, &quot;others&quot;],
+            },
+            &quot;code&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;description&quot;: &quot;&quot;&quot;Python code to execute.
+# Note
+1. The code should generate a comprehensive text-based report containing dataset overview, column details, basic statistics, derived metrics, timeseries comparisons, outliers, and key insights.
+2. Use print() for all outputs so the analysis (including sections like 'Dataset Overview' or 'Preprocessing Results') is clearly visible and save it also
+3. Save any report / processed files / each analysis result in worksapce directory: {directory}
+4. Data reports need to be content-rich, including your overall analysis process and corresponding data visualization.
+5. You can invode this tool step-by-step to do data analysis from summary to in-depth with data report saved also&quot;&quot;&quot;.format(
+                    directory=config.workspace_root
+                ),
+            },
+        },
+        &quot;required&quot;: [&quot;code&quot;],
+    }
+
+    async def execute(self, code: str, code_type: str | None = None, timeout=5):
+        return await super().execute(code, timeout)
+</code></pre>
+
+<p>Through the above operations, we can get a tool proficient in Python code for data analysis/data reporting through simple prompt modifications. By adding it to manus's tool library, we complete your exclusive creation.</p>
+<h3 id="data-analysis-agent">Data Analysis Agent</h3>
+<p>With our dedicated Tool, forming our Data Analysis Agent becomes even simpler!</p>
+<h4 id="step-1-inherit-toolcallagent">Step 1: Inherit ToolCallAgent</h4>
+<p>ToolCallAgent is a general-purpose agent that calls various tools. By inheriting it, we already have the ability to solve problems by calling tools.</p>
+<pre class="codehilite"><code>&quot;&quot;&quot; Inherit ToolCallAgent &quot;&quot;&quot;
+class DataAnalysis(ToolCallAgent):
+    &quot;&quot;&quot;
+    A data analysis agent that uses planning to solve various data analysis tasks.
+
+    This agent extends ToolCallAgent with a comprehensive set of tools and capabilities,
+    including Data Analysis, Chart Visualization, Data Report.
+    &quot;&quot;&quot;
+</code></pre>
+
+<h4 id="step-2-modify-prompt">Step 2: Modify prompt</h4>
+<p>Modify system_prompt and next_step_prompt to inject the agent's soul</p>
+<pre class="codehilite"><code>class DataAnalysis(ToolCallAgent):
+    &quot;&quot;&quot;
+    A data analysis agent that uses planning to solve various data analysis tasks.
+
+    This agent extends ToolCallAgent with a comprehensive set of tools and capabilities,
+    including Data Analysis, Chart Visualization, Data Report.
+    &quot;&quot;&quot;
+
+    name: str = &quot;DataAnalysis&quot;
+    description: str = &quot;An analytical agent that utilizes multiple tools to solve diverse data analysis tasks&quot;
+
+    # Modify your own prompt
+    system_prompt: str = SYSTEM_PROMPT.format(directory=config.workspace_root)
+    next_step_prompt: str = NEXT_STEP_PROMPT
+</code></pre>
+
+<h3 id="step-3-tool-injection">Step 3: Tool Injection</h3>
+<p>The final step, inject the available Tools, and it's done</p>
+<pre class="codehilite"><code>class DataAnalysis(ToolCallAgent):
+    &quot;&quot;&quot;
+    A data analysis agent that uses planning to solve various data analysis tasks.
+
+    This agent extends ToolCallAgent with a comprehensive set of tools and capabilities,
+    including Data Analysis, Chart Visualization, Data Report.
+    &quot;&quot;&quot;
+
+    name: str = &quot;DataAnalysis&quot;
+    description: str = &quot;An analytical agent that utilizes multiple tools to solve diverse data analysis tasks&quot;
+
+    system_prompt: str = SYSTEM_PROMPT.format(directory=config.workspace_root)
+    next_step_prompt: str = NEXT_STEP_PROMPT
+
+    max_observe: int = 15000
+    max_steps: int = 20
+
+    *# Inject available tools*
+    available_tools: ToolCollection = Field(
+        default_factory=lambda: ToolCollection(
+            NormalPythonExecute(),
+            VisualizationPrepare(),
+            DataVisualization(),
+            Terminate(),
+        )
+    )
+</code></pre>
+
+<h2 id="final-results">Final Results</h2>
+<h3 id="manus">Manus</h3>
+<p>So how are the final results? Can it reach Manus's level? Let's try it out;</p>
+<p>We tried a classic analysis case from Manus:</p>
+<p>Original case replay address (requires VPN): https://manus.im/share/c3onakN6Iajcm1Vt1xAVG7?replay=1</p>
+<p>Address for all generated products in the case: https://github.com/VisActor/VMind/tree/develop/docs/assets/openManus</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ZO9eb8Xkaonre1xLhoZcFcb0nxd.gif' alt='' width='1000' height='auto'></p>
+<p>This is a typical data analysis scenario, giving Manus monthly sales data and expecting a plan for 10% sales growth next month. Manus completed this task well, generating a detailed report and producing many data analysis results and data visualization results.</p>
+<h3 id="openmanus-running-results">OpenManus Running Results</h3>
+<p>After adding VMind to OpenManus, OpenManus's data analysis capabilities and chart generation capabilities have been significantly improved on the basis of the original general-purpose architecture, able to generate multiple high-quality markdown data analysis reports and rich and accurate data visualization results.</p>
+<h4 id="task-breakdown">Task Breakdown</h4>
+<p>The Agent will break down the overall task into: data processing, data analysis, data visualization, pattern recognition, strategy generation, and final report generation for execution</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ADtzbIH1qoLRHjxTd6Zc2Xqlnjf.gif' alt='' width='1000' height='auto'></p>
+<h4 id="final-report">Final Report</h4>
+<p>After all tasks are completed, we generated the final data report and multiple intermediate analysis result reports. The data report also includes links to the generated visualizations</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Pg1ubizghoZICgxYJtocpTUgnZC.gif' alt='' width='1000' height='auto'></p>
+<h4 id="visualization-results">Visualization Results</h4>
+<p>Below are some data visualization results, able to generate interactive chart pages (VChart rendering) with data annotations</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/J0G3bW3x1oCtCQxRrAKcpIHEnmd.gif' alt='' width='1000' height='auto'></p>
+<h1 id="final-words">Final Words</h1>
+<h2 id="summary">Summary</h2>
+<p>Thanks to OpenManus's concise and versatile design, adding new Tools or Agents on its basis is quite simple 🚀</p>
+<p>Developers only need to focus on the specific implementation and input/output of their tools, without spending a lot of energy on Agent frameworks, interactions, and communication with large models, easily creating their own Agents!</p>
+<p>The DataAnalysis Agent is such an example. We only need to design the corresponding data analysis tools to have super-strong data analysis capabilities. Perhaps this is what it feels like to stand on the shoulders of giants!</p>
+<h2 id="next-steps">Next Steps</h2>
+<p>This is just our small attempt. There are still many issues. We will continue to improve the scheduling capabilities of data analysis tools and integrate more powerful VMind mcp services. Our goal is to create a full-process tool that integrates data analysis, chart recommendation, automatic beautification, automatic layout, and automatic report generation. The products include charts, reports, posters, dashboards, and presentations.</p>
+<h2 id="welcome-to-exchange-and-co-build">Welcome to Exchange and Co-build</h2>
+<p>Finally, everyone is welcome to participate in the open-source construction of OpenManus and VisActor in various ways. Submitting issues, writing code, adding comments, and starring are all support for open-source projects.</p>
+<p>OpenManus: https://github.com/FoundationAgents/OpenManus</p>
+<p>VisActor: https://visactor.com/</p>
+<p>VMind: https://github.com/VisActor/VMind</p>
+<p>VChart: <a href="https://github.com/VisActor/VChart">GitHub - VisActor/VChart: VChart, more than just a cross-platform charting library, but also an expr</a></p>
+<p>VTable: https://github.com/VisActor/VTable</p>
+<p>VisActor Feishu Exchange Group:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NSFpbl1I2olGZmxpxs1cysj9n5t.gif' alt='' width='161' height='auto'></p>
+<p>VisActor WeChat Official Account:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/KpQUbqKoUofUmlxIB8Ycjxz3noj.gif' alt='' width='258' height='auto'> </p>
+</body>
+</html>

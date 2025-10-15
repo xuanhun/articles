@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10.4 数据更新动画</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="104">10.4 数据更新动画</h2>
+<p>分数：8    </p>
+<ol>
+<li>
+<p>更新动画：    </p>
+</li>
+<li>
+<p>代码入口：<code>packages/vchart/src/animation/</code>    </p>
+</li>
+<li>
+<p>解读重点：    </p>
+</li>
+<li>
+<p>更新动画的实现    </p>
+</li>
+<li>
+<p>其他参考文档：    </p>
+</li>
+</ol>
+<p>https://www.visactor.io/vchart/guide/tutorial_docs/Animation/Animation_Types    </p>
+<p>https://www.visactor.io/vrender/guide/asd/Basic_Tutorial/Animate    </p>
+<p>https://visactor.io/vgrammar/guide/guides/animation    </p>
+<p><a href="https://juejin.cn/post/7275270809777520651">魔力之帧(上):前端图表库动画实现原理一幅生动的可视化作品往往少不了动画的参与。无论是各色各样的图表还是叙事作品，组织周 - 掘金</a>    </p>
+<p>在了解完对特定的图元数据变化时添加变更动画效果之后，我们可以对某个类型的图表中配置系列图元的数据更新动画，满足特定场景时的动画效果。    </p>
+<h3 id="_1">数据更新动画的实现解读</h3>
+<p>数据更新动画是指当图表的数据发生变化时，图表元素根据新的数据状态执行的动画效果。在VChart中，这种动画设计得非常灵活，可以应用于新数据加入（<code>enter</code>）、现有数据更新（<code>update</code>）和旧数据移除（<code>exit</code>）三种场景。以下是详细的实现解读。    </p>
+<h4 id="1">1. 动画配置结构</h4>
+<p><strong>IAnimationSpec 接口</strong>    </p>
+<p><code>IAnimationSpec</code>接口定义了动画配置的基本结构，其中包含了针对不同状态的动画设置。对于数据更新动画来说，它主要涉及以下三个属性：    </p>
+<ul>
+<li>
+<p><code>animationEnter</code>：用于描述新数据加入时的动画效果。    </p>
+</li>
+<li>
+<p><code>animationUpdate</code>：用于描述现有数据更新时的动画效果。    </p>
+</li>
+<li>
+<p><code>animationExit</code>：用于描述旧数据移除时的动画效果。    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">interface IAnimationSpec&lt;MarkName extends string, Preset extends string&gt; {
+  animationEnter?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+  animationUpdate?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+  animationExit?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+}    
+</code></pre>
+
+<p>每个属性都可以接受布尔值（启用/禁用）、预设配置对象或自定义配置对象作为参数，从而为开发者提供了高度定制化的可能性。    </p>
+<h4 id="2">2. 动画管理器</h4>
+<p><strong>AnimateManager 类</strong>    </p>
+<p><code>AnimateManager</code>类负责管理和协调所有动画的状态。它实现了<code>IAnimate</code>接口，并提供了方法来更新和检索动画状态。对于数据更新动画而言，<code>AnimateManager</code>会确保这些动画在数据变化时自动触发，并且可以根据需要暂停或恢复。    </p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.update) {
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; element.diffState
+          }
+        },
+        noRender
+      );
+    } else if (state === AnimationStateEnum.appear) {
+      // 出现状态下的动画逻辑
+    } else if (state === AnimationStateEnum.exit) {
+      // 退出状态下的动画逻辑
+    }
+  }
+}    
+</code></pre>
+
+<p>当图表元素进入<code>update</code>、<code>appear</code>或<code>exit</code>状态时，<code>updateAnimateState</code>方法会被调用，并将状态传递给内部的状态管理逻辑。这使得所有符合条件的元素都能够执行对应的动画。    </p>
+<h4 id="3">3. 动画配置生成</h4>
+<p><strong>animationConfig 函数</strong>    </p>
+<p>为了简化用户配置和默认配置之间的合并过程，VChart提供了一个名为<code>animationConfig</code>的辅助函数。该函数遍历所有可能的动画状态，并根据用户提供的配置或默认配置构建出最终的动画配置对象。    </p>
+<pre class="codehilite"><code class="language-xml">function animationConfig&lt;Preset extends string&gt;(
+  defaultConfig: MarkAnimationSpec = {},
+  userConfig?: Partial&lt;Record&lt;IAnimationState, boolean | IStateAnimateSpec&lt;Preset&gt; | IAnimationConfig | IAnimationConfig[]&gt;&gt;,
+  params?: { dataIndex: (datum: any, params: any) =&gt; number; dataCount: () =&gt; number; }
+): MarkAnimationSpec {
+  const config = {} as MarkAnimationSpec;
+
+  for (let i = 0; i &lt; AnimationStates.length; i++) {
+    const state = AnimationStates[i];
+    const userStateConfig = userConfig ? userConfig[state] : undefined;
+
+    if (userStateConfig === false) continue;
+
+    if (state === 'enter' || state === 'update' || state === 'exit') {
+      let defaultStateConfig: IAnimationConfig[];
+      if (isArray(defaultConfig[state])) {
+        defaultStateConfig = defaultConfig[state] as IAnimationConfig[];
+      } else {
+        defaultStateConfig = [{ ...DEFAULT_ANIMATION_CONFIG[state], ...defaultConfig[state] } as any];
+      }
+
+      config[state] = defaultStateConfig;
+    }
+  }
+
+  return config;
+}    
+</code></pre>
+
+<p>此函数处理了<code>enter</code>、<code>update</code>和<code>exit</code>状态下的动画配置合并，确保用户提供的配置能够正确应用到具体的图元上。如果用户没有提供自定义的动画配置，则使用默认配置。    </p>
+<h4 id="4">4. 数据更新动画的具体实现</h4>
+<p>以柱状图为例，假设我们希望为新加入的数据点添加淡入效果，为更新的数据点添加缩放效果，为移除的数据点添加淡出效果。以下是详细的实现步骤：    </p>
+<ul>
+<li><strong>定义动画配置</strong>：首先，在图表配置中为柱状图系列指定<code>animationEnter</code>、<code>animationUpdate</code>和<code>animationExit</code>配置。这里我们可以选择内置的动画类型，并调整其持续时间和缓动函数。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 初始数据数组 */],
+      animationEnter: {
+        type: 'fadeIn', // 新数据点淡入
+        duration: 800,
+        easing: 'easeInOutQuad'
+      },
+      animationUpdate: {
+        type: 'scaleIn', // 更新数据点缩放
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut', // 移除数据点淡出
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<ul>
+<li><strong>注册动画</strong>：接下来，我们需要确保所需的动画已经被正确注册到系统中。这一步骤通常在项目启动时完成，或者在需要的地方显式调用。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { Appear_FadeIn, ScaleInOutAnimation, Appear_FadeOut } from './series/bar/animation';
+
+// 注册淡入动画
+Factory.registerAnimation('fadeIn', Appear_FadeIn);
+
+// 注册缩放动画
+Factory.registerAnimation('scaleIn', ScaleInOutAnimation);
+
+// 注册淡出动画
+Factory.registerAnimation('fadeOut', Appear_FadeOut);    
+</code></pre>
+
+<p>这里的<code>Appear_FadeIn</code>、<code>ScaleInOutAnimation</code>和<code>Appear_FadeOut</code>函数分别定义了淡入、缩放和淡出动画的具体逻辑，例如如何改变图形元素的透明度或尺寸。    </p>
+<ul>
+<li><strong>初始化图表实例</strong>：有了上述配置之后，我们可以初始化一个<code>VChart</code>实例，并将配置传递给它。这会触发图表的渲染过程，并应用相应的动画效果。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/vchart';
+
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});    
+</code></pre>
+
+<ul>
+<li><strong>触发动画</strong>：一旦图表被渲染出来，任何数据的变化都会自动触发动画。例如，当有新的数据加入时，<code>animationEnter</code>配置就会生效；当数据更新时，<code>animationUpdate</code>配置生效；而当数据被移除时，则是<code>animationExit</code>配置起作用。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// 假设一段时间后需要更新数据
+setTimeout(() =&gt; {
+  const newData = [/* 新的数据数组 */];
+  chart.updateSeriesData(newData);
+}, 5000);    
+</code></pre>
+
+<h4 id="5">5. 动画任务的执行</h4>
+<p><strong>IAnimationTask 接口</strong>    </p>
+<p>对于复杂的动画序列，VChart引入了<code>IAnimationTask</code>接口来描述动画任务的数据结构。每个任务包含时间偏移、动作队列和后继任务列表，形成了一种链式动画执行机制。    </p>
+<pre class="codehilite"><code class="language-xml">interface IAnimationTask {
+  timeOffset: number;
+  actionList: Action[];
+  nextTaskList: IAnimationTask[];
+}    
+</code></pre>
+
+<p>这种设计使得多个动画任务可以按顺序或并发执行，从而实现更加复杂和细腻的动画效果。对于数据更新动画而言，它可以作为一个独立的任务链的一部分，与其他动画任务一起协同工作。    </p>
+<h4 id="6">6. 示例：创建带有数据更新动画的柱状图</h4>
+<p>下面以创建一个带有数据更新动画的柱状图为例，说明如何使用VChart的数据更新动画系统来实现基础流程。    </p>
+<h5 id="1_1">步骤 1: 定义动画配置</h5>
+<p>首先，我们需要定义柱状图的基本配置，包括数据源和其他视觉属性。同时，在这里我们也会指定<code>animationEnter</code>、<code>animationUpdate</code>和<code>animationExit</code>配置，以确保在数据变化时能够触发相应的动画效果。    </p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [
+        { value: 10 },
+        { value: 20 },
+        { value: 30 }
+      ],
+      animationEnter: {
+        type: 'fadeIn',
+        duration: 800,
+        easing: 'easeInOutQuad'
+      },
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<h5 id="2_1">步骤 2: 注册动画</h5>
+<p>确保所需的动画已经被正确注册到系统中。这一步骤通常在项目启动时完成，或者在需要的地方显式调用。    </p>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { Appear_FadeIn, ScaleInOutAnimation, Appear_FadeOut } from './series/bar/animation';
+
+Factory.registerAnimation('fadeIn', Appear_FadeIn);
+Factory.registerAnimation('scaleIn', ScaleInOutAnimation);
+Factory.registerAnimation('fadeOut', Appear_FadeOut);    
+</code></pre>
+
+<h5 id="3_1">步骤 3: 初始化图表实例</h5>
+<p>有了上述配置之后，我们可以初始化一个<code>VChart</code>实例，并将配置传递给它。这一步骤会触发图表的渲染过程，并应用相应的动画效果。    </p>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/vchart';
+
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});    
+</code></pre>
+
+<h5 id="4_1">步骤 4: 触发数据更新动画</h5>
+<p>一旦图表被渲染出来，任何数据的变化都会自动触发动画。例如，当有新的数据加入时，<code>animationEnter</code>配置会生效；当数据更新时，<code>animationUpdate</code>配置生效；而当数据被移除时，则是<code>animationExit</code>配置起作用。    </p>
+<pre class="codehilite"><code class="language-xml">// 模拟数据更新
+setTimeout(() =&gt; {
+  const updatedData = [
+    { value: 15 }, // 更新第一个数据点
+    { value: 25 }, // 更新第二个数据点
+    { value: 35 }, // 更新第三个数据点
+    { value: 45 }  // 添加一个新的数据点
+  ];
+
+  // 更新图表数据并触发动画
+  chart.updateSeriesData(updatedData);
+}, 5000);    
+</code></pre>
+
+<p>在这个例子中，<code>updateSeriesData</code>方法会触发一系列动画：    </p>
+<ul>
+<li>
+<p>对于新加入的数据点（第四个数据点），<code>animationEnter</code>配置会使其以淡入的方式逐渐显现。    </p>
+</li>
+<li>
+<p>对于已存在的数据点（前三个数据点），<code>animationUpdate</code>配置会根据新的数据值调整它们的大小，并以缩放的方式过渡。    </p>
+</li>
+<li>
+<p>如果有数据点被移除，则<code>animationExit</code>配置会使其以淡出的方式消失。    </p>
+</li>
+</ul>
+<h5 id="5_1">步骤 5: 动态控制动画</h5>
+<p>在某些情况下，你可能想要动态地控制数据更新动画的行为，比如更改动画的速度或样式。VChart提供了灵活的方法来实现这一点。    </p>
+<pre class="codehilite"><code class="language-xml">// 更新某个系列的数据更新动画配置
+chart.updateSeriesOptions(0, {
+  animationEnter: {
+    duration: 1000, // 更改淡入动画的持续时间
+    easing: 'linear' // 更改缓动函数
+  },
+  animationUpdate: {
+    duration: 700, // 更改缩放动画的持续时间
+    easing: 'easeInOutCubic' // 更改缓动函数
+  },
+  animationExit: {
+    duration: 900, // 更改淡出动画的持续时间
+    easing: 'easeInOutCubic' // 更改缓动函数
+  }
+});
+
+// 重新应用新的动画配置
+chart.render();    
+</code></pre>
+
+<h4 id="7">7. 动画生命周期管理</h4>
+<p><strong>事件监听与钩子</strong>    </p>
+<p>为了更好地管理动画的生命周期，VChart提供了一系列事件监听器和钩子函数。例如，<code>VGRAMMAR_HOOK_EVENT.AFTER_DO_RENDER</code>事件可以在图表首次渲染完成后触发，而<code>VGRAMMAR_HOOK_EVENT.ANIMATION_END</code>则会在动画结束时触发。    </p>
+<pre class="codehilite"><code class="language-xml">this._event.on(VGRAMMAR_HOOK_EVENT.AFTER_DO_RENDER, () =&gt; {
+  // 图表首次渲染完成后的逻辑
+});
+
+this._event.on(VGRAMMAR_HOOK_EVENT.ANIMATION_END, ({ event }) =&gt; {
+  if (event.animationState === AnimationStateEnum.enter) {
+    // enter 动画结束后的逻辑
+  } else if (event.animationState === AnimationStateEnum.update) {
+    // update 动画结束后的逻辑
+  } else if (event.animationState === AnimationStateEnum.exit) {
+    // exit 动画结束后的逻辑
+  }
+});    
+</code></pre>
+
+<p>这段代码展示了如何在不同的动画阶段执行特定的逻辑，保证动画之间的平滑过渡，提升用户体验。    </p>
+<h4 id="8">8. 差异检测与动画触发</h4>
+<p><strong>差异检测</strong>    </p>
+<p>在数据更新过程中，VChart会自动进行差异检测，识别哪些数据点是新增的、更新的或移除的。基于这些信息，<code>AnimateManager</code>会触发相应的动画。    </p>
+<pre class="codehilite"><code class="language-xml">if (state === AnimationStateEnum.update) {
+  this.updateState(
+    {
+      animationState: {
+        callback: (datum: any, element: IElement) =&gt; element.diffState
+      }
+    },
+    noRender
+  );
+}    
+</code></pre>
+
+<p>这里的<code>diffState</code>属性表示元素的状态变化类型，如<code>enter</code>、<code>update</code>或<code>exit</code>。<code>AnimateManager</code>会根据这个属性来决定应用哪种类型的动画。    </p>
+<h4 id="9">9. 动画的具体实现</h4>
+<p><strong>具体动画函数</strong>    </p>
+<p>每个具体的动画函数（如<code>Appear_FadeIn</code>、<code>ScaleInOutAnimation</code>和<code>Appear_FadeOut</code>）定义了动画的具体行为。例如，<code>Appear_FadeIn</code>函数可能如下所示：    </p>
+<pre class="codehilite"><code class="language-xml">export const Appear_FadeIn: IAnimationTypeConfig = {
+  type: 'fadeIn',
+  duration: 800,
+  easing: 'easeInOutQuad',
+  channel: {
+    opacity: { from: 0, to: 1 }
+  }
+};    
+</code></pre>
+
+<p>这段代码定义了一个淡入动画，通过调整图形元素的<code>opacity</code>属性从0变到1来实现视觉上的淡入效果。    </p>
+<h4 id="10">10. 动画状态管理</h4>
+<p><strong>状态切换与更新</strong>    </p>
+<p><code>AnimateManager</code>不仅管理<code>normal</code>动画，还负责处理其他状态下的动画切换。例如，当有新数据加入时，<code>enter</code>状态的动画会被触发；当数据更新时，<code>update</code>状态的动画生效；而当数据被移除时，则是<code>exit</code>状态的动画起作用。    </p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.update) {
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; element.diffState
+          }
+        },
+        noRender
+      );
+    } else if (state === AnimationStateEnum.appear) {
+      // appear 状态下的动画逻辑
+    } else if (state === AnimationStateEnum.exit) {
+      // exit 状态下的动画逻辑
+    }
+  }
+}    
+</code></pre>
+
+<p>当图表元素进入<code>update</code>、<code>appear</code>或<code>exit</code>状态时，<code>updateAnimateState</code>方法会被调用，并将状态传递给内部的状态管理逻辑。这使得所有符合条件的元素都能够执行对应的动画。    </p>
+<h3 id="_2">总结</h3>
+<p>通过上述步骤，我们详细解读了VChart中数据更新动画的实现原理。VChart的数据更新动画系统设计巧妙地结合了工厂模式、状态管理器模式以及模块化的动画配置，不仅提供了丰富的内置动画效果，还支持高度定制化的需求。开发者可以根据实际应用场景灵活配置和组合不同的动画，创造出既美观又实用的可视化效果。具体来说：    </p>
+<ul>
+<li>
+<p><code>**animationEnter**</code>：适用于新数据点的入场动画，如淡入、生长等。    </p>
+</li>
+<li>
+<p><code>**animationUpdate**</code>：适用于现有数据点的更新动画，如缩放、颜色渐变等。    </p>
+</li>
+<li>
+<p><code>**animationExit**</code>：适用于旧数据点的退场动画，如淡出、缩小等。    </p>
+</li>
+</ul>
+<p>这种设计确保了在数据变化时，图表能够以平滑且直观的方式呈现给用户，提升了交互体验和视觉吸引力。    </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

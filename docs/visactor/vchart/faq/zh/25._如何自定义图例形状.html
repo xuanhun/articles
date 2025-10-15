@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25. 如何自定义图例形状</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何自定义图例形状</br></p>
+<h2 id="_2">问题描述</h2>
+<p>图例形状默认是圆角矩形，请问如何自定义图例的形状？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Fl7FbLGe6o8pPNxn6NGcfbOXnxh.gif' alt='' width='1312' height='1106'></p>
+<h2 id="_3">解决方案</h2>
+<p>VChart 中可以用通过配置来设置图例的形状</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'pie',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { type: 'oxygen', value: '46.60' },
+        { type: 'silicon', value: '27.72' },
+        { type: 'aluminum', value: '8.13' },
+        { type: 'iron', value: '5' },
+        { type: 'calcium', value: '3.63' },
+        { type: 'sodium', value: '2.83' },
+        { type: 'potassium', value: '2.59' },
+        { type: 'others', value: '3.5' }
+      ]
+    }
+  ],
+  outerRadius: 0.8,
+  innerRadius: 0.5,
+  padAngle: 0.6,
+  valueField: 'value',
+  categoryField: 'type',
+  pie: {
+    style: {
+      cornerRadius: 10
+    },
+    state: {
+      hover: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      },
+      selected: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      }
+    }
+  },
+  title: {
+    visible: true,
+    text: 'Statistics of Surface Element Content'
+  },
+  legends: {
+    visible: true,
+    orient: 'left',
+    item: {
+      shape: {
+        style: {
+          symbolType: 'star'
+        }
+      }
+    }
+  },
+  label: {
+    visible: true
+  },
+  tooltip: {
+    mark: {
+      content: [
+        {
+          key: datum =&gt; datum['type'],
+          value: datum =&gt; datum['value'] + '%'
+        }
+      ]
+    }
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DSQFbD4bXom0v1xPDmnc8Spin6T.gif' alt='' width='2332' height='950'></p>
+<p>Demo: https://codesandbox.io/p/sandbox/pie-legends-shap-6tq5k9?file=%2Fsrc%2Findex.ts%3A69%2C7</br></p>
+<h2 id="_6">相关文档</h2>
+<p>Demo：https://codesandbox.io/p/sandbox/pie-legends-shap-6tq5k9?file=%2Fsrc%2Findex.ts%3A69%2C7</br>
+API：</br>
+*  图例形状：https://visactor.io/vchart/option/pieChart-legends-discrete#item.shape.style.symbolType</br>
+Github：https://github.com/VisActor/VChart/</br></p>
+</body>
+</html>

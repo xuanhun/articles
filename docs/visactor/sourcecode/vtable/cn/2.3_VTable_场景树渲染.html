@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2.3 VTable 场景树渲染</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <blockquote>
+<h2 id="_1">相关源码位置</h2>
+<ul>
+<li>package/vtable/src/scenegraph/group-creater/cell-helper.ts：VTable 渲染引擎中单元格处理的核心文件,提供了 用于根据不同列类型创建单元格(<code>createCell</code>)、负责单元格的动态更新(<code>updateCell</code>和 <code>updateCellContent</code>)等功能；    </li>
+<li>package/vtable/src/scenegraph/group-creater/column-helper.ts：基于createCell单元格创建实现了复合列表ComplexColumn的合并、渲染处理；    </li>
+<li>package/vtable/src/scenegraph/group-creater/column.ts：基于CreateComplexColumn从起始列到结束列，遍历创建列组，从而构建整个表格的列结构；    </li>
+</ul>
+</blockquote>
+<h2 id="_2">表格的创建流程</h2>
+<p>表格的场景图的构建过程是层层递进的，整体流程大致是先通过<code>createCell</code>函数创建单个单元格，然后利用<code>createComplexColumn</code>函数创建复合列（同一列中不同类型的单元格），最后通过<code>createColGroup</code>函数遍历生成表格的列组，进而形成整个表格的结构。    </p>
+<p>下面逐层分析创建的流程：    </p>
+<h3 id="createcell">单元格的创建（<code>createCell</code>）</h3>
+<blockquote>
+<p><strong>功能</strong>：根据传入的单元格类型<code>type</code>，创建相应类型的单元格。支持的类型包括<code>text</code>、<code>image</code>、<code>video</code>、<code>chart</code>、<code>progressbar</code>、<code>sparkline</code>、<code>checkbox</code>、<code>radio</code>等。    </p>
+</blockquote>
+<pre class="codehilite"><code class="language-xml">function createCell(
+  type: ColumnTypeOption, // 单元格类型（text/link/image/chart等）
+  value: string,         // 单元格显示值
+  define: ColumnDefine,  // 列定义配置
+  table: BaseTableAPI,   // 表格实例
+  col: number,           // 列索引
+  row: number,           // 行索引
+  colWidth: number,      // 列宽
+  cellWidth: number,     // 单元格实际宽度（可能合并）
+  cellHeight: number,    // 单元格高度
+  columnGroup: Group,    // 父容器（列组）
+  y: number,             // Y轴位置
+  padding: [number, number, number, number], // 内边距
+  textAlign: CanvasTextAlign,     // 文本对齐
+  textBaseline: CanvasTextBaseline, // 文本基线
+  mayHaveIcon: boolean,  // 是否可能包含图标
+  cellTheme: IThemeSpec, // 主题样式
+  range: CellRange | undefined, // 合并单元格范围
+  customResult?: {     
+    elementsGroup?: VGroup;
+    renderDefault: boolean;
+  }
+): Group    
+</code></pre>
+
+<p>这个函数源码的大部分结构是根据不同的CellType进入不同的创建流程，对创建的Group对象通过<code>Factory.getFunction</code>动态获取各类型创建函数，然后配置不同单元格特有的参数或逻辑处理，    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MPMdbCInQo1jkXx9GC1cZ0Gmn7g.gif' alt='' width='528' height='auto'></p>
+<h3 id="createcomplexcolumn">列的创建（createComplexColumn）</h3>
+<blockquote>
+<p><strong>功能</strong>：在指定的列范围内，根据单元格的合并情况、数据类型等，创建复合列，计算或获取合并单元格的总宽度和高度，并通过Map缓存优化性能。    </p>
+</blockquote>
+<h4 id="_3">确认插入坐标坐标</h4>
+<p>复杂列的创建一开始先确认插入的坐标，根据 <code>columnGroup</code> 的最后一个子元素和高度，确定单元格插入的起始Y坐标；如果连续插入单元格的话，就跟在现有的高度上累加上单元格的高度，从而形成列的结构。这里处理了连续添加单元格时的垂直定位问题。    </p>
+<pre class="codehilite"><code class="language-javascript">let y = 0;
+if (columnGroup.lastChild &amp;&amp; (columnGroup.lastChild as Group).row === rowStart - 1) {
+  y = (columnGroup.lastChild as Group).attribute.y + (columnGroup.lastChild as Group).attribute.height;
+} else if (columnGroup.colHeight) {
+  y = columnGroup.colHeight;
+}
+</code></pre>
+
+<h4 id="dealmerge">合并单元格dealMerge</h4>
+<p>接着从起始行至终止行开始执行遍历循环，处理单元格的合并算法；处理单元格的合并，即通过计算更新单元格的宽度和高度(计算<code>mergeSize</code>)实现合并的效果。此处的缓存指的是以起始行列的拼接值做键，通过Map缓存mergeResult ，存储计算的CellWitdh和CellHeight值，避免重复计算    </p>
+<pre class="codehilite"><code class="language-javascript">function dealMerge(range: CellRange, mergeMap: MergeMap, table: BaseTableAPI, forceUpdate: boolean) {
+  let cellWidth = 0;
+  let cellHeight = 0;
+  const mergeResult = mergeMap.get(`${range.start.col},${range.start.row};${range.end.col},${range.end.row}`);
+  if (!mergeResult || forceUpdate) {
+    for (let col = range.start.col; col &lt;= range.end.col; col++) {
+      cellWidth += table.getColWidth(col);
+    }
+
+    // let cellHeight = 0;
+    for (let i = range.start.row; i &lt;= range.end.row; i++) {
+      cellHeight += table.getRowHeight(i);
+    }
+
+    mergeMap.set(`${range.start.col},${range.start.row};${range.end.col},${range.end.row}`, {
+      cellWidth,
+      cellHeight
+    });
+  } else {
+    cellWidth = mergeResult.cellWidth;
+    cellHeight = mergeResult.cellHeight;
+  }
+  return {
+    cellWidth,
+    cellHeight
+  };
+}    
+</code></pre>
+
+<h3 id="createcolgroup">表格的创建（createColGroup）</h3>
+<blockquote>
+<p><strong>功能</strong>：在指定的列和行范围内，创建列组，从而构建整个表格的列结构。    </p>
+</blockquote>
+<pre class="codehilite"><code class="language-xml">for (let i = colStart; i &lt;= colEnd; i++) {
+    const col = i;
+    const colWidth = table.getColWidth(col);
+
+    const columnGroup = new Group({
+      x: xOrigin + x,
+      y: yOrigin,
+      width: colWidth,
+      height: 0,
+      clip: false,
+      pickable: false
+    });
+    columnGroup.role = 'column';
+    columnGroup.col = i;
+    containerGroup.addChild(columnGroup);
+    const { width: default2Width, height: default2Height } = createComplexColumn(
+      columnGroup,
+      col,
+      colWidth,
+      rowStart,
+      rowEnd,
+      table.scenegraph.mergeMap,
+      cellLocation === 'columnHeader' &amp;&amp; isNumber(defaultHeaderRowHeight)
+        ? (defaultHeaderRowHeight as number)
+        : defaultRowHeight,
+      table,
+      // cellLocation,
+      rowLimit
+    );
+    x += default2Width;
+    heightMax = Math.max(heightMax, default2Height);
+  }    
+</code></pre>
+
+<p>这段代码首先从起始列到末尾列依次遍历，依次执行：    </p>
+<ol>
+<li>
+<p>创建列组对象<code>columnGroup</code>，<code>x: xOrigin + x</code>理解起来比较形象，x （偏移量）随着循环创建列组而不断累加，不难想象由此每一列组都能依次排列在水平方向上；<code>width: colWidth</code>设置列组的宽度为当前列的宽度 <code>colWidth</code>，该宽度通过 <code>table.getColWidth(col)</code> 获取；<code>height: 0</code>初始时将列组的高度设置为 0，后续会根据该列中实际创建的元素（如单元格）的高度进行更新。    </p>
+</li>
+<li>
+<p>设置列组属性和索引，设置 <code>role</code> 属性为 <code>'column'</code>，列组设置 <code>col</code> 属性为当前列的索引 <code>i</code>，这样可以明确该列组对应的是表格中的哪一列。    </p>
+</li>
+<li>
+<p>通过调用 <code>createComplexColumn</code> 函数，在指定的列组中创建<code>ComplexColumn</code>复合列，并动态更新布局参数。<code>createComplexColumn</code> 函数接收多个参数，包括列组、列索引、列宽、行范围等，同时会考虑单元格的位置、合并情况以及默认行高，最终生成相应的列结构。    </p>
+</li>
+</ol>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

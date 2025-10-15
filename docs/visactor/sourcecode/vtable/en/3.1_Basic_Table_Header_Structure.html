@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3.1 Basic Table Header Structure</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="introduction">Introduction</h2>
+<p>Basic tables differ from the complexity of pivot tables, with only distinctions between rows and columns, and the structure of the header is relatively simple. Let's take a look at the relevant parts of the header structure of basic tables.    \r</p>
+<h2 id="scene-tree-related">Scene Tree Related</h2>
+<p>VTable manages the various modules of the table in the form of a scene tree. For the header of a basic table, it mainly involves the following nodes:    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/UkqRbiVtHonLpMxi9k0cOdmGnTf.gif' alt='' width='957' height='auto'></p>
+<ol>
+<li>colHeaderGroup     </li>
+</ol>
+<p>List header node: Responsible for managing the entire list header, the header part does not change position with scrolling;    \r</p>
+<ol>
+<li>columnGroup    </li>
+</ol>
+<p>Column Group: Each column is a separate container, and basically each column will have its own style configuration;    \r</p>
+<ol>
+<li>cellGroup    </li>
+</ol>
+<p>Cell node: Each cell maintains its own copy, containing all the graphic elements that need to be rendered internally;    \r</p>
+<ol>
+<li>rightTopCornerGroup    </li>
+</ol>
+<p>Freeze the right-side list header: When configuring the right-side frozen columns, maintain a separate list header for the right side;    </p>
+<ol>
+<li>cornerHeaderGroup    </li>
+</ol>
+<p>Left frozen list header: Maintain the header part of the left frozen column, equivalent to the corner header;    \r</p>
+<h2 id="layout-module">Layout Module</h2>
+<p>The module related to the basic table header layout is maintained separately in the <code>SimpleHeaderLayoutMap</code> class, which contains a lot of layout-related logic and auxiliary functions. The most important are the following submodules.</p>
+<h3 id="original-column-definition-storage">Original Column Definition Storage</h3>
+<p>The original column definition is maintained separately on <code>interProps</code>, and separately maintained as <code>_columns</code> in <code>LayoutMap</code>. The difference is that for tree structures, <code>_columns</code> will only maintain a set of leaf nodes. This field is mainly used for operations to obtain the number of columns and column definitions.</p>
+<p>To achieve the column hiding feature, the nodes hidden internally by VTable are not placed in <code>columns</code>, but are stored separately in <code>columnsIncludeHided</code>, which contains all the leaf nodes.</p>
+<h3 id="dimension-tree">Dimension Tree</h3>
+<p>For such a multi-level header, it can be maintained in the form of a dimension tree. However, within the basic table, maintaining a tree structure is too costly, so VTable adopts another solution.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/I9xUbUGs0o1GkrxqFKycpFjUn3e.gif' alt='' width='472' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ZqY4bUgLMojIWSxP5x1cQ3vwnNh.gif' alt='' width='734' height='auto'></p>
+<h3 id="tree-structure-alternatives">Tree Structure Alternatives</h3>
+<p>Since implementing a tree structure is too difficult, what can be done to reduce the complexity of handling tree structures? This is how VTable solves it internally:    \r</p>
+<p>For the table header, flatten the definition of the columns, define an index for each column, and establish a mapping table between the index and the column definition; at the same time, generate a two-dimensional header ID matrix based on the layout of the table, generate the corresponding index at the corresponding row and column, use the row and column numbers to get the id, and then obtain the column definition on the corresponding cell according to the id.    \r</p>
+<p>The flattened column definition mapping table is maintained in <code>layoutMap._headerObjectMap</code>, and the two-dimensional data index is maintained in <code>layouMap._headerCellIds</code>.    </p>
+<p>Let's take the above tree structure as an example,    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TS5ubIMU2oe3QtxMRKEcWXYvnkf.gif' alt='' width='447' height='auto'></p>
+<p>_headerCellIds looks like this    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GIetbByq9oZTAwxPm7Vc8Au2nlc.gif' alt='' width='459' height='auto'></p>
+<p>Corresponding _headerObjectsMap mapping table:    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RTINb9ccuoT5t0xsUVhcq4Eun2d.gif' alt='' width='1000' height='auto'></p>
+<p>By decoupling the tree structure into a data index table corresponding to each row and column's id and a mapping table of id to column definitions, apart from needing to maintain the header ID matrix when the header structure changes, the simplicity of obtaining column definitions and performance in terms of storage are far superior to directly storing the tree structure.    \r</p>
+<h3 id="merged-cell-range-cache">Merged Cell Range Cache</h3>
+<p>In the case where there is a merged header in the basic table header, there is a need to determine which range the current cell is in based on the row and column numbers. If you frequently judge based on the original structure, it will cause a great performance waste. Therefore, <code>LayoutMap</code> internally stores a cache of merged cell ranges <code>_cellRangeMap</code>. This mapping table uses <code>${col}_${row}</code> as the key, and the cellRange where the current cell is located as the value.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Bcw9bgiuIomGzWxS1mLckMBCnTe.gif' alt='' width='380' height='auto'></p>
+<p>If there is a need to obtain the range based on row and column numbers in the future, you can directly use this mapping table to get it. It should be noted that after the header position is dragged, the cached row and column numbers are no longer accurate and need to be reset.</p>
+<h2 id="module-generation">Module Generation</h2>
+<p>The above introduces several important modules in <code>LayoutMap</code> and their usage. Let's see how each module is generated during initialization:</p>
+<h3 id="header-id-matrix">Header ID Matrix</h3>
+<p>Since the generation of the header ID matrix and the header definition mapping are both completed in the same function <code>_addHeader</code>, it is quite challenging to directly understand this functional feature. Here, we will first separate the two parts of the logic and take a look at the generation of the data index table part:</p>
+<p>Taking the tree header in the above figure as an example, let's look at the generation logic of <code>_headerCellIds</code>.    </p>
+<pre class="codehilite"><code class="language-Typescript">  const columns = [
+    {
+      field: 'id',
+      title: 'ID',
+    },
+    {
+      title: 'Name',
+      columns: [
+        {
+          field: 'name1',
+          title: 'name1',
+        },
+        {
+          title: 'name-level-2',
+          columns: [
+            {
+              field: 'name2',
+              title: 'name2',
+            },
+            {
+              title: 'name3',
+              field: 'name3',
+            }
+          ]
+        }
+      ]
+    }
+  ];    
+</code></pre>
+
+<h4 id="function-simplification">Function Simplification</h4>
+<p>Here is the simplified logic for generating <code>_headerCellIds</code>:    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\simple-header-layout.ts
+const _columns = [];
+let seqId = 0;
+const _headerCellIds = [];
+
+function _addHeaders(row, column, roots) {
+  const rowCells = _newRow(row);
+  column.forEach(hd =&gt; {
+    const col = _columns.length;
+    const id = seqId++;
+    for (let r = row - 1; r &gt;= 0; r--) {
+      _headerCellIds[r] &amp;&amp; (_headerCellIds[r][col] = roots[r]);
+    }
+    rowCells[col] = id;
+    if (hd.columns) {
+      _addHeaders(row + 1, hd.columns, [...roots, id]);
+    } else {
+      _columns.push(hd);
+      seqId++;
+      for (let r = row + 1; r &lt; _headerCellIds.length; r++) {
+        _headerCellIds[r][col] = id;
+      }
+    }
+  });
+}    
+</code></pre>
+
+<h4 id="single-line-index-generation">Single Line Index Generation</h4>
+<p>Before parsing the logic in detail, let's first see how the current line's rowCells are associated through line numbers:</p>
+<p>When generating lines, there will be two situations:    \r</p>
+<ol>
+<li>
+<p>If the current line already exists, it will be completed based on the data from the previous line, and the address of the current line will be returned;    \r</p>
+</li>
+<li>
+<p>If the current row does not exist, a newRow will be generated, associated with _headerCellIds[row], and then the information from the previous layer will be synchronized to newRow, returning the address of newRow. This way, when modifying rowCells, it can be synchronized to <code>_headerCellIds</code>.    </p>
+</li>
+</ol>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/IYoIw7tCOhmXCjbPWeicPZZOnPh.gif" /></p>
+<h4 id="_headercellids-changes">_headerCellIds Changes</h4>
+<p>Here is the change in the <code>addHeaders</code> process, <code>headerCellIds</code>:    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/O0gBbczpPoJllKxJFf3cyLYWnZc.gif' alt='' width='1000' height='auto'></p>
+<h4 id="generation-process">Generation Process</h4>
+<p>It can be seen that the number of columns in the final generated _headerCellIds is determined by the breadth of the columns tree, while the number of rows is determined by the depth of the tree.    </p>
+<p>The generation process is mainly through depth-first traversal. Before traversing the columns, rowCells and _headerCellIds will be associated first. \r</p>
+<p>During the traversal of the columns, before processing the current node, if there is a node in the same column at the upper level, the node in the same column at the upper level will be updated.    </p>
+<p>After processing the previous layer, update the index for the current row and column.    </p>
+<p>If there is a subtree, recursion will continue to update roots, which represents the path from the root node to the current node.    \r</p>
+<p>If there is no subtree, the nodes below this column will be updated, and then the next iteration will begin. After the recursion is complete, it indicates that the update of _headerCellIds is finished.    \r</p>
+<h3 id="header-mapping">Header Mapping</h3>
+<p>The generation of the header mapping relative to the header ID matrix is relatively simple, it is just a recursive process.    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\simple-header-layout.ts
+      function _addHeaders(row, column) {
+        const results = [];
+        column.forEach((hd) =&gt; {
+          const id = seqId++;
+          const cell = {
+            id,
+            title: hd.title ?? hd.caption,
+            ...
+          };
+          results[id] = cell;
+          if (hd.columns) {
+            _addHeaders(row + 1, hd.columns).forEach((c) =&gt; results.push(c));
+          } else {
+            seqId++;
+          }
+        });
+        return results;
+      }    
+</code></pre>
+
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/FBeUwdZechOoUwbhKDCch1k8nof.gif" /></p>
+<p>After recursion, _headerObjectsIncludeHided looks like this:    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TJbLbQDsnoiLa1xJDf7cPVmQnOf.gif' alt='' width='1000' height='auto'></p>
+<p>Subsequently processed through reduce to generate _headerObjectMap    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\simple-header-layout.ts
+this._headerObjectMap = this._headerObjects.reduce((o, e) =&gt; {
+  o[e.id] = e;
+  return o;
+}, {});    
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TbbLbz5Tpos0xUxFBXQcT3ROn7b.gif' alt='' width='1000' height='auto'></p>
+<h2 id="conclusion">Conclusion</h2>
+<p>The structure of a basic table is simpler compared to a pivot table, as it only requires maintaining the list header.    </p>
+<p>The header structure is divided into several important modules:    \r</p>
+<ul>
+<li>
+<p>_headerCellIds: Responsible for managing the index of the column definition corresponding to the current row and column number;    \r</p>
+</li>
+<li>
+<p>_headerObjectMap: Mapping table of column index and column definition;    \r</p>
+</li>
+<li>
+<p>_columns: maintain the leaf nodes of the table header structure;    \r</p>
+</li>
+</ul>
+<h1 id="this-document-is-provided-by-the-following-personnel">This document is provided by the following personnel</h1>
+<p>taiiiyang( https://github.com/taiiiyang)     </p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

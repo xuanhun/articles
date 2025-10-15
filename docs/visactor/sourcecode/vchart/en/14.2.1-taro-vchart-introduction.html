@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14.2.1 Taro-VChart Introduction</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="overview">Overview</h2>
+<p>taro-vchart is the Taro mini program encapsulation version of VChart, providing an encapsulation of the VChart React version in the Taro environment.    </p>
+<ul>
+<li>For more information about the Taro mini program host environment, please refer to the official documentation: https://docs.taro.zone/docs/    </li>
+</ul>
+<h2 id="core-code-structure">Core Code Structure</h2>
+<p>taro-vchart's directory and architecture correspond to:    </p>
+<ul>
+<li>Chart Factory Layer: <code>charts</code> directory    </li>
+</ul>
+<p>Using the factory pattern to uniformly generate chart components (such as <code>BoxPlotChart</code>), which includes all available chart type components. Each chart is created through the createChart method with standardized parameters:    </p>
+<pre class="codehilite"><code class="language-xml">export const Chart = createChart&lt;ISpec&gt;(
+  'ChartName',
+  { chartConstructor: VChart }, // 核心图表构造器
+  [registerModules] // 按需注册的图表模块
+);    
+</code></pre>
+
+<ul>
+<li>
+<p>Cross-platform adaptation layer: The <code>components</code> directory implements the core logic for cross-platform rendering, including a general chart component and a browser chart component, with consistent functionality mainly to address different platforms.    </p>
+</li>
+<li>
+<p>General chart component <code>general-chart/index.tsx</code>    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">export class GeneralChart extends React.Component&lt;GeneralChartProps&gt; {
+  // 小程序专用生命周期
+  async componentDidMount() {
+    // 通过循环最多尝试100次获取DOM节点（解决飞书小程序异步问题）
+    for (let i = 0; i &lt; MAX_TIMES; i++) {
+      const domref = await getDomRef();
+      this.init({ domref });
+    }
+  }
+
+  // 小程序专用渲染结构
+  render() {
+    return (
+      &lt;View&gt;
+        &lt;Canvas id=&quot;tooltip&quot;/&gt; {/* 交互事件画布 */}
+        &lt;Canvas id=&quot;draw&quot;/&gt;    {/* 主渲染画布 */}
+        &lt;Canvas id=&quot;hidden&quot;/&gt; {/* 辅助画布 */}
+      &lt;/View&gt;
+    )
+  }
+}    
+</code></pre>
+
+<ul>
+<li>Browser chart component <code>web-chart/index.tsx</code>    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">export class WebChart extends React.Component&lt;WebChartProps&gt; {
+  // 标准浏览器生命周期
+  componentDidMount() {
+    this.vchart = new chartConstructor(spec, {
+      dom: canvasId // 直接使用DOM容器
+    });
+  }
+
+  // 简单DOM结构
+  render() {
+    return &lt;div id={canvasId}/&gt; // 单容器方案
+  }
+}    
+</code></pre>
+
+<p>The cross-platform adaptation architecture is shown in the figure below:    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Dl8XbIJzXoXReDxI7A3cQiUanvc.gif' alt='' width='908' height='auto' /></p>
+<p>Taro is a framework that can run in various mini-program environments. When using GeneralChart, you can pass in different environments to adapt:</p>
+<pre class="codehilite"><code class="language-Typescript">const strategies = {
+  lark: () =&gt; &lt;GeneralChart mode=&quot;miniApp&quot;/&gt;,
+  tt: () =&gt; &lt;GeneralChart mode=&quot;tt&quot;/&gt;,
+  weapp: () =&gt; &lt;GeneralChart mode=&quot;wx&quot;/&gt;,
+  web: () =&gt; &lt;WebChart /&gt;,
+  h5: () =&gt; &lt;WebChart mode=&quot;mobile-browser&quot;/&gt;
+};    
+</code></pre>
+
+<p>TTCanvas is responsible for managing specific VChart instances, receiving props passed by GeneralChart, and implements the chart capabilities for seamless integration into the mini-program ecosystem through an abstract general interface.    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ArD8bd1Fxow9puxGqhZcnEbrnCd.gif' alt='' width='1000' height='auto' /></p>
+<p>In the following chapters, we will analyze the encapsulation of the WX-VChart component in detail.    </p>
+<p># This document was revised and organized by the following person 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

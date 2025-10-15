@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creating Cool Pyramid Charts with VTable</title>
+    <meta name="keywords" content="VisActor, VChart, VTable, VStory, VMind, VGrammar, VRender, Visualization, Chart, Data, Table, Graph, Gis, LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>In the field of data analysis and visualization, tables are one of the most intuitive and effective ways to display data. Today, let's explore how to use VTable, a powerful table component, to create beautiful and informative pyramid charts, and delve into the usage of various cell types in VTable, enabling your tables to "draw" amazing charts!</p>
+<h2 id="implementing-population-pyramid-with-vtable">Implementing Population Pyramid with VTable</h2>
+<p>The population pyramid is a classic chart form that clearly shows the gender distribution of different age groups. In VTable, we can create this chart by cleverly setting cell types and data.</p>
+<h3 id="data-preparation">Data Preparation</h3>
+<p>Taking China's 2023 population pyramid as an example, we first need to prepare population data, including male and female population numbers for different age groups. The following is a two-dimensional array where the first column represents age, the second column represents male population, and the third column represents female population.</p>
+<pre class="codehilite"><code>const records = [
+  [0, 5634674, 5063545],
+  [1, 5705095, 5104886],
+  [2, 6428332, 5727205],
+  // ... (same data as original)
+  [100, 3722, 45558]
+];
+</code></pre>
+
+<h3 id="configure-column-information">Configure Column Information</h3>
+<p>Then, create a table in VTable, using age groups and gender as column labels. The key step is to set the cell type of male and female population columns to progressbar, so each cell can display a progress bar whose length represents the population of the corresponding age group and gender.</p>
+<p>In the specific implementation, we can configure the table's column information as follows:</p>
+<pre class="codehilite"><code>const columns = [
+  {
+    field: '0',
+    title: 'Age',
+    width: 'auto'
+  },
+  {
+    field: '1',
+    title: 'Male (Population)',
+    width: 'auto',
+    cellType: 'progressbar',
+    min: 0,
+    max: 13601860 + 1000000,
+  },
+  {
+    field: '2',
+    title: 'Female (Population)',
+    width: 'auto',
+    cellType: 'progressbar',
+    min: 0,
+    max: 13601860 + 1000000,
+  },
+  {
+    field: '0',
+    title: 'Age',
+    width: 'auto',
+  }
+];
+</code></pre>
+
+<p>In the above configuration, both the first and last columns are age groups, the second column is male population, and the third column is female population. Our data is a two-dimensional array with each age from <code>0-100</code> corresponding to one row of data, so we set the array index directly to the <code>field</code> in the column configuration. The <code>cellType</code> of the second and third columns is set to <code>'progressbar'</code> to display as data bars. The data bars need to be configured with <code>{min: number, max: number}</code> to specify the data range. For max, I chose the maximum value in records, and added a <code>buffer: 1000000</code> to make it look better overall with padding from the edges.</p>
+<p>Current display effect:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Zs10bEE1ToAKTgxo8HRcUALynBK.gif' alt='' width='496' height='auto'></p>
+<h3 id="optimize-display-effect">Optimize Display Effect</h3>
+<p>First, optimize the crowded text issue due to the small row height (<code>defaultRowHeight: 6</code> is only 6px). To optimize the incomplete display of age numbers on both sides, enable <code>mergeCell: true</code>. This configuration will merge cells with the same content above and below. But how about when each row's data is different? We force adjacent five rows to have the same content through fieldFormat:</p>
+<pre class="codehilite"><code>    fieldFormat(args) {
+      if (args[0] &gt;= 100) {
+        return 100;
+      }
+      return Math.round(args[0] / 5) * 5;
+    },
+</code></pre>
+
+<p>For the second and third columns, we don't want to display data, also using fieldFormat:</p>
+<pre class="codehilite"><code>    fieldFormat(args) {
+      return '';
+    }
+</code></pre>
+
+<p>Current effect after optimization:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/FAZKbucAboQSfXxmYJLcPwYSnFg.gif' alt='' width='499' height='auto'></p>
+<p>Continue to optimize the data bar style. First, make the second column's data bars right-aligned by setting style:</p>
+<pre class="codehilite"><code>    style: {
+      barRightToLeft: true
+    }
+</code></pre>
+
+<p>After optimization:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AXwwbb76Yo3crpxotCXctGvMnLd.gif' alt='' width='495' height='auto'></p>
+<p>After optimizing the colors of data bars on both sides, the final configuration for these two columns is:</p>
+<pre class="codehilite"><code>{
+    field: '1',
+    title: 'Male (Population)',
+    width: 'auto',
+    fieldFormat(args) {
+      return '';
+    },
+    cellType: 'progressbar',
+    min: 0,
+    max: 13601860 + 1000000,
+    style: {
+      barHeight: 5,
+      barColor: '#4cba72',
+      barRightToLeft: true
+    }
+  },
+  {
+    field: '2',
+    title: 'Female (Population)',
+    width: 'auto',
+    cellType: 'progressbar',
+    fieldFormat(args) {
+      return '';
+    },
+    min: 0,
+    max: 13601860 + 1000000,
+    style: {
+      barColor:'#f66d6c',
+      barHeight: 5,
+    }
+  },
+</code></pre>
+
+<p>Other border and header cell background color and text style configurations are in the theme:</p>
+<pre class="codehilite"><code>  theme: VTable.themes.DEFAULT.extends({
+    headerStyle: {
+      color: '#dfeef7',
+      bgColor: '#038dc8'
+    },
+    frameStyle: {
+      borderColor: '#1d80b0',
+      borderLineWidth: 2
+    }
+  })
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ScAnbIDmzoRXIqxBMB4cE2KdnIf.gif' alt='' width='500' height='auto'></p>
+<p>Through the above code, we can see that the male and female population numbers for each age group are displayed with progress bars in different colors, forming an intuitive population pyramid chart.</p>
+<h3 id="chart-title">Chart Title</h3>
+<p>A complete chart needs a concise and accurate title that precisely conveys its core information to clearly communicate its meaning. For the powerful VTable, this is a piece of cake. We only need to easily add title configuration to the existing configuration to give the chart an appropriate and comprehensive title, making the chart's meaning clear at a glance, allowing users to quickly capture key information, greatly improving the chart's readability and practicality.</p>
+<pre class="codehilite"><code>title: {
+    text: 'China Population 2023 Pyramid: 1,425,849,286',
+    padding: 10,
+    orient: 'top',
+    textStyle: { fill: '#16cdcd' }
+  },
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/GyQfbJqXKoaN4mxiL6ScsLInn8f.gif' alt='' width='497' height='auto'></p>
+<p>The complete example code can be found on the official website: https://visactor.com/vtable/demo/business/population-pyramid</p>
+<h2 id="using-progressbar-type-in-vtable">Using Progressbar Type in VTable</h2>
+<p>Progress bars play an important role in various applications, intuitively showing users task progress. The <code>progressbar</code> type provided by VTable offers rich options that, combined with other table capabilities, allow developers to create unique progress bars according to specific needs and design styles.</p>
+<p>Let's look at the key configurations in detail:</p>
+<ul>
+<li>
+<p><strong>min</strong>: Minimum data value for progress bar display, default is 0.</p>
+</li>
+<li>
+<p><strong>max</strong>: Maximum data value for progress bar display, default is 100.</p>
+</li>
+<li>
+<p><strong>barType</strong>: Progress bar type, default is 'default'. Available values include:</p>
+</li>
+<li>'default': Normal progress bar</li>
+<li>'negative': Progress bar considering negative values, showing progress bars in both positive and negative directions with 0 as the divider</li>
+<li>
+<p>'negative_no_axis': Similar to 'negative' but without 0 value axis</p>
+</li>
+<li>
+<p><strong>dependField</strong>: If the text displayed in the cell and the data field used by the progress bar need to be different, configure the data field used by the progress bar in <code>dependField</code>.</p>
+</li>
+</ul>
+<p>Additionally, the progressbar type has many exclusive style configuration items, such as <code>barColor</code>, <code>barHeight</code>, <code>barAxisColor</code>, <code>barMarkXXX</code>, etc. Through these configuration items, we can further beautify the appearance of progress bars.</p>
+<h2 id="introduction-to-other-cell-types-in-vtable">Introduction to Other Cell Types in VTable</h2>
+<p>Besides the progressbar type, VTable provides various rich cell types, each with unique characteristics and functions, allowing us to flexibly choose according to different data display needs.</p>
+<p>Here's a brief introduction:</p>
+<ul>
+<li>
+<p><strong>text</strong>: The most basic cell type, used to display text information. In tables, we can use the text type to display row labels, column labels, and some auxiliary explanatory text to help audiences better understand the meaning of data.</p>
+</li>
+<li>
+<p><strong>link</strong>: Used to display link-type data. Through setting different formatting functions, styles, and click jump addresses, whether to check link validity, etc., we can flexibly display and handle links.</p>
+</li>
+<li>
+<p><strong>image</strong>: Allows us to insert images in cells. If our data is related to images, such as product images, geographic location images, etc., using the image type can intuitively display this information, enhancing the table's visual effect.</p>
+</li>
+<li>
+<p><strong>video</strong>: Similar to the image type, used to display video-type data, with all configuration items the same as image.</p>
+</li>
+<li>
+<p><strong>sparkline</strong>: Used to display sparkline-type data. By setting specific <code>sparklineSpec</code> configuration items for sparklines, we can display various trends, distributions, and other mini charts, providing more possibilities for data visualization.</p>
+</li>
+<li>
+<p><strong>chart</strong>: Used to display chart-type data. Before using this type, you need to first register a chart type through <code>VTable.chart.register</code>. After registration, you can display rich chart content through configuration items like <code>chartModule</code> and <code>chartSpec</code>.</p>
+</li>
+<li>
+<p><strong>checkbox</strong>: Checkbox type cells are widely used in many applications, including task management, data filtering, permission settings, etc. Whether the checkbox cell is in a checked state defaults to false and supports configuring functions with different configurations for different cells.</p>
+</li>
+<li>
+<p><strong>radio</strong>: Radio button type</p>
+</li>
+</ul>
+<p>Below is a screenshot of the demo list showing various types from the official website for reference! Don't you feel its functionality is quite powerful? From these demos, we can clearly feel the convenience and efficiency brought by its powerful functions. Whether in data display or data analysis scenarios, it can play a significant role, providing us with quality experience and solutions.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/SuKNbbpxDofcJkxz1oUczYAOnYg.gif' alt='' width='897' height='auto'></p>
+<h2 id="summary">Summary</h2>
+<p>By reasonably using various cell types in VTable, we can create feature-rich and diverse table charts. Whether it's an intuitive population pyramid or other complex data visualization needs, VTable can provide powerful support. Go ahead and try it out, let your tables also "draw" a wonderful world of charts! </p>
+<h1 id="contact-us">Contact Us</h1>
+<p>GitHub: <a href="https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2FVisActor">github.com/VisActor</a></p>
+<p>Follow our WeChat Official Account (join WeChat group through menu):</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VyPsbaIz8offShxlv0ZcqqD8nfd.gif' alt='' width='258' height='auto'></p>
+<p>VisActor Website: <a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.io/</a> ; <a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.</a>com</p>
+<p>Feishu Group:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NAQhbtdelofTIyxk9pgcE3hqnQG.gif' alt='' width='264' height='auto'></p>
+<p>Discord: https://discord.com/invite/3wPyxVyH6m</p>
+</body>
+</html>

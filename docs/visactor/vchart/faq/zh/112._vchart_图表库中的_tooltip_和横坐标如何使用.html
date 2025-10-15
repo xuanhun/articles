@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>112. vchart 图表库中的 tooltip 和横坐标如何使用？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">问题标题</h1>
+<p>vchart 图表库中的 tooltip 和横坐标如何使用？</br></p>
+<h1 id="_2">问题描述</h1>
+<p>我正在使用 vchart 图表库制作图表，但在设置 tooltip 和横坐标时遇到了困难。我尝试对 tooltip 进行配置，但它并没有显示出来，即使我设置了 visible 也无法显示它。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/QVIIbry4sodz3axF4LXcMQxRnYc.gif' alt='' width='674' height='692'></p>
+<p>此外，我还希望能够自定义 x 轴的内容。我不确定是我的使用方式不对还是有其他的问题。</br></p>
+<h1 id="_3">解决方案</h1>
+<p>首先，对于 tooltip 的配置问题，你的设置方式是正确的。</br></p>
+<p>然后，关于 tooltip 没有生效的问题，你需要检查你的 <code>content</code> 是否写错了位置。如果你想要自定义 tooltip 的内容，可以参考<a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Ftooltip%2Fcustom-tooltip">vchart 的这个示例</a>。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OH4BbX2LPoFfLHxtvbhclGS2nrf.gif' alt='' width='3482' height='1592'></p>
+<p>最后，关于 x 轴的自定义内容，你可以通过在 <code>axes.label</code> 中设置样式来实现。你还可以使用 <code>formatMethod</code> 来自定义内容。具体实现方法可以参考<a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Faxis%2Fgrid-style">vchart 的这个示例</a>。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/D2cMbBI6wo1ftYxEhbkc0E7Unie.gif' alt='' width='3526' height='1306'></p>
+<h1 id="_4">相关文档</h1>
+<ul>
+<li><a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fguide%2Ftutorial_docs%2FChart_Concepts%2FTooltip">vchart Tooltip 使用指南</a></br></li>
+<li><a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Faxis%2Fstyle">vchart Axis 样式设置示例</a></br></li>
+<li><a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Ftooltip%2Fcustom-tooltip">vchart 自定义 Tooltip 示例</a></br></li>
+<li><a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Faxis%2Fgrid-style">vchart Axis 网格样式示例</a></br></li>
+</ul>
+</body>
+</html>

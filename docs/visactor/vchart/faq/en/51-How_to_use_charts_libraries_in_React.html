@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>51-How_to_use_charts_libraries_in_React</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-use-charts-libraries-in-react-like-vchart">How to use charts libraries in React, like VChart?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>How to implement <a href="https://www.visactor.io/vchart/demo/bar-chart/basic-column">a simple bar chart</a> using a chart library like VChart in React? Any tips for implementation?</p>
+<p><img alt="bar chart" src="/vchart/faq/29-0.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>There are two ways to use VChart in React:</p>
+<ol>
+<li>Implement it using the official React wrapper library provided by VChart, which is called <code>react-vchart</code>. You can refer to the <a href="https://www.visactor.io/vchart/guide/tutorial_docs/Cross-terminal_and_Developer_Ecology/react">tutorial</a> for more information.</li>
+<li>Create your own wrapper for VChart in React.</li>
+</ol>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code>/* @refresh reset */
+import { VChart, VChartProps } from &quot;@visactor/react-vchart&quot;;
+import { useMemo } from &quot;react&quot;;
+
+export interface AreaChartProps {
+  colors?: string[];
+}
+
+export const AreaChart = (props: AreaChartProps) =&gt; {
+  const { colors } = props;
+
+  const spec = useMemo(() =&gt; {
+    const areaColors = colors ?? [
+      &quot;#6690F2&quot;,
+      &quot;#70D6A3&quot;,
+      &quot;#B4E6E2&quot;,
+      &quot;#63B5FC&quot;,
+      &quot;#FF8F62&quot;,
+      &quot;#FFDC83&quot;,
+      &quot;#BCC5FD&quot;,
+      &quot;#A29BFE&quot;,
+      &quot;#63C4C7&quot;,
+      &quot;#F68484&quot;
+    ];
+    return {
+      type: &quot;area&quot;,
+      data: {
+        values: [
+          { type: &quot;Nail polish&quot;, country: &quot;Africa&quot;, value: 4229 },
+          { type: &quot;Nail polish&quot;, country: &quot;EU&quot;, value: 4376 },
+          { type: &quot;Nail polish&quot;, country: &quot;China&quot;, value: 3054 },
+          { type: &quot;Nail polish&quot;, country: &quot;USA&quot;, value: 12814 },
+          { type: &quot;Eyebrow pencil&quot;, country: &quot;Africa&quot;, value: 3932 },
+          { type: &quot;Eyebrow pencil&quot;, country: &quot;EU&quot;, value: 3987 },
+          { type: &quot;Eyebrow pencil&quot;, country: &quot;China&quot;, value: 5067 },
+          { type: &quot;Eyebrow pencil&quot;, country: &quot;USA&quot;, value: 13012 },
+          { type: &quot;Rouge&quot;, country: &quot;Africa&quot;, value: 5221 },
+          { type: &quot;Rouge&quot;, country: &quot;EU&quot;, value: 3574 },
+          { type: &quot;Rouge&quot;, country: &quot;China&quot;, value: 7004 },
+          { type: &quot;Rouge&quot;, country: &quot;USA&quot;, value: 11624 },
+          { type: &quot;Lipstick&quot;, country: &quot;Africa&quot;, value: 9256 },
+          { type: &quot;Lipstick&quot;, country: &quot;EU&quot;, value: 4376 },
+          { type: &quot;Lipstick&quot;, country: &quot;China&quot;, value: 9054 },
+          { type: &quot;Lipstick&quot;, country: &quot;USA&quot;, value: 8814 },
+          { type: &quot;Eyeshadows&quot;, country: &quot;Africa&quot;, value: 3308 },
+          { type: &quot;Eyeshadows&quot;, country: &quot;EU&quot;, value: 4572 },
+          { type: &quot;Eyeshadows&quot;, country: &quot;China&quot;, value: 12043 },
+          { type: &quot;Eyeshadows&quot;, country: &quot;USA&quot;, value: 12998 },
+          { type: &quot;Eyeliner&quot;, country: &quot;Africa&quot;, value: 5432 },
+          { type: &quot;Eyeliner&quot;, country: &quot;EU&quot;, value: 3417 },
+          { type: &quot;Eyeliner&quot;, country: &quot;China&quot;, value: 15067 },
+          { type: &quot;Eyeliner&quot;, country: &quot;USA&quot;, value: 12321 },
+          { type: &quot;Foundation&quot;, country: &quot;Africa&quot;, value: 13701 },
+          { type: &quot;Foundation&quot;, country: &quot;EU&quot;, value: 5231 },
+          { type: &quot;Foundation&quot;, country: &quot;China&quot;, value: 10119 },
+          { type: &quot;Foundation&quot;, country: &quot;USA&quot;, value: 10342 },
+          { type: &quot;Lip gloss&quot;, country: &quot;Africa&quot;, value: 4008 },
+          { type: &quot;Lip gloss&quot;, country: &quot;EU&quot;, value: 4572 },
+          { type: &quot;Lip gloss&quot;, country: &quot;China&quot;, value: 12043 },
+          { type: &quot;Lip gloss&quot;, country: &quot;USA&quot;, value: 22998 },
+          { type: &quot;Mascara&quot;, country: &quot;Africa&quot;, value: 18712 },
+          { type: &quot;Mascara&quot;, country: &quot;EU&quot;, value: 6134 },
+          { type: &quot;Mascara&quot;, country: &quot;China&quot;, value: 10419 },
+          { type: &quot;Mascara&quot;, country: &quot;USA&quot;, value: 11261 }
+        ]
+      },
+      color: {
+        type: &quot;ordinal&quot;,
+        domain: [],
+        range: areaColors
+      },
+      title: {
+        visible: true,
+        text: &quot;Stacked line chart&quot;
+      },
+      stack: true,
+      xField: &quot;type&quot;,
+      yField: &quot;value&quot;,
+      seriesField: &quot;country&quot;,
+      legends: [{ visible: true, position: &quot;middle&quot;, orient: &quot;bottom&quot; }]
+    } as VChartProps[&quot;spec&quot;];
+  }, [colors]);
+
+  return &lt;VChart spec={spec} /&gt;;
+};
+</code></pre>
+
+<h2 id="results">Results</h2>
+<p><a href="https://codesandbox.io/s/visactor-vchart-react-demo-forked-jsqqjj">Online demo</a></p>
+<p><img alt="result" src="/vchart/faq/29-1.gif" /></p>
+<h2 id="related-documentation">Related Documentation</h2>
+<ul>
+<li><a href="https://www.visactor.io/vchart/guide/tutorial_docs/Cross-terminal_and_Developer_Ecology/react">react-vchart Tutorial</a></li>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>13.1 VChart On-Demand Loading Mechanism</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>VChart is a ready-to-use chart library that provides 20+ chart types by default. As the number of chart types increases and features become richer, package size is a major concern for everyone. Therefore, VChart uses an on-demand loading mechanism to meet various needs for VChart in different scenarios. Before introducing the specific design, we need to understand two prerequisite concepts:    </p>
+<ul>
+<li>
+<p>VChart chart composition    </p>
+</li>
+<li>
+<p>What is tree-shaking    </p>
+</li>
+</ul>
+<p>This article will introduce the principle of VChart's on-demand loading from these two perspectives.    </p>
+<h2 id="vchart-chart-composition">VChart Chart Composition</h2>
+<h3 id="terminology-definition">Terminology Definition</h3>
+<p>Before delving into the composition of VChart charts, we need to understand the following terms:    </p>
+<ul>
+<li>
+<p><code>series</code> - The main body of the chart, also known as a series, contains a set of graphic elements and their corresponding chart logic.    </p>
+</li>
+<li>
+<p><code>mark</code> - Basic graphic elements, also known as basic graphics, such as points, lines, etc.    </p>
+</li>
+<li>
+<p><code>region</code> - Spatial information element, associated with one or more series, helps in spatial positioning.    </p>
+</li>
+<li>
+<p><code>component</code> - Components that assist in reading and interacting with the chart, such as legends, axes, tooltips, etc.    </p>
+</li>
+<li>
+<p><code>layout</code> - Layout, manages the spatial distribution of chart elements.    </p>
+</li>
+<li>
+<p><code>chart</code> - An abstract concept of a chart, the manager that integrates and manages data, graphic elements, components, and layout elements.    </p>
+</li>
+</ul>
+<h3 id="chart-definition">Chart Definition</h3>
+<h4 id="logical-layer-chart-elements">Logical Layer Chart Elements</h4>
+<p>We break down the logical layer elements of a chart into the following four parts:    </p>
+<ul>
+<li>
+<p>series is the main body of the chart, containing a set of graphic elements and the corresponding type of chart logic. For example, in a line chart, series refers to the collection of points and lines and all the logic of the line chart.    </p>
+</li>
+<li>
+<p>component provides auxiliary capabilities, helping with reading and interacting with the chart, such as legends, axes, tooltips, dataZoom, etc.    </p>
+</li>
+<li>
+<p>region is a spatial information element that can associate with one or more series, helping series with spatial positioning, and is also a minimum combination unit.    </p>
+</li>
+<li>
+<p>chart is an abstract concept, the manager that integrates and manages various elements of the chart, and is the core context of the chart's logical layer.    </p>
+</li>
+</ul>
+<h5 id="simple-chart">Simple Chart</h5>
+<p>A simple chart consists of a region, a series of a determined type, a component, and a chart that manages the chart logic. Taking a common line chart as an example, its composition is as follows    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TT0JbnoqsoEj2xxllhDcrpDSnCg.gif' alt='' width='1000' height='auto' /></p>
+<h5 id="combination-chart">Combination Chart</h5>
+<p>We define a combination chart as consisting of multiple regions, multiple series of determined types, components, and a chart that manages the chart logic. Here, we encapsulate the chart as a combination chart with <code>type: 'common'</code>.</p>
+<p>In a combination chart, several different types of sub-charts can be defined. Each sub-chart can independently configure its own data and components, and all sub-charts are by default associated with the same region. At this point, each sub-chart overlaps on the region. We take the common bar-line dual-axis chart as an example to introduce the combination chart in detail:</p>
+<ul>
+<li>
+<p>First, if we need to create a combination chart, we need to declare <code>type: 'common'</code>, indicating that the type of chart we need to create is a combination chart.</p>
+</li>
+<li>
+<p>As mentioned above, the chart is the manager that integrates and manages data, graphic elements, components, and layout elements. Logically, it consists of region + series + layout, and the bar and line correspond to the 'bar' and 'line' series types, respectively. By default, all series are associated with the same region, so we do not need to configure the region here.</p>
+</li>
+<li>
+<p>Each series can have its own data source, or the data source can be directly configured on the chart. In the series, it is associated through <code>fromDataId</code> or <code>fromDataIndex</code>. In the current example, we choose to configure it on the chart.</p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/W6kabi4nGoY2wQx31VRcOaA6nXl.gif' alt='' width='1000' height='auto' /></p>
+<p>As mentioned earlier, a region is a spatial information element that can be used in conjunction with layouts to divide the canvas into spatial sections using multiple differently positioned regions. At the same time, components can also specify relationships associated with regions. When a component is associated with multiple regions, it will by default collect the data dimensions of all subgraphs under the regions for display, as shown in the following example:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/W4uSbbcr9o22gBxsIOrcDs4Qnyc.gif' alt='' width='1000' height='auto' /></p>
+<h3 id="primitive-mark">Primitive mark</h3>
+<p>Primitives are the definition of graphics in the chart view layer. VChart defines primitives in charts, including basic primitives and composite primitives.</p>
+<p>Basic primitives include: symbol, rect, line, rule, arc, area, text, path, image, 3D rect, 3D arc, polygon, etc.</p>
+<p>Composite primitives are formed by combining multiple basic primitives. We collectively refer to basic primitives and composite primitives as primitives.</p>
+<p>Logical layer elements (such as series) are composed of several primitives. For example, the area chart (<code>'area'</code>) series includes points, lines, and areas, corresponding to the basic primitives: symbol, line, area.</p>
+<h2 id="what-is-tree-shaking">What is tree-shaking</h2>
+<p>Tree Shaking is a code optimization technique used to remove unused code (dead code) in JavaScript. This concept was first proposed by Rollup and later widely adopted by build tools such as Webpack.</p>
+<p>The implementation of Tree Shaking mainly relies on these features of ES Module:</p>
+<ul>
+<li>
+<p>Import and export statements can only be at the top level of the module</p>
+</li>
+<li>
+<p>The names of imported and exported modules cannot be dynamic</p>
+</li>
+<li>
+<p>Imported modules are immutable</p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// 1. 导入导出语句只能在模块顶层
+import { foo } from './foo';
+export const bar = () =&gt; {};
+
+// 2. 导入导出的模块名字不能是动态的
+import { 'f' + 'oo' }; // 错误
+
+// 3. 导入的模块是不可变的
+import { foo } from './foo';
+foo = 'bar'; // 错误    
+</code></pre>
+
+<p>The packaging tool constructs a module dependency graph during the marking phase based on the dependencies between files, analyzes import and export relationships, and removes unused exports during the packaging phase, retaining only the used code.</p>
+<pre class="codehilite"><code class="language-javascript">// 1. 标记阶段
+// module.js
+export const foo = () =&gt; console.log('foo');
+export const bar = () =&gt; console.log('bar');
+
+// main.js
+import { foo } from './module';
+foo();  // foo被标记为使用
+// bar未被使用，标记为dead code
+
+// 2. 删除阶段
+// 打包后，bar函数被删除
+const foo = () =&gt; console.log('foo');
+foo();    
+</code></pre>
+
+<p>When using Tree Shaking, the <code>sideEffects</code> configuration plays a crucial role in ensuring that unused code is correctly removed. In the project's <code>package.json</code> file, the <code>sideEffects</code> field is used to inform the bundler which files or modules have side effects, meaning they perform actions other than exporting values (such as modifying global state, executing initialization code, etc.). If a module has no side effects, the bundler can safely remove unreferenced parts.</p>
+<h2 id="the-principle-of-vchart-on-demand-loading">The Principle of VChart On-Demand Loading</h2>
+<p>Based on the above understanding of VChart chart composition and the concept of Tree Shaking, the core idea of VChart on-demand loading is to use Tree Shaking technology to only bundle the chart types, components, and graphic elements that the user actually uses, thereby reducing the package size. In the next chapter, we will detail some implementation specifics.</p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>31. How to control the timing of exiting edit mode after implementing editable cells in VTable components?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-title">Question Title</h2>
+<p>How to control the timing of exiting edit mode after implementing editable cells in VTable components?</br></p>
+<h2 id="question-description">Question Description</h2>
+<p>Referring to the flowchart provided on the official website, if a user clicks another cell or presses the Enter key while in edit mode, will VTable definitely trigger the onEnd event to exit edit mode? In my project, there is a scenario where I do not want the edit mode to be exited when these interactions are triggered. Is there a way to achieve this currently?</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/PIhobUXZwocx7Ax1u73cFjIun8d.gif' alt='' width='1302' height='913'></p>
+<h2 id="solution">Solution</h2>
+<h3 id="click-without-exit-edit">Click without exit edit</h3>
+<p>You can use a custom editor to control when to exit the edit state. Because the VTable logic calls the editor's <code>isEditorElement</code> method, if it returns false, the VTable will follow the exit edit logic; if it returns true, it will not exit the edit mode. Therefore, we can use this method to meet the requirement of not exiting the edit mode. The specific tutorial address is: <a href="https%3A%2F%2Fvisactor.io%2Fvtable%2Fguide%2Fedit%2Fedit_cell">https://visactor.io/vtable/guide/edit/edit_cell</a></br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NFmkbzUyFoRNiBxUbd5cxIqanHe.gif' alt='' width='1948' height='1730'></p>
+<h3 id="type-enter-without-exiting-edit">Type enter without exiting edit</h3>
+<p>This can listen to the keydown event of editing <code>dom</code>, directly organize bubbling, and prevent <code>VTable</code> from listening, so it will not exit editing.</br></p>
+<h2 id="example-code">Example code</h2>
+<pre class="codehilite"><code>let  tableInstance;
+ class MyInputEditor {
+  createElement() {
+     const input = document.createElement('input');
+    input.setAttribute('type', 'text');
+    input.style.position = 'absolute';
+    input.style.padding = '4px';
+    input.style.width = '100%';
+    input.style.boxSizing = 'border-box';
+    this.element = input;
+    this.container.appendChild(input);
+    // 监听键盘事件
+    input.addEventListener('keydown', (e) =&gt; {
+        // 阻止冒泡
+        e.stopPropagation();
+    });
+  }
+  setValue(value) {
+    this.element.value = typeof value !== 'undefined' ? value : '';
+  }
+  getValue() {
+    return this.element.value;
+  }
+  onStart({ value, referencePosition, container, endEdit }){
+    this.container = container;
+    this.successCallback = endEdit;
+    if (!this.element) {
+      this.createElement();
+
+      if (value !== undefined &amp;&amp; value !== null) {
+        this.setValue(value);
+      }
+      if (referencePosition?.rect) {
+        this.adjustPosition(referencePosition.rect);
+      }
+    }
+    this.element.focus();
+  }
+
+  adjustPosition(rect) {
+    this.element.style.top = rect.top + 'px';
+    this.element.style.left = rect.left + 'px';
+    this.element.style.width = rect.width + 'px';
+    this.element.style.height = rect.height + 'px';
+  }
+  onEnd() {
+    this.container.removeChild(this.element);
+    this.element = undefined;
+  }
+
+  isEditorElement(target) {
+    // 仅允许点击到表格外部才会结束编辑
+    if(target.tagName === 'CANVAS')
+      return true;
+    return target === this.element;
+  }
+}
+
+const my_editor = new MyInputEditor();
+VTable.register.editor('my_editor', my_editor);
+
+const option = {
+  container: document.getElementById(CONTAINER_ID),
+  columns: [
+    {
+      field: 'bloggerName',
+      title: 'bloggerName'
+    },
+    {
+      field: 'fansCount',
+      title: 'fansCount',
+      fieldFormat(rec) {
+        return rec.fansCount + 'w';
+      },
+      style: {
+        fontFamily: 'Arial',
+        fontSize: 12,
+        fontWeight: 'bold'
+      }
+    },
+    {
+      field: 'worksCount',
+      title: 'worksCount',
+      style: {
+        fontFamily: 'Arial',
+        fontSize: 12,
+        fontWeight: 'bold'
+      }
+    },
+    {
+      field: 'viewCount',
+      title: 'viewCount',
+      fieldFormat(rec) {
+        return rec.fansCount + 'w';
+      },
+      style: {
+        fontFamily: 'Arial',
+        fontSize: 12,
+        fontWeight: 'bold'
+      }
+    },
+    {
+      field: 'viewCount',
+      title: 'viewCount',
+      fieldFormat(rec) {
+        return rec.fansCount + 'w';
+      },
+      style: {
+        fontFamily: 'Arial',
+        fontSize: 12,
+        fontWeight: 'bold'
+      }
+    },
+  ],
+  records: [
+    {
+      bloggerId: 1,
+      bloggerName: 'Virtual Anchor Xiaohua',
+     fansCount: 400,
+      worksCount: 10,
+      viewCount: 5,
+      city: 'Dream City',
+      tags: ['game', 'anime', 'food']
+    },
+    {
+      bloggerId: 2,
+      bloggerName: 'Virtual anchor little wolf',
+      fansCount: 800,
+      worksCount: 20,
+      viewCount: 15,
+      city: 'City of Music',
+      tags: ['music', 'travel', 'photography']
+    },
+    {
+      bloggerId: 3,
+      bloggerName: 'Virtual anchor bunny',
+      fansCount: 600,
+      worksCount: 15,
+      viewCount: 10,
+      city: 'City of Art',
+      tags: ['painting', 'handmade', 'beauty makeup']
+    },
+    {
+      bloggerId: 4,
+      bloggerName: 'Virtual anchor kitten',
+      fansCount: 1000,
+      worksCount: 30,
+      viewCount: 20,
+      city: 'Health City',
+      tags: ['dance', 'fitness', 'cooking']
+    },
+    {
+      bloggerId: 5,
+      bloggerName: 'Virtual anchor Bear',
+      fansCount: 1200,
+      worksCount: 25,
+      viewCount: 18,
+      city: 'City of Wisdom',
+      tags: ['Movie', 'Literature']
+    },
+    {
+      bloggerId: 6,
+      bloggerName: 'Virtual anchor bird',
+      fansCount: 900,
+      worksCount: 12,
+      viewCount: 8,
+      city: 'Happy City',
+      tags: ['music', 'performance', 'variety']
+    }
+  ],
+  enableLineBreak: true,
+
+  editCellTrigger: 'click',
+  editor:'my_editor'
+};
+tableInstance = new VTable.ListTable(option);
+tableInstance.on('change_cell_value', arg =&gt; {
+  console.log(arg);
+});&lt;/br&gt;
+</code></pre>
+
+<h2 id="related-documents">Related documents</h2>
+<ul>
+<li>Editing form demo: <a href="https%3A%2F%2Fvisactor.io%2Fvtable%2Fdemo%2Fedit%2Fedit-cell">https://visactor.io/vtable/demo/edit/edit-cell</a></br></li>
+<li>Editing form tutorial: <a href="https%3A%2F%2Fvisactor.io%2Fvtable%2Fguide%2Fedit%2Fedit_cell">https://visactor.io/vtable/guide/edit/edit_cell</a></br></li>
+<li>Related API: </br>
+https://visactor.io/vtable/option/ListTable#editor</br>
+https://visactor.io/vtable/option/ListTable-columns-text#editor</br>
+github：https://github.com/VisActor/VTable</br></li>
+</ul>
+</body>
+</html>

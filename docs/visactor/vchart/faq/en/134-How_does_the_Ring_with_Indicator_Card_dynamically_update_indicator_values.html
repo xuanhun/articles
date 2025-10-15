@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>134-How_does_the_Ring_with_Indicator_Card_dynamically_update_indicator_values</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-does-the-ring-with-indicator-card-dynamically-update-indicator-values">How does the Ring with Indicator Card dynamically update indicator values?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>Something like (https://www.visactor.io/vchart/demo/pie-chart/pie-indicator) for a ring with indicator cards.</p>
+<p>The value in this metrics card is now user-defined and does not support automatic changes, but it is possible to update this value after calculation. Can this number in the metrics card be changed according to the sector of the hover? How to do it?</p>
+<h2 id="solution">Solution</h2>
+<p>The solution is different for different charting libraries. According to the demo you gave, you only need to set the interaction trigger type and configure the text field content.</p>
+<ul>
+<li>indicator.trigger is used to set the interaction trigger type. The available interaction types are hover, select, none, the default interaction trigger type is select, according to your requirement, you need to set indicator.trigger to hover.</li>
+<li>indicator.title.style.text is used to set the text content and supports callback. You can configure the required fields in the text according to the required data fields and format the presentation according to your needs.</li>
+</ul>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const data = [
+  { type: 'oxygen', value: '46.60', formula: 'O', texture: 'circle' },
+  { type: 'silicon', value: '27.72', formula: 'Si', texture: 'horizontal-line' },
+  { type: 'aluminum', value: '8.13', formula: 'Al', texture: 'vertical-line' },
+  { type: 'iron', value: '5', formula: 'Fe', texture: 'rect' },
+  { type: 'calcium', value: '3.63', formula: 'Ca', texture: 'grid' },
+  { type: 'sodium', value: '2.83', formula: 'Na', texture: 'bias-rl' },
+  { type: 'potassium', value: '2.59', formula: 'K', texture: 'diamond' },
+  { type: 'others', value: '3.5', formula: 'Others', texture: 'bias-lr' }
+];
+const spec = {
+  type: 'pie',
+  data: [
+    {
+      id: 'id0',
+      values: data
+    }
+  ],
+  outerRadius: 0.8,
+  innerRadius: 0.5,
+  padAngle: 0.6,
+  valueField: 'value',
+  categoryField: 'type',
+  pie: {
+    style: {
+      cornerRadius: 10,
+      texture: datum =&gt; datum['texture']
+    },
+    state: {
+      hover: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      },
+      selected: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      }
+    }
+  },
+  title: {
+    visible: true,
+    text: 'Statistics of Surface Element Content'
+  },
+  indicator: {
+    visible: true,
+    trigger: 'hover',
+    limitRatio: 0.4,
+    title: {
+      visible: true,
+      autoFit: true,
+      style: {
+        fontWeight: 'bolder',
+        fontFamily: 'Times New Roman',
+        fill: '#888',
+        text: datum =&gt; {
+          const d = datum ?? data[0];
+          return d['formula'];
+        }
+      }
+    },
+    content: [
+      {
+        visible: true,
+        style: {
+          fontSize: 20,
+          fill: 'orange',
+          fontWeight: 'bolder',
+          fontFamily: 'Times New Roman',
+          text: datum =&gt; {
+            const d = datum ?? data[0];
+            return d['type'];
+          }
+        }
+      },
+      {
+        visible: true,
+        style: {
+          fontSize: 18,
+          fill: 'orange',
+          fontFamily: 'Times New Roman',
+          text: datum =&gt; {
+            const d = datum ?? data[0];
+            return d['value'] + '%';
+          }
+        }
+      }
+    ]
+  },
+  legends: {
+    visible: true,
+    orient: 'left',
+    item: {
+      shape: {
+        style: {
+          symbolType: 'circle',
+          texture: datum =&gt; datum['texture']
+        }
+      }
+    }
+  },
+  tooltip: {
+    mark: {
+      content: [
+        {
+          key: datum =&gt; datum['type'],
+          value: datum =&gt; datum['value'] + '%'
+        }
+      ]
+    }
+  }
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="results">Results</h2>
+<ul>
+<li><a href="https://codesandbox.io/s/pie-chart-with-indicator-card-4ypr2k">Online demo</a></li>
+</ul>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://www.visactor.io/vchart/demo/bar-chart/stack-column">Pie Chart with Indicator Card Demo</a></li>
+<li><a href="https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Indicator">Indicator Tutorial</a></li>
+<li><a href="https://www.visactor.io/vchart/option/pieChart#indicator">Related api</a></li>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+</ul>
+</body>
+</html>

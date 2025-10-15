@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>129-How_to_customize_Tooltip_in_dual_axis_chart</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-customize-tooltip-in-dual-axis-chart">How to customize Tooltip in dual axis chart?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>How to display some rich text content in the tooltip of the dual axis chart?</p>
+<p><img alt="tooltip" src="/vchart/faq/40-0.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>This question presupposes a dual-axis chart. In fact, for most chart components with tooltips customization, whether or not it's a dual-axis chart has no effect on customizing the tooltips.
+Next I'll use an example of a VisActor chart that I've been using recently, and the logic goes something like this:</p>
+<ul>
+<li>Determine the type of tooltips you want to customize.</li>
+<li>Register an event to trigger the display of custom tooltips.</li>
+<li>Design your own layout for the tooltip
+  In custom events, you can render the tooltip any way you want. By callback event parameters, you can get the current hover element specific data.</li>
+</ul>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code class="language-javascript">const vchart = new VChart(spec, { dom: 'container' });
+
+vchart.setTooltipHandler({
+  showTooltip: (activeType, tooltipData, params) =&gt; {
+    // some code of custom tooltip
+    const tooltip = document.getElementById('custom-tooltip');
+    if (!tooltip) return;
+    tooltip.style.visibility = 'visible';
+    tooltip.style.left = params.event.x + 20 + 'px';
+    tooltip.style.top = params.event.y + 20 + 'px';
+    tooltip.style.position = 'absolute';
+    tooltip.style.background = 'white';
+    tooltip.style.padding = '10px';
+    tooltip.innerText = 'This is Custom Tooltip';
+  },
+  hideTooltip: () =&gt; {
+    // hide your custom tooltip
+    const tooltip = document.getElementById('custom-tooltip');
+    if (!tooltip) return;
+    tooltip.style.visibility = 'hidden';
+  }
+});
+</code></pre>
+
+<h2 id="result">Result</h2>
+<p><img alt="result" src="/vchart/faq/40-1.png" /></p>
+<p><a href="https://codesandbox.io/s/custom-tooltip-dyvy3z">https://codesandbox.io/s/custom-tooltip-dyvy3z</a></p>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Tooltip">https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Tooltip</a></li>
+<li><a href="https://visactor.io/vchart/demo/tooltip/custom-tooltip-handler?keyword=tooltip">https://visactor.io/vchart/demo/tooltip/custom-tooltip-handler?keyword=tooltip</a></li>
+</ul>
+</body>
+</html>

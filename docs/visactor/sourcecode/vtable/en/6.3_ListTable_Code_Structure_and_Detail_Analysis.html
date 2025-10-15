@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6.3 ListTable Code Structure and Detail Analysis</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="introduction">Introduction</h2>
+<p>Common table component libraries are usually implemented based on the DOM, and there are very few table component libraries rendered based on Canvas. However, @Visactor/VTable provides a table component library rendered based on Canvas. This article will start with the implementation of various functions and interactions to see how ListTable relies on the capabilities provided by Canvas to achieve operations similar to native DOM.    \r</p>
+<h2 id="listtable-external-dependencies">ListTable External Dependencies</h2>
+<p>在对 ListTable 进行细节分析前，有必要先提下 ListTable 的外部依赖 <a href="https://visactor.com/vrender">VRender</a>。VRender 是由 ByteDance 提供的一款可视化引擎，通过将 Canvas 的渲染图形的过程抽象成 Group 和 Stage 进行管理，可以通过配置的形式在 Canvas 内部快捷的生成不同的图元。Group 可以理解成多个图元的组，Stage 则对所有图元和 Group 进行管理，在下文中会经常提到这两个部分。    </p>
+<h2 id="listtable-architecture">ListTable Architecture</h2>
+<p>First, let's understand the general architecture. The basic architecture of ListTable can be divided into the following modules    \r</p>
+<ul>
+<li>
+<p>Rendering engine: Scenegraph scene tree. The movement of the header, graphic rendering, and cell width and height calculation are all included in the scene tree; \r</p>
+</li>
+<li>
+<p>Progressive generation: The SceneProxy module is a submodule under Scenegraph, which defines the generation of the scene tree initialization, maintains the maximum row and column values generated during the initialization of the scene tree, and is responsible for the logic of scrolling progressive rendering; \r</p>
+</li>
+<li>
+<p>State Management: StateManager handles the table state. Hover and select in ListTable exist in the form of data. When the state changes, it triggers the Scenegraph to re-render the chart; \r</p>
+</li>
+<li>
+<p>Event System: EventManager/EventHandler handles interaction events;    \r</p>
+</li>
+<li>
+<p>Layout Management: The core layout module of the LayoutMap table. It generates row list headers and maintains cell information through configuration; including the calculation of information for tree tables and multi-level headers, all within the Layout;    \r</p>
+</li>
+<li>
+<p>Layout calculation: Maintain row and column width and height data through colWidthsMap/rowHeightsMap;    \r</p>
+</li>
+<li>
+<p>Style system: Manage styles through theme/style related modules;    \r</p>
+</li>
+<li>
+<p>Data Management: Manage records through DataSource, including logic processing such as data addition, deletion, modification, query, sorting, and aggregation; \r</p>
+</li>
+</ul>
+<p>If you can understand the above modules, you will be able to understand the general workflow of ListTable.</p>
+<h2 id="basic-table-layout-initialization">Basic Table Layout Initialization</h2>
+<p>Basic tables differ from the complexity of pivot tables, consisting only of basic rows and columns. For basic table display, we only need to focus on how many rows and columns need to be displayed, the logic of row and column layout generation, and how these rows and columns are mapped through data.</p>
+<p>The previous article mentioned that the entire scene tree is created using <code>createGroupForFirstScreen</code> in the VTable. We will analyze it directly from this function.    </p>
+<h3 id="creategroupforfirstscreen">createGroupForFirstScreen</h3>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\group-creater\progress\create-group-for-first-screen.ts
+createGroupForFirstScreen(
+  cornerHeaderGroup: Group,
+  colHeaderGroup: Group,
+  rowHeaderGroup: Group,
+  rightFrozenGroup: Group,
+  bottomFrozenGroup: Group,
+  bodyGroup: Group,
+  xOrigin: number,
+  yOrigin: number,
+  proxy: SceneProxy
+ ) {
+*  // 阶段1：参数初始化*
+  proxy.setParamsForRow(); *// 计算行的更新位置，行更新的数量和新的范围*
+  proxy.setParamsForColumn(); *// 计算列的更新位置，列更新的数量和新的范围*
+
+  *// 阶段2：计算首屏渲染范围*
+  *// 列范围计算逻辑*
+  distCol = Math.min(proxy.firstScreenColLimit - 1, table.colCount - 1);
+  *// 行范围计算逻辑*
+  distRow = Math.min(proxy.firstScreenRowLimit - 1, table.rowCount - 1);
+
+  *// 阶段3：自适应计算（首次渲染需要精确计算）*
+  if (未手动调整列宽) {
+    computeColsWidth(table, 0, distCol); *// 计算列宽*
+  }
+  if (未手动调整行高) {
+    computeRowsHeight(table, 0, distRow); *// 计算行高*
+  }
+
+  *// 阶段4：定位容器组*
+  table.scenegraph.colHeaderGroup.setAttribute('x', table.getFrozenColsWidth());
+  table.scenegraph.bodyGroup.setAttributes({
+    x: table.getFrozenColsWidth(),
+    y: table.getFrozenRowsHeight()
+  });
+
+  *// 阶段5：填充列容器（核心）*
+  *// 5.1 填充角表头*
+  createColGroup(cornerHeaderGroup, ...);
+
+  *// 5.2 填充顶部表头*
+  createColGroup(colHeaderGroup, ...);
+
+  *// 5.3 填充左侧表头（含行号列）*
+  createColGroup(rowHeaderGroup, ...);
+
+  *// 5.4 填充 body group*
+  createColGroup( ... , bodyGroup, ... );
+
+  //... 填充剩下的容器
+  *// 阶段6：启动渐进渲染*
+  if (有数据) {
+    proxy.progress(); *// 启动异步渲染任务*
+  }
+}    
+</code></pre>
+
+<p>It can be seen that after the process of createGroupForFirstScreen is completed, the scene tree is filled. Internally, <code>createColGroup</code> is continuously called to achieve container filling.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TnsOwzt8ThFyIxbLHrzcdfnmn7g.gif' alt='' width='814' height='auto'></p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">It is especially noteworthy that this function only involves the filling of the column container. The initialization of the container is located in initSceneGraph, which will be called when initializing the scene graph.    
+The file is located at VTable\packages\vtable\src\scenegraph\group-creater\init-scenegraph.ts    
+</div>
+<h3 id="createcolgroup">createColGroup</h3>
+<ul>
+<li>packages\vtable\src\scenegraph\group-creater\column.ts    </li>
+</ul>
+<p>Generate a column scene node, call <code>createComplexColumn</code> to populate the ColumnGroup according to the start and end columns, and update the height of each column.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QPOMw4BcwhAuoRbbibtc20WznAd.gif' alt='' width='820' height='auto'></p>
+<h3 id="createcomplexcolumn">createComplexColumn</h3>
+<ul>
+<li>packages\vtable\src\scenegraph\group-creater\column-helper.ts    </li>
+</ul>
+<p>Create a graphic element for each row based on the range of rows, and it will be divided into common cell groups according to the rows.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RNefwa6gjhAX1ibVmkBcAz9dnob.gif' alt='' width='789' height='auto'></p>
+<h3 id="createcell">createCell</h3>
+<p>From the internal import, it can be found that createCell is the creation closure of the cell container. createCell will create a cell based on the passed configuration and insert it into the corresponding column container, generating different primitives according to different types.</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\group-creater\cell-helper.ts
+import type { CreateChartCellGroup } from './cell-type/chart-cell';
+import type { CreateImageCellGroup } from './cell-type/image-cell';
+import type { CreateProgressBarCell } from './cell-type/progress-bar-cell';
+import type { CreateSparkLineCellGroup } from './cell-type/spark-line-cell';
+import type { CreateTextCellGroup } from './cell-type/text-cell';
+import type { CreateVideoCellGroup } from './cell-type/video-cell';    
+</code></pre>
+
+<h3 id="basic-table-layout-organization-full-process">Basic Table Layout Organization Full Process</h3>
+<p>From the above logic, the basic display process of VTbale first creates all the necessary containers, including the header container and the body container. Then, it iterates through the columns to create header column containers, configures each row to create cell containers, and then creates body column containers, continuing to configure rows to generate cell containers.</p>
+<p>Simply put, first create each structure container, then create column containers, and finally the cells.    \r</p>
+<h3 id="verification">Verification</h3>
+<p>We print the value in createCell to see if the creation order is the same as we analyzed.</p>
+<ul>
+<li>packages\vtable\src\scenegraph\group-creater\cell-helper.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YNuobIX1eoRwNtxfKadcEEzVnVh.gif' alt='' width='934' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Mou3bafYiowc9PxSmGycKRnpnsc.gif' alt='' width='1000' height='auto'></p>
+<p>Observe the console output, perfectly validating our previous analysis.    </p>
+<h2 id="data-presentation">Data Presentation</h2>
+<h3 id="get-the-value-of-a-cell">Get the value of a cell</h3>
+<p>After discussing the layout process of basic tables, let's see how basic tables obtain the <code>value</code> that needs to be displayed in each cell.    </p>
+<p>Returning to the previously mentioned <code>createComplexColumn</code>, you can see that before creating a cell, it always calls table.getCellValue to get the display value of the current cell. For a basic table, table represents ListTable.    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\group-creater\column-helper.ts
+export function createComplexColumn() { 
+    // 省略
+    let value = table.getCellValue(col, row);
+    // 省略
+}    
+</code></pre>
+
+<p>For the cells in the body section, the lowest level of <code>ListTable.getCellValue</code> will use _currentPagerIndexedData, which represents the index of records corresponding to each row on the current page. It will be updated in the <code>DataSource.updatePagerData</code> method based on pagination and <code>currentIndexedData</code>.    </p>
+<p>Due to the existence of <code>currentPagerIndexedData</code>, when you want to get the cell value, you only need to find the record in the original data through the index of the current row, and then you can match the original value of the cell according to the column index.    </p>
+<p>As for obtaining the value of the header cell, it directly retrieves the corresponding configuration from _headerObjectMap, indirectly obtaining the title from columns, then performs some special processing on it, and uses it as the value of the header cell. The specific process will not be elaborated here. \r</p>
+<h3 id="currentindexeddata">currentIndexedData</h3>
+<p>Regarding currentIndexedData, it has already been mentioned before. Here, we will emphasize its meaning and usage again.    \r</p>
+<p>Due to the various interaction methods of ListTable, such as row and column transposition and tree structure, it is very difficult to obtain cell values. Therefore, ListTable introduces currentIndexedData (<em>the index of the source data corresponding to each row</em>) to assist in data processing.    \r</p>
+<p>Let's take a tree structure as an example    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/He2Vb8ZAuoOs6ExoXDZcLqFin9e.gif' alt='' width='622' height='auto'></p>
+<p>His currentIndexedData looks like this.    </p>
+<pre class="codehilite"><code class="language-Typescript">[
+  0, // 数据源对应第1条数据 紧邻其下的是第1条数据的子节点 说明第1条数据被展开了
+  [0, 0], // 数据源对应第1条下的 第1个子节点
+  [0, 1], // 数据源对应第1条下的 第2个子节点
+  1, // 数据源对应第2条数据
+  [1, 0], // 以此类推 。。。
+  [1, 1], 
+  [1, 2], 
+  [1, 3], 
+  2, 
+  [2, 0], 
+  [2, 1], 
+  3
+];    
+</code></pre>
+
+<p>So how to use currentIndexedData? You can refer to the DataSource.getValueFromDeepArray method. For example, to get the data of the second row, the reading method is tableInstance.dataSource.records[0].children[0], which corresponds to [0,0].</p>
+<p>By abstracting the direct reading or modification of raw data into a form of adjusting and retrieving the corresponding row record through an index, without needing to modify the original data, it allows for focusing only on the index corresponding to each row when updating the layout, without worrying about the original data, thus reducing cognitive load.</p>
+<h2 id="transpose-of-rows-and-columns">Transpose of Rows and Columns</h2>
+<h3 id="concept">Concept</h3>
+<p>Transposing rows and columns is to swap the rows and columns of a table, and this feature is only available in basic tables.    \r</p>
+<p>Unlike other table component libraries based on native DOM that require complex customization to achieve transposition functionality, ListTable can enable row-column transposition with just one configuration. Let's see how ListTable implements this feature.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OOwVbOIdioM6yKxiNvDcNu8Nnfd.gif' alt='' width='803' height='auto'></p>
+<h3 id="scene-tree-creation-process">Scene Tree Creation Process</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/JEzpbEUmMomBGvx6gEScbsvbnIc.gif' alt='' width='1000' height='auto'></p>
+<p>By observing the calls to getCellValue, it is found that the creation process of the scene tree remains the same.    </p>
+<h3 id="post-transposition-processing">Post-transposition Processing</h3>
+<p>Think about how to handle the transposed data, two obvious methods come to mind:    \r</p>
+<ol>
+<li>
+<p>Directly change records     </p>
+</li>
+<li>
+<p>Specially handle data reading based on whether to transpose or not    \r</p>
+</li>
+</ol>
+<p>ListTable internally adopts the second solution. The reason for not adopting the first solution is that there is too much dependency on records internally, including data addition, deletion, modification, and query. If records are directly modified, it affects many areas, not to mention the situation where users need to frequently modify data, which requires compatibility in many places.    \r</p>
+<p>We use the transpose matrix in linear algebra for comparison. A transpose matrix is where the number of rows becomes the number of columns, and the number of columns becomes the number of rows. Originally, values were accessed using records[row][col], but now they should be accessed using records[col][row].</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/EKbFbIU4moqsxSxXWzmca06Inxg.gif' alt='' width='832' height='auto'></p>
+<p>Originally, the header was determined by row, now it needs to be determined by col.    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\simple-header-layout.ts
+  isHeader(col: number, row: number): boolean {
+    if (
+      this.transpose &amp;&amp;
+      col &gt;= this.leftRowSeriesNumberColumnCount &amp;&amp;
+      col &lt; this.headerLevelCount + this.leftRowSeriesNumberColumnCount
+    ) {
+      return true;
+    }
+    if (!this.transpose &amp;&amp; row &gt;= 0 &amp;&amp; row &lt; this.headerLevelCount) {
+      return true;
+    }
+    return false;
+  }    
+</code></pre>
+
+<p>From the special handling part of transpose within ListTable, transposition not only affects the judgment logic of the header and body parts, but also affects the conversion of the number of rows and columns, the adjustment of col and row when fetching data, and the calculation of table width and height in multiple places.    \r</p>
+<h2 id="tree-structure">Tree Structure</h2>
+<h3 id="background-of-use">Background of Use</h3>
+<p>When users need to view hierarchical data, a tree structure is used.    \r</p>
+<p>Below is an example of a ListTable tree structure:    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ByhEbnFLto9DPfxbsqtceMx6nvh.gif' alt='' width='622' height='auto'></p>
+<h3 id="configuration">Configuration</h3>
+<p>ListTable uses commonly used data configurations in the market, implementing a tree structure by nesting data with <code>children</code> and specifying the <code>tree</code> attribute in <code>columns</code>.    </p>
+<h3 id="tree-table-processing">Tree Table Processing</h3>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/X86Kw3Xjqhp35YbXdHFcOz4cnne.gif" /></p>
+<p>Process Analysis    </p>
+<ol>
+<li>
+<p>Parse option:     </p>
+</li>
+<li>
+<p>When initializing the layoutMap, the rowHierarchyType will be dynamically adjusted based on whether the column configuration includes a tree field or a groupBy configuration. Subsequent special judgments will be made based on the rowHierarchyType.    </p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\simple-header-layout.ts
+export class SimpleHeaderLayoutMap implements LayoutMapAPI {
+  constructor() {
+    // 省略
+    this.rowHierarchyType = checkHasTreeDefine(this) ? 'tree' : 'grid';
+  }
+}    
+</code></pre>
+
+<ol>
+<li>
+<p>When rowHierarchyType is true, it will call initTreeHierarchyState to initialize the default cell expansion state, adjusting <strong>hierarchyState</strong> (the expanded/collapsed state of the cell tree structure) and <strong>hierarchyExpandLevel</strong> (the number of levels expanded in the tree structure)    \r</p>
+</li>
+<li>
+<p>Handle layout: Calculate the placeholder layout for the collapse/expand button, and position the content display based on the hierarchyIndent distance configured by the user for child nodes;    \r</p>
+</li>
+<li>
+<p>Data processing: Special handling of tree-structured data is required, including logic for adding, deleting, updating, querying, and sorting;    \r</p>
+</li>
+</ol>
+<p>Taking sorting as an example, ListTable internally performs the following steps for the tree structure:    </p>
+<ol>
+<li>
+<p>Get the column to be sorted, ListTable supports multi-column sorting;    \r</p>
+</li>
+<li>
+<p>If there is cached data from the previous sorting, use it directly (cache optimization, this cache will be cleared when the data is updated)    \r</p>
+</li>
+<li>
+<p>Traverse all the columns to be sorted obtained from the first step, sort the first layer of the tree structure, and adjust currentIndexedData; the sorting standard of ListTable is based on the column clicked first;    \r</p>
+</li>
+<li>
+<p>Traverse from top to bottom, call pushChildrenNode sequentially to sort the child nodes, and then insert the sorted data under the parent node;    \r</p>
+</li>
+<li>
+<p>Recursively call pushChildrenNode to continuously sort the child nodes;    \r</p>
+</li>
+</ol>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DZ2Tw5BLyhNkUnbGbKncJaoZnnc.gif" /></p>
+<p>Here is the currentIndexedDatra after clicking the category for ascending order, you can clearly see the corresponding change, <code>Furniture</code> is placed before <code>Technology</code>:    </p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MnTYwk2jAhJq1hbdO6McdtdVnXi.gif" /></p>
+<ol>
+<li>
+<p>Event Binding: By binding the ICON_CLICK event, when clicking the expand/collapse icon, call table.toggleHierarchyState to adjust the table, while maintaining currentIndexedData, and report the corresponding event and parameters to the user through a callback.    </p>
+</li>
+<li>
+<p>Table rendering: Layout according to table column definitions    </p>
+</li>
+<li>
+<p>When rendering nodes, determine the expand/collapse state and adjust the node's icon accordingly; use the expand/collapse state (hierarchyState) to determine the node's icon. Note that the root node's hierarchyState is NONE, so there is no icon;</p>
+</li>
+<li>
+<p>Adjust the indentation value of the cells and the calculation method of the column width according to the level;    \r</p>
+</li>
+<li>
+<p>Asynchronous Loading: When dealing with large data volumes, set children to true to enable asynchronous rendering. Listen to the expand and collapse events of the tree structure and manually call setRecordChildren to insert data.    \r</p>
+</li>
+</ol>
+<h3 id="calculation-of-indentation">Calculation of Indentation</h3>
+<p>Regarding the indentation of tree structures, it affects two parts: one is the calculation logic of indentation within the cell, and the other is the calculation of the cell's automatic width.    </p>
+<ul>
+<li>Calculate column width    </li>
+</ul>
+<p>In the core logic of calculating column width, there is a section of code specifically for handling indentation.    \r</p>
+<p>计算公式用伪代码表示：<code>cellHierarchyIndent = 当前的缩进层级 * hierarchyIndent + 展开收起图标的宽度</code></p>
+<p>Subsequently, when calculating the column width, this cellHierarchyIndent will be added to the original cell length.    \r</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\layout\compute-col-width.ts
+function computeAutoColWidth(...): number {
+      // 省略
+      *// 基本表格表身body单元格 如果是树形展开 需要考虑缩进值*
+      const define = table.getBodyColumnDefine(col, row);
+      if ((define as ColumnDefine)?.tree) {
+        const indexArr = table.dataSource.getIndexKey(table.getRecordShowIndexByCell(col, row));
+        cellHierarchyIndent =
+          Array.isArray(indexArr) &amp;&amp; table.getHierarchyState(col, row) !== HierarchyState.none
+            ? (indexArr.length - 1) * ((layoutMap as SimpleHeaderLayoutMap).hierarchyIndent ?? 0)
+            : 0;
+         // 省略
+      }
+      // 省略
+ }    
+</code></pre>
+
+<ul>
+<li>Cell internal indentation calculation    </li>
+</ul>
+<p>In the process of creating a text cell (createTextCellGroup), there is an internal call to a method <code>getHierarchyOffset</code>.    </p>
+<p>It involves the calculation of the indentation offset value (cellHierarchyIndent), with the formula <code>cellHierarchyIndent = current indentation level * hierarchyIndent + width of the expand/collapse icon</code>. This formula can be used to derive the indentation offset, thereby positioning the text during cell generation and adjusting the offset value in the x direction.    </p>
+<h3 id="state-transition">State Transition</h3>
+<p>As mentioned earlier, the basic table internally manages data through currentIndexedData. Let's first look at what changes occur when a node is expanded using currentIndexedData:    \r</p>
+<ul>
+<li>Click <code>envelope</code> before    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WKruwwasthgYXRbK1lMcJUqXnue.gif' alt='' width='814' height='auto'></p>
+<ul>
+<li>Click <code>信封</code> after    </li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/R3KawuIYuh4tRDbf99Mc3p4Lnvb.gif" /></p>
+<p>It is clearly seen that two lines of data, [0,0,0] and [0,0,1], are inserted under the <code>envelope</code>; they represent the <code>yellow envelope</code> and <code>white envelope</code> respectively.    </p>
+<ul>
+<li>Observe again the output of getCellValue when clicking the <code>envelope</code> to expand:    \r</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OvVJbYo8Xop2iRxi5e3cMiFFnYb.gif' alt='' width='1000' height='auto'></p>
+<p>What can be seen is that all cells below the <code>envelope</code> were updated first, and then other column containers for <code>envelope</code> children were created.    </p>
+<hr />
+<p>For the expansion toggle of nodes, it can be abstracted into the following steps:    </p>
+<ol>
+<li>
+<p>Parent node icon toggle: Adjust the hierarchyState of nodeData to change the expand/collapse icon;    \r</p>
+</li>
+<li>
+<p>Insertion and deletion of child nodes:    </p>
+</li>
+<li>
+<p>When expanding, recursively call <code>pushChildrenNode</code> to insert child nodes and update currentIndexedData;    </p>
+</li>
+<li>
+<p>When deleting, recursively call <code>computeChildrenNodeLength</code> to calculate the number of affected lines, and directly delete currentIndexedData;    </p>
+</li>
+<li>
+<p>Data Update: Update _currentPagerIndexedData through currentIndexedData;    \r</p>
+</li>
+<li>
+<p>Update the number of rows and columns: Adjust the number of rows and columns through _currentPagerIndexedData;    \r</p>
+</li>
+<li>
+<p>Update the scene tree: Call <code>scenegraph.updateRow</code> to update the scene tree;    </p>
+</li>
+<li>
+<p>Trigger the callback <code>TREE_HIERARCHY_STATE_CHANGE</code> passed in by the business party;    </p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NHiewfuLBhmOzdb7R1cc2Fbhn7f.gif' alt='' width='820' height='auto'></p>
+<h2 id="grouping">Grouping</h2>
+<h3 id="scenario-analysis">Scenario Analysis</h3>
+<p>Basic table grouping display function is applicable to various scenarios, for example:    \r</p>
+<ul>
+<li>
+<p>Financial statements: Can be grouped and displayed according to different account types (such as income, expenses, assets, liabilities) to help better understand the financial situation.    \r</p>
+</li>
+<li>
+<p>Sales data analysis: It can be grouped by product category, region, salesperson, etc., making it easy to compare and analyze the sales performance of different categories or regions.    \r</p>
+</li>
+</ul>
+<h3 id="case">Case</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KGNybWmjLo7CAsx8VPIcFn5qnwf.gif' alt='' width='1000' height='auto'></p>
+<pre class="codehilite"><code class="language-Typescript">  const data = [
+    {
+      Category: 'Office Supplies',
+      'Sub-Category': 'Paper',
+      'Product Name': 'Message Book, Wirebound, Four 5 1/2&quot; X 4&quot; Forms/Pg., 200 Dupl. Sets/Book'
+    },
+    {
+      Category: 'Office Supplies',
+      'Sub-Category': 'Labels',
+      'Product Name': 'Avery 508'
+    }
+  ];
+
+  const option = {
+    records: data,
+    columns,
+    widthMode: 'standard',
+    groupBy: ['Category', 'Sub-Category'],
+    enableTreeStickCell: true
+  };    
+</code></pre>
+
+<p>The expansion and collapse of tree structures have been discussed earlier. In the grouping section, we will focus on the data processing part.</p>
+<h3 id="internal-data-processing">Internal Data Processing</h3>
+<p>Let's observe the currentIndexedData in the example above. It is obvious that it has five rows, but only two rows were passed in during initialization in records. It is easy to see that ListTable internally inserted three rows for us, which represent the group headers generated internally by ListTable. \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/F7WibbJPuouRYbxshuLc9BSPnkh.gif' alt='' width='699' height='auto'></p>
+<p>currentIndexedData has changed, indicating that records have definitely been adjusted. Let's take another look at <code>tableInstance.dataSource.records</code>, which is clearly quite different from the original records passed in.    </p>
+<p>The ListTable converts the original two-dimensional array structure into a tree structure and automatically groups it.</p>
+<pre class="codehilite"><code class="language-javascript">[
+    {
+        &quot;vtableMerge&quot;: true,
+        &quot;vtableMergeName&quot;: &quot;Office Supplies&quot;,
+        &quot;children&quot;: [
+            {
+                &quot;vtableMerge&quot;: true,
+                &quot;vtableMergeName&quot;: &quot;Paper&quot;,
+                &quot;children&quot;: [
+                    {
+                        &quot;Category&quot;: &quot;Office Supplies&quot;,
+                        &quot;Sub-Category&quot;: &quot;Paper&quot;,
+                        &quot;Product Name&quot;: &quot;Message Book, Wirebound, Four 5 1/2\&quot; X 4\&quot; Forms/Pg., 200 Dupl. Sets/Book&quot;
+                    }
+                ],
+                &quot;hierarchyState&quot;: &quot;expand&quot;
+            },
+            {
+                &quot;vtableMerge&quot;: true,
+                &quot;vtableMergeName&quot;: &quot;Labels&quot;,
+                &quot;children&quot;: [
+                    {
+                        &quot;Category&quot;: &quot;Office Supplies&quot;,
+                        &quot;Sub-Category&quot;: &quot;Labels&quot;,
+                        &quot;Product Name&quot;: &quot;Avery 508&quot;
+                    }
+                ],
+                &quot;hierarchyState&quot;: &quot;expand&quot;
+            }
+        ],
+        &quot;hierarchyState&quot;: &quot;expand&quot;
+    }
+]    
+</code></pre>
+
+<p>Note that there are several special fields in the tree structure, namely:    \r</p>
+<ul>
+<li>
+<p>hierarchyState: This field, mentioned earlier, indicates the current node's expand/collapse state;    \r</p>
+</li>
+<li>
+<p>vtableMerge: Indicates whether it is a merged cell. For merged cells, ListTable will have special handling;    \r</p>
+</li>
+<li>
+<p>vtableMergeName: Name of the merged cell;    \r</p>
+</li>
+</ul>
+<hr />
+<p>Through the above analysis, we can understand what ListTable does internally for grouping.    \r</p>
+<p>So how does ListTable group two-dimensional data to form a tree structure? This involves the grouping algorithm within ListTable.    </p>
+<h3 id="core-grouping-algorithm">Core Grouping Algorithm</h3>
+<p>The core of the internal grouping algorithm of ListTable is dealWithGroup     </p>
+<h4 id="parameter-parsing">Parameter Parsing</h4>
+<p>This method receives five parameters    </p>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\data\CachedDataSource.ts
+function dealWithGroup(record, children, map, groupByKeys, level) { ... }    
+</code></pre>
+
+<ul>
+<li>
+<p>record - The data record currently being processed;    \r</p>
+</li>
+<li>
+<p>children - The array of child nodes at the current level. Before processing all records, a top-level groupResult is generated as children, and subsequently, child elements are inserted recursively;    \r</p>
+</li>
+<li>
+<p>map - The mapping table of the <code>next level group value</code> and <code>corresponding index in the group node children</code> of the current group node; a separate one is maintained at each level of the group node, and when the same group value is encountered later, it will be directly inserted at the same index;    \r</p>
+</li>
+<li>
+<p>groupByKeys - Array of grouping fields, groupBy passed in option; \r</p>
+</li>
+<li>
+<p>level - The current processing group level    </p>
+</li>
+</ul>
+<h4 id="group-node">Group Node</h4>
+<p>This is a general structure of a grouped node    </p>
+<pre class="codehilite"><code class="language-javascript">{
+      vtableMerge: true,
+      vtableMergeName: value,
+      children: [] as any,
+      map: new Map()
+}    
+</code></pre>
+
+<p>Among them:    </p>
+<ul>
+<li>vtableMergeName: The grouping value corresponding to the current record, for example, such a piece of data    \r</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">{
+  Category: 'Office Supplies',
+  'Sub-Category': 'Paper',
+  'Product Name': 'Message Book, Wirebound, Four 5 1/2&quot; X 4&quot; Forms/Pg., 200 Dupl. Sets/Book'
+}    
+</code></pre>
+
+<p>If the groupKey corresponding to the current level is <code>Category</code>, then for the grouping node at this level, the vtableMergeName is <code>Office Supplies</code>    </p>
+<ul>
+<li>
+<p>vtableMerge: Due to grouping, for group headers, it is always assumed that the entire row needs to be merged;    \r</p>
+</li>
+<li>
+<p>children: The children corresponding to the current group, as there may be multiple groups, it is a tree structure;    \r</p>
+</li>
+<li>
+<p>map: A mapping table of the group values and their corresponding indices in the children under the current group node, ensuring that the same subgroup can be quickly inserted into the correct position when encountered next time.    \r</p>
+</li>
+</ul>
+<p>Taking the grouping in the example above as an example, the outermost Map looks like this. This means that if data from the Office Supplies -&gt; Paper group is encountered later, it can be directly inserted into children[0].</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KMiMbcDaSoAXNIxuM47cNju3nWf.gif' alt='' width='706' height='auto'></p>
+<h4 id="pre-process-flow">Pre-process Flow</h4>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\data\CachedDataSource.ts
+// 省略
+const groupMap = new Map();
+const groupResult = [] as any[];
+for (let i = 0; i &lt; records.length; i++) {
+  dealWithGroup(records[i], groupResult, groupMap, groupByKeys, 0);
+}
+return groupResult;
+// 省略    
+</code></pre>
+
+<p>Before traversing the records, an outermost groupMap and groupResult are generated. The groupResult serves as the first layer of the tree structure. Due to address referencing, all subsequent record insertions will be inserted into the groupResult. After traversing each data entry and completing dealWithGroup, the groupResult is returned as the final records.    \r</p>
+<h4 id="dealwithgroup-recursive-process">dealWithGroup Recursive Process</h4>
+<ol>
+<li>First, obtain the current groupKey and determine whether it has reached the last level. If it is the last level, directly insert it into children, indicating that the recursion is complete:</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\data\CachedDataSource.ts
+  if (!isValid(groupByKey)) {
+    children.push(record);
+    return;
+  }
+  // ...    
+</code></pre>
+
+<ol>
+<li>Use groupByKey to get the value and determine which group the current record belongs to at this level;    \r</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\data\CachedDataSource.ts
+  const value = get(record, groupByKey);    
+</code></pre>
+
+<ol>
+<li>Use map to determine whether the current value (group value) exists in the <code>children</code> of the previous group node (i.e., the children passed in the current closure). If it exists, it means that this group has already appeared, and the same node is reused and passed as children to the next recursive logic;    \r</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\data\CachedDataSource.ts
+if (map.has(value)) {
+  const index = map.get(value);
+  return dealWithGroup(record, children[index].children, children[index].map, groupByKeys, level + 1);
+}    
+</code></pre>
+
+<ol>
+<li>If the map does not exist, it means there is no corresponding group node, and a new group node needs to be created. Then update the map of the previous group node, and append the new node to the end of <code>children of the previous group node</code> (i.e., the children passed in the current closure). Use this newly created node as the children parameter for the next recursion, because the current record has been determined to belong to this group. Return the result after recursive processing.</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\data\CachedDataSource.ts
+map.set(value, children.length);
+children.push({
+  vtableMerge: true,
+  vtableMergeName: value,
+  children: [] as any,
+  map: new Map()
+});
+return dealWithGroup(
+  record,
+  children[children.length - 1].children,
+  children[children.length - 1].map,
+  groupByKeys,
+  level + 1
+);    
+</code></pre>
+
+<p>At this point, the dealWithGroup for a single record has been completed. Below is the corresponding flowchart:    \r</p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WRuAwvF0JhY8TebvI88c7VgBnkb.gif" /></p>
+<h4 id="case-study">Case Study</h4>
+<p>Let's take the records above as an example. After processing the first record, let's see the status of groupResult and groupMap:    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/HKq3bJWbGoS8kZxDeFIcAoxmngf.gif' alt='' width='1000' height='auto'></p>
+<p>You can see that the first record has been correctly grouped and inserted into groupResult[0].children[0], and the index corresponding to the <code>Office Supplies</code> group has already been stored in groupMap.    </p>
+<p>So when inserting the second record, a new group node will not be created at the first level, but at the second level <code>Sub Category</code> level, since there is no record of the <code>Labels</code> node in <code>children[0].map</code>, a new <code>Paper</code> node will be created, and the record will be placed in the children corresponding to that node.    </p>
+<p>If there is more data, it will follow this pattern. After processing all records, the final groupResult will be assigned to <code>tableInstance.dataSource.records</code>, completing the grouped data processing.</p>
+<p>Since each node maintains a Map individually, the time complexity is greatly reduced during the recursion process.    </p>
+<h2 id="classic-interaction">Classic Interaction</h2>
+<p>As mentioned earlier, the underlying layer of VTable is based on VRender, and most interactions are implemented by listening to events provided by VRender. Let's start with a few classic interactions to see how ListTable achieves interactions comparable to native DOM by listening to events provided by VRender.    \r</p>
+<h3 id="drag-to-adjust-column-width">Drag to Adjust Column Width</h3>
+<p>The regular way to adjust column width mainly involves listening to three events:    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/HbwWwpEphhkyORbRwS0cxyEwnlf.gif' alt='' width='820' height='auto'></p>
+<p>However, in the VTable, adjusting the column width mainly relies on pointer events:    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SzFVwZKpdhlQCbb8IPGcd6Iynwb.gif' alt='' width='804' height='auto'></p>
+<p>The main reason for using pointer events is that pointer not only supports mouse events but also supports all pointer devices such as stylus and touch screens, providing better compatibility.    </p>
+<h4 id="start-dragging-to-adjust-column-width">Start dragging to adjust column width</h4>
+<p>The activation of dragging column width mainly listens to the pointerdown event of the tableGroup. The overall process is roughly as follows:    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Xp4Ew3iaphfPMmbbRHEcE1wynCc.gif' alt='' width='820' height='auto'></p>
+<h5 id="dragging-hotspot-judgment">Dragging Hotspot Judgment</h5>
+<p>You might be curious about how ListTable internally determines whether the current click is on a border or a cell. Let's take a look at how ListTable makes this determination.    \r</p>
+<p>Determine whether the clicked area is within the drag hotspot, mainly relying on scenegraph.getResizeColAt, which contains a core piece of code.</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\scenegraph.ts
+if (abstractX &lt; cellGroup.globalAABBBounds.x1 + offset) {
+  // 命中 左边界
+  cell = { col: cellGroup.col - 1, row: cellGroup.row, x: cellGroup.globalAABBBounds.x1 };
+} else if (cellGroup.globalAABBBounds.x2 - offset &lt; abstractX) {
+  // 命中 右边界
+  cell = { col: cellGroup.col, row: cellGroup.row, x: cellGroup.globalAABBBounds.x2 };
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>globalAABBBounds: The boundary information of the current cell, x1 is the left boundary, x2 is the right boundary    \r</p>
+</li>
+<li>
+<p>abstractX: The X coordinate of the current click position    \r</p>
+</li>
+<li>
+<p>offset: Dragging hotspot width (resizeHotSpotSize)    \r</p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ZIJCbkIYVorwzhxVUUScY3YVncf.gif' alt='' width='683' height='auto'></p>
+<p>Let's take the left boundary as an example:    </p>
+<p>The current clicked X coordinate &lt; the X coordinate of the left boundary of the cell + resizeHotSpotSize means hitting the left drag hotspot, at this time you need to update the information of the current drag cell to the left cell, the same applies to the right drag hotspot.</p>
+<p>Below is the overall flowchart of getResizeColAt    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QCEHwmw6whebzNbXsHlckNCrnkb.gif' alt='' width='820' height='auto'></p>
+<p>If you can get the cell information clicked through getResizeColAt, it means that the boundary of a certain column has been hit, and you can continue the action of dragging the column width.    \r</p>
+<h5 id="impact-of-startresizecol">Impact of startResizeCol</h5>
+<p>The startResizeCol in the previous step will update the columnResize state in the StateManager, and later in the pointermove event, it can determine whether the column width is being dragged by checking resizing.    </p>
+<p>It will also record the x-coordinate and column index at the start of the drag.    \r</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\state\state.ts
+  startResizeCol(col: number, x: number, y: number, isRightFrozen?: boolean) {
+    this.columnResize.resizing = true;
+    this.columnResize.col = col;
+    this.columnResize.x = x;
+    this.columnResize.isRightFrozen = isRightFrozen;
+    this.table.scenegraph.component.showResizeCol(col, y, isRightFrozen);
+  }    
+</code></pre>
+
+<h4 id="dragging">Dragging</h4>
+<p>Handling the drag process mainly relies on the pointermove event. Below is the logic for entering and binding related drag events.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Nx4BwnFM9hUicdbwZnWclWg3ntc.gif' alt='' width='820' height='auto'></p>
+<ul>
+<li>bindContainerDomListener    </li>
+</ul>
+<p>ListTable listens to the pointermove event at the body and passes in globalPointermoveCallback as a callback.    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\container-dom.ts
+bindContainerDomListener() { 
+    // ... 
+    document.body.addEventListener('pointermove', globalPointermoveCallback);
+}    
+</code></pre>
+
+<ul>
+<li>globalPointermoveCallback    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\container-dom.ts
+function globalPointermoveCallback() {
+  // ...
+  if (stateManager.interactionState === InteractionState.grabing) {
+      if (stateManager.isResizeCol()) {
+        eventManager.dealColumnResize(x, y);
+        if ((table as any).hasListeners(TABLE_EVENT_TYPE.RESIZE_COLUMN)) {
+          table.fireListeners(TABLE_EVENT_TYPE.RESIZE_COLUMN, {
+            col: table.stateManager.columnResize.col,
+            colWidth: table.getColWidth(table.stateManager.columnResize.col)
+          });
+        }
+      }
+  }
+  // ...
+ }    
+</code></pre>
+
+<p>The callback will internally determine whether it is in the state of dragging the column width, then call dealColumnResize, and subsequently trigger the callback event configured by the business side.    </p>
+<h5 id="real-time-column-width-update-mechanism">Real-time Column Width Update Mechanism</h5>
+<p>Why is ListTable so smooth when adjusting column widths? The main processing logic is still in dealColumnResize. And the execution of dealColumnResize is actually executing updateReizeColumn.    </p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/HdyUwBmcHhMB1wbbqICcCeXNnmd.gif" /></p>
+<h5 id="column-width-update-process">Column Width Update Process</h5>
+<p>Updating column width mainly involves three functional functions    </p>
+<ul>
+<li>updateReizeColumn（packages\vtable\src\state\resize\update-resize-column.ts）    </li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XLFjwjbkhhMofBbzsZmcAkgsn4b.gif" /></p>
+<ul>
+<li>updateResizeColForColumn（packages\vtable\src\state\resize\update-resize-column.ts）    </li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Dlx9wIZiNh2dh6bqP1kcnbO8n5c.gif" /></p>
+<ul>
+<li>updateColWidth （packages\vtable\src\scenegraph\layout\update-width.ts）    </li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GHdLwtjgyh3mlGbInwIc7jcWntg.gif" /></p>
+<h5 id="special-handling-in-adaptive-mode">Special Handling in Adaptive Mode</h5>
+<p>Basic tables can enable adaptive mode with <code>widthMode: 'adaptive'</code>. In this case, the length of the table is fixed, and you cannot update just one column alone; instead, columns on both sides of the baseline need to be updated.</p>
+<p>Assuming the user has dragged the baseline to the right, the offset of the drag is deltaX, which is deltaX for the left column and <code>-deltaX</code> for the right column.</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\state\resize\update-resize-column.ts
+function updateResizeColForColumn(detaX: number, state: StateManager) {
+    // ...
+    state.table.scenegraph.updateColWidth(state.columnResize.col, detaX);
+    state.table.scenegraph.updateColWidth(state.columnResize.col + 1, -detaX);
+    // ...
+ }    
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SKAXbuwcvoNCjhxdYlJcDBSknfc.gif' alt='' width='905' height='auto'></p>
+<h4 id="drag-and-drop-completed">Drag and Drop Completed</h4>
+<p>The drag completion listens to the pointerup event. Since the chart has already been updated during the drag process, there isn't much to do when the drag is completed. The main tasks are operations like restoring the state to default values, specifically including:    \r</p>
+<ol>
+<li>
+<p>Restore stateManager.columnResize state    </p>
+</li>
+<li>
+<p>Update interactionState to the default value     </p>
+</li>
+</ol>
+<p><code>stateManager.updateInteractionState(InteractionState.default);</code>    </p>
+<ol>
+<li>
+<p>Hide baseline    </p>
+</li>
+<li>
+<p>Trigger RESIZE_COLUMN_END event    </p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\table-group.ts
+table.scenegraph.tableGroup.addEventListener('pointerup', (e: FederatedPointerEvent) =&gt; {
+    //...
+    if (stateManager.interactionState === 'grabing') {
+      stateManager.updateInteractionState(InteractionState.default);
+      if (stateManager.isResizeCol()) {
+        endResizeCol(table);
+      } 
+    // ...
+  });    
+</code></pre>
+
+<h4 id="overall-process">Overall Process</h4>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ACoVwofb1h3lJWbieQIcdjyxnZg.gif" /></p>
+<h3 id="column-drag-and-drop-replacement">Column Drag and Drop Replacement</h3>
+<h4 id="configuration_1">Configuration</h4>
+<p>Business parties can enable drag-and-drop header rearrangement through the dragHeaderMode configuration, but for drag-and-drop header rearrangement, it is limited to the same level and cross-level dragging is not allowed. \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/H8QrbEqz6onC6fx5kBuceikkn3e.gif' alt='' width='845' height='auto'></p>
+<h4 id="drag-and-drop-listener">Drag and Drop Listener</h4>
+<p>The listener for drag-and-drop repositioning is the same as the listener for drag-and-drop column width adjustment, both listening to the pointerdown event.    \r</p>
+<p>However, in this callback, it will first determine whether it hits the drag to adjust column width, to avoid affecting the drag column width event.    \r</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\table-group.ts
+table.scenegraph.tableGroup.addEventListener('pointerdown', (e: FederatedPointerEvent) =&gt; {
+  //...
+  *// 处理column mover*
+  if (eventManager.chechColumnMover(eventArgsSet)) {
+       stateManager.updateInteractionState(InteractionState.grabing);
+       return;
+  }
+  //...
+}    
+</code></pre>
+
+<ul>
+<li>chechColumnMover    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\event.ts
+  chechColumnMover(eventArgsSet: SceneEvent): boolean {
+    const { eventArgs } = eventArgsSet;
+    if (
+      eventArgs &amp;&amp;
+      this.table._canDragHeaderPosition(eventArgs.col, eventArgs.row)
+    ) {
+      this.table.stateManager.startMoveCol(...);
+      return true;
+    }
+    return false;
+  }    
+</code></pre>
+
+<h4 id="whether-to-enter-dragging">Whether to Enter Dragging</h4>
+<p>Due to the particularly complex logic of dragging and swapping columns, the criteria for determining whether to enter dragging are very strict. The diagram below shows the logic for determining whether to enter column drag swapping:    \r</p>
+<ul>
+<li>_canDragHeaderPosition(packages\vtable\src\core\BaseTable.ts)    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Xq86wVNcxhbHsRbeymIcu49Vn9c.gif' alt='' width='820' height='auto'></p>
+<p>There is a special judgment internally. If the current configuration's headerSelectMode is 'cell' or the range does not include the entire column when multiple rows are selected, dragging is not allowed. This judgment is mainly added to resolve the conflict between dragging to select multiple headers and dragging columns.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YAXfbxCEPo5KQQxS6wtcsg4BnVc.gif' alt='' width='550' height='auto'></p>
+<h4 id="initialize-dragging-process">Initialize Dragging Process</h4>
+<ul>
+<li>startMoveCol （packages\vtable\src\state\cell-move\index.ts）    </li>
+</ul>
+<p>When it is determined to be a column drag event, three things will be done internally:    \r</p>
+<ol>
+<li>
+<p>Update the stateManage.columnMove status, record the current starting row and column number of the drag, and update moving to true;    </p>
+</li>
+<li>
+<p>Display the current drag-and-drop order adjustment component    </p>
+</li>
+<li>
+<p>Clear selected state    </p>
+</li>
+</ol>
+<h4 id="drag-validity">Drag Validity</h4>
+<h5 id="prerequisite-scenario">Prerequisite Scenario</h5>
+<p>Assume we have a table header with 3 rows and 6 columns    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OKf0b4m7nogjkbxnocNcYX3Jnxe.gif' alt='' width='664' height='auto'></p>
+<p>ListTable maintains a _headerCellIds in the LayoutMap module (table layout module), and the _headerCellIds corresponding to the header above looks like this:    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KYMLb2RyCoaeO8xDuxVchJaPnXc.gif' alt='' width='679' height='auto'></p>
+<h5 id="transposition-rule">Transposition Rule</h5>
+<p>As mentioned earlier, the sourceCol is recorded at the start of the drag, and the targetCol is also obtained in real-time during the drag. The main function of ListTable is to determine whether the parent IDs of the two are consistent to decide if swapping is possible.</p>
+<p>The core logic of this part is located in <code>layoutMap.canMoveHeaderPosition</code>:    </p>
+<ul>
+<li></li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\simple-header-layout.ts
+  canMoveHeaderPosition(source: CellAddress, target: CellAddress): boolean {
+  // ... 
+      const sourceTopId = this.getParentCellId(source.col, sourceCellRange.start.row);
+      const targetTopId = this.getParentCellId(target.col, sourceCellRange.start.row);
+      return sourceTopId === targetTopId;
+  // ...
+  }    
+</code></pre>
+
+<p>For example:    </p>
+<ul>
+<li>sourceCell is B1, targetCell is B2, directly use _headerCellIds to get the parent ID    \r</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WHUVb4cPdo0fPmx7IRLcCvEnnmb.gif' alt='' width='664' height='auto'></p>
+<ul>
+<li>sourceTopId：    </li>
+</ul>
+<p>B1 is the sourceCell, col is 1, row is 1, the entire cell sourceCellRange is \r</p>
+<pre class="codehilite"><code class="language-Typescript">start = {col: 1, row: 1}
+end = {col: 1, row: 2}    
+</code></pre>
+
+<p>Get parent ID as 2 based on source.col = 1 and sourceCellRange.start.row = 1, sourceTopId = 2    \r</p>
+<ul>
+<li>targetTopId：    </li>
+</ul>
+<p>B2 is the targetCell, col is 3, row is 1, \r</p>
+<p>According to target.col = 3 and sourceCellRange.start.row = 1, get parent ID as 2, targetTopId = 2    \r</p>
+<ul>
+<li>
+<p>The two IDs are the same, they can be swapped    </p>
+</li>
+<li>
+<p>sourceCell is B2, targetCell is C1, directly use _headerCellIds to get parent ID \r</p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/IqtNbajm7oIBQyx1rxzczMpbn6c.gif' alt='' width='664' height='auto'></p>
+<ul>
+<li>sourceTopId:    </li>
+</ul>
+<p>B2 is the sourceCell, col is 2, row is 1, sourceCellRange is     \r</p>
+<pre class="codehilite"><code class="language-Typescript">end = {col: 3, row: 1}
+start = {col: 2, row: 1}    
+</code></pre>
+
+<p>Get parent ID as 2 based on source.col = 2 and sourceCellRange.start.row = 1, sourceTopId = 2    \r</p>
+<ul>
+<li>targetTopId:    </li>
+</ul>
+<p>C1 is the targetCell, col is 4, row is 1    </p>
+<p>Get parent ID as 7, targetTopId = 7 based on target.col = 4 and sourceCellRange.start.row = 1    \r</p>
+<ul>
+<li>The two IDs are different, swapping is prohibited    </li>
+</ul>
+<hr />
+<p>It is very obvious that when swapping, the row number is judged using the row number of the starting cell. This is because it is assumed that dragging will only occur at the same level, so theoretically, only the column (col) changes during the dragging process.    \r</p>
+<h5 id="purpose-of-_headercellids-cache">Purpose of _headerCellIds Cache</h5>
+<p>layoutMap maintains a _headerCellIds, partly to facilitate obtaining relationships between nodes. For example, when obtaining a parent node, if the current cell's path is <code>headerCellIds[row][col]</code>, then the parent ID can be directly obtained using <code>headerCellIds[row - 1][col]</code>.</p>
+<h4 id="dragging-process">Dragging Process</h4>
+<p>Unlike the callback for dragging to adjust column width, the style update for column drag-and-drop rearrangement is done in the pointermove event callback of the tableGroup. The actual update occurs in the pointerup event.</p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Lxzpw5fqqhkrztbhp6scarIBnme.gif" /></p>
+<h4 id="_headercellids-update-mechanism">_headerCellIds Update Mechanism</h4>
+<p>When the drag event is completed, _headerCellIds will be dynamically updated. The update logic here is quite complex. Let's take B1 -&gt; B2 as an example to see how the update of _headerCellIds is completed.</p>
+<ol>
+<li>First, obtain the number of columns contained in the starting cell according to sourceCellRange, sourceSize;    \r</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WKdEbLBkmowNI6xGLkTcKDwKnYf.gif' alt='' width='793' height='auto'></p>
+<ol>
+<li>Get the column targetIndex for the insertion target address. Here, two situations need to be considered:    </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MSzrb1QwwoNKjjxKDWxcOYSsnoe.gif' alt='' width='793' height='auto'></p>
+<ol>
+<li>
+<p>The target column is to the left of the starting column, targetIndex = targetCellRange.start.col;    \r</p>
+</li>
+<li>
+<p>The target column is to the right of the starting column, targetIndex = targetCellRange.end.col - sourceSize + 1;    </p>
+</li>
+</ol>
+<p>In this case, targetIndex = 3 - 1 + 1 = 3;    </p>
+<ol>
+<li>
+<p>Traverse _headerCellIds line by line     </p>
+</li>
+<li>
+<p>First line:     \r</p>
+</li>
+<li>
+<p>_headerCellIds The first row, from the beginning column of sourceCellRange, removes the length of sourceSize, and takes the removed elements as sourceIds     \r</p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KKUabsDRloCHnox6uQlc4lbjnpd.gif' alt='' width='811' height='auto'></p>
+<ol>
+<li>Then insert 0 and targetIndex at the beginning of sourceIds;    \r</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CafobZllBouDgxxbnIvcpbisnNO.gif' alt='' width='258' height='auto'></p>
+<ol>
+<li>Call <code>Array.prototype.splice.apply(this._headerCellIds[row], sourceIds)</code>; equivalent to <code>this._headerCellIds[row].splice(3, 0, 2)</code>, after this step, _headerCellIds will be </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SFLxbIhs3o2y8qxgJVlc8ZPzn4b.gif' alt='' width='790' height='auto'></p>
+<p>Abstracting to the chart, it is actually equivalent to moving all cells after sourceIndex forward, and then moving the starting cell to the targetIndex position.</p>
+<ol>
+<li>
+<p>Second line    </p>
+</li>
+<li>
+<p>Extract sourceIds    </p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/X72xb3ya8oJLuqxNIkXchS2xnHf.gif' alt='' width='811' height='auto'></p>
+<ol>
+<li>Insert 0 and targetIndex    </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KQQObiGpuoFkb1xbSj5chh49nWh.gif' alt='' width='258' height='auto'></p>
+<ol>
+<li>Insert sourceIds into targetIndex     </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Fve6bsFphouBTmxRdSYcoNn1nmh.gif' alt='' width='795' height='auto'></p>
+<ol>
+<li>Similarly, after updating the third line, the _headCellIds looks like this. At this point, the adjustment of the data index part for dragging and swapping columns is complete.    \r</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/UQkTbUD0Go0KsQxmQGMcDf3TnPh.gif' alt='' width='805' height='auto'></p>
+<h4 id="overall-general-process">Overall General Process</h4>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/BJ4Vw42ckhLMkqb2JoNcqKhtn9b.gif" /></p>
+<h3 id="table-scrolling">Table Scrolling</h3>
+<h4 id="background-of-the-requirement">Background of the Requirement</h4>
+<p>The native table component library can directly use the browser's built-in scrolling effect, whereas for Canvas, it does not automatically generate scroll bars, nor does it have corresponding scrolling logic, let alone create virtual scrolling effects like native DOM. All scrolling effects need to be manually calculated. Let's take a look at how ListTable achieves scrolling effects by listening to Canvas events.</p>
+<h4 id="scrolling-scheme">Scrolling Scheme</h4>
+<p>ListTable supports two scrolling methods, namely dragging the scrollbar and using the mouse wheel. Essentially, these two scrolling methods are the same, with the difference being the trigger point:    \r</p>
+<h5 id="wheel-scrolling">Wheel Scrolling</h5>
+<p>The scroll wheel relies on the wheel event provided by Stage, allowing you to obtain the current scroll offset during scrolling, and then progressively load table elements during the scrolling process.    \r</p>
+<p>Here is a general process about wheel scrolling:    \r</p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/AhcIwRW4KhcIcWbSlx1cW7ncndg.gif" /></p>
+<h5 id="drag-the-scrollbar">Drag the scrollbar</h5>
+<p>The scrollbar uses the ScrollBar component provided by VRender, and listens to the scroll event to complete the scrolling logic; the handling during the drag process is roughly the same as the logic of the mouse wheel scrolling, the core is to complete the progressive loading of the scene graph through <code>this.table.scenegraph.setY</code>;</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/VF0pw7of0h0jJubejYxcWjIMnFc.gif' alt='' width='820' height='auto'></p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Cnf1wO8OKhoG7ab5iwRcRtKTnsA.gif" /></p>
+<p>Since the user manually drags the scrollbar to trigger it, there is no need to update the position of the scrollbar. Moreover, only one direction will exist at the same time, and the corresponding direction is already known before entering the logic.</p>
+<h4 id="scroll-offset-optimization">Scroll Offset Optimization</h4>
+<p>During the process of wheel scrolling, there is a function <code>optimizeScrollXY</code>, which is mainly used to optimize the scrolling direction by converting near-horizontal or vertical scrolling into a single direction, avoiding the interference caused by diagonal scrolling.    </p>
+<h5 id="formula">Formula</h5>
+<ul>
+<li>
+<p>ANGLE = 2, defined as the slope threshold for direction determination    \r</p>
+</li>
+<li>
+<p>Obtain the slope angle through <code>x ``/ y</code>    </p>
+</li>
+<li>
+<p>Optimized deltaX = angle &lt;= 1 / ANGLE ? 0 : x    </p>
+</li>
+<li>
+<p>Optimized deltaY = angle &gt; ANGLE ? 0 : y    </p>
+</li>
+</ul>
+<h5 id="core-processing">Core Processing</h5>
+<ul>
+<li>
+<p>When the absolute value of <code>x/y</code> is less than or equal to 0.5 (i.e., 1/ANGLE), it is considered vertical scrolling, and the horizontal increment is cleared.    </p>
+</li>
+<li>
+<p>When the absolute value of <code>x/y</code> is greater than 2 (i.e., ANGLE), it is considered horizontal scrolling, and the vertical increment is cleared    </p>
+</li>
+<li>
+<p>The intermediate angle retains the original increment (considered as diagonal scrolling)    </p>
+</li>
+</ul>
+<p>Simply put, only those with a slope between 0.5 and 2 will retain their original values; otherwise, they will all be reset to a single direction.    </p>
+<h5 id="case_1">Case</h5>
+<p>Let's look at how <code>optimizeScrollXY</code> is optimized through the following case studies.    </p>
+<ul>
+<li>Significant vertical scrolling (y-direction increment is much greater than x)    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NZDnbBQ27ozVQMxL0KXcmq2YnSh.gif' alt='' width='494' height='auto'></p>
+<p>Reset to vertical scrolling    </p>
+<ul>
+<li>Significant horizontal scrolling (x-direction increment is much greater than y)    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CYdGbCO5doXyMLxnT5Ica9KAn8e.gif' alt='' width='680' height='auto'></p>
+<p>Reset to horizontal scrolling    </p>
+<ul>
+<li>45-degree diagonal scroll (x/y=1)    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/HiMnb2GsIohVI3x9cBccVu1XnXq.gif' alt='' width='679' height='auto'></p>
+<p>Preserve original value    \r</p>
+<h4 id="progressive-loading">Progressive Loading</h4>
+<p>Since the smoothness of ListTable scrolling is reflected in the frame rate, the more frames that can be displayed in one second, the smoother the table scrolls. To increase the frame rate, it is necessary to optimize data processing during scrolling to ensure more frames can be used to re-render the chart. For this reason, ListTable implements progressive loading for scrolling. During scrolling, it does not simply adjust the x and y coordinates but achieves scrolling by dynamically adjusting the cells. Let's take a look at how ListTable specifically implements this:    \r</p>
+<h5 id="entry-file">Entry File</h5>
+<p>The previously mentioned setY and setX methods are the core logic for implementing scrolling in the table. The entry points for these two methods are in the scenegraph module, where they actually call the setX and setY methods in SceneProxy.    \r</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\scenegraph.ts
+  */***
+*   * @description: 设置表格的x位置，滚动中使用*
+*   * @return {*}*
+*   */*
+  setX(x: number, isEnd = false) {
+    this.table.scenegraph.proxy.setX(-x, isEnd);
+  }
+
+  */***
+*   * @description: 更新表格的y位置，滚动中使用*
+*   * @param {number} y*
+*   */*
+  setY(y: number, isEnd = false) {
+    this.table.scenegraph.proxy.setY(-y, isEnd);
+  }
+</code></pre>
+
+<h5 id="sceneproxy">SceneProxy</h5>
+<p>Regarding the SceneProxy module, it is a submodule of SceneGraph and is created during the initialization of SceneGraph. This module is mainly responsible for calculating the maximum number of rows and columns of the scene tree, progressive loading of the scene tree, and the logic for creating the first screen group.    \r</p>
+<p>Let's take setY as an example, here is the flowchart of setY:    \r</p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/LXmMw6A5VhIx0cb4aS7cbJAyn1e.gif" /></p>
+<p>The core logic of progressive updates is dynamicSetY.    </p>
+<h5 id="dynamic-update-of-scene-tree">Dynamic Update of Scene Tree</h5>
+<ul>
+<li>packages\vtable\src\scenegraph\group-creater\progress\update-position\dynamic-set-y.ts    </li>
+</ul>
+<p>The core logic of progressive loading is located in dynamicSetY. Next, let's see what dynamicSetY does.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/AtiTwmweFhsR1ObM0escwgj7nx5.gif' alt='' width='820' height='auto'></p>
+<h5 id="core-implementation-principle">Core Implementation Principle</h5>
+<p>In ListTable, there is also cell reuse operation. The preliminary process of dynamicSetY mainly determines the range of updates, and the actual update logic is located in updateCellGroupPosition. \r</p>
+<p>Let's take sliding down as an example. In the ListTable, the first cell will be taken out, the y-value of the CellGroup will be updated, and then the cell will be inserted into the end of the ColGroup. If the number of cells that need to be updated has been calculated beforehand, this operation will be repeated multiple times.    \r</p>
+<p>This operation can avoid frequent creation of cells, and you only need to update the position of the cell.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QE4dbH4zkoagirxcJjic0WeZntc.gif' alt='' width='1000' height='auto'></p>
+<h2 id="summary">Summary</h2>
+<p>This article starts with the ListTable module and describes the underlying implementation logic of most functions and interactions in ListTable.    </p>
+<p>From the analysis of the above structures, it can be seen that ListTable has made many performance optimizations, including the indexing and storage of data; mapping tables for different groups in the grouping algorithm to reduce the time complexity of node insertion; indexing and storage of header data to reduce the time complexity of processing headers; and progressive loading of the scene tree during scrolling, etc.</p>
+<h1 id="this-document-is-provided-by-the-following-personnel">This document is provided by the following personnel</h1>
+<p>taiiiyang( https://github.com/taiiiyang)     </p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can we limit the default rendered lines in a vchart multi-line chart?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="question-title">Question Title</h1>
+<p>Can we limit the default rendered lines in a vchart multi-line chart?</br></p>
+<h1 id="question-description">Question Description</h1>
+<p>While using vchart, I encountered a problem. I'm making a multiple-line chart, and I want to ask if this multi-line chart can limit the default rendered lines? For instance, can I make it only default render one line?</br></p>
+<h1 id="solution">Solution</h1>
+<p>This can be achieved. You need to use the configuration item legends.defaultSelected to set the legend items that are selected by default when the legend is initialized. The element in the array is the name of the legend item. For example, you can set defaultSelected: ['Type D'], which indicates that the line with the legend item named 'Type D' will be rendered by default. Here is a complete code example:</br></p>
+<pre class="codehilite"><code>const spec = {
+type: 'line',
+data: [
+{
+id: 'line',
+values: data
+}
+],
+xField: 'year',
+yField: 'value',
+seriesField: 'name',
+legends: {
+orient: 'right',
+selectMode: 'single', // Configure legend selection mode
+defaultSelected: ['Type D'],
+title: {
+visible: true,
+text: 'Single Select'
+}
+},
+axes: [
+{
+orient: 'left',
+label: {
+inside: true,
+space: 2,
+style: {
+textBaseline: 'bottom',
+textAlign: 'start',
+fontWeight: 'bold'
+}
+},
+tick: {
+visible: false
+},
+domainLine: {
+visible: false
+},
+title: {
+visible: true,
+text: 'Axis Title'
+}
+}
+]
+};&lt;/br&gt;
+</code></pre>
+
+<h1 id="result">Result</h1>
+<p>After running the code, the multi-line chart will only render the line of 'Type D' by default.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VlUnb1s2dooeKNxHM46cABLfngh.gif' alt='' width='1496' height='1048'></p>
+<p>Online demo：https://codesandbox.io/p/sandbox/line-chart-legend-shape-and-color-forked-gq3gcv</br></p>
+<h1 id="relevant-documents">Relevant Documents</h1>
+<ul>
+<li>VChart defaultSelected configuration item: https://visactor.bytedance.net/vchart/option/barChart-legends-discrete#defaultSelected</br></li>
+<li>VChart github: https://github.com/VisActor/VChart</br></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.3 PivotTable 代码结构和细节分析</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">树形展示</h1>
+<h2 id="_2">需求</h2>
+<p>PivotTable 的一大特点就是树形的 <code>rowHeader</code>和<code>columnHeader</code>。用户能根据以下配置定义树的展示形式：    </p>
+<ul>
+<li>
+<p><code>rowHierarchyType / columnHierarchyType</code> ：树展示模式    </p>
+</li>
+<li>
+<p>grid    </p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/FQABbDAB0o2vtKxp4Qjcc9DZnBf.gif' alt='' width='430' height='auto'></p>
+<ul>
+<li>tree    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Q1NsbNwRio0uEMxhFxYcu0mMnpe.gif' alt='' width='252' height='auto'></p>
+<ul>
+<li>grid-tree (仅支持row)    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KiLTbkFzhoefrIxsbV3cI3hWngf.gif' alt='' width='516' height='auto'></p>
+<ul>
+<li>
+<p><code>indicatorsAsCol</code>：指标是否作为列表头展示，默认为 true    </p>
+</li>
+<li>
+<p><code>rowExpandLevel / columnExpandLevel</code>：默认展开层数    </p>
+</li>
+<li>
+<p>当自定义<code>rowTree / columnTree</code>，对每个节点可用 <code>node.hierarchyState</code> 设置节点的折叠状态    </p>
+</li>
+</ul>
+<h2 id="_3">问题</h2>
+<p>由上面的需求，我们可能会有一些疑问❓：    </p>
+<ol>
+<li>
+<p>怎么渲染出树形<code>rowHeader / columnHeadr</code>，需要什么<strong>数据</strong>？    </p>
+</li>
+<li>
+<p>不同的 <code>rowHierarchyType / columnHierarchyType</code>，会有不同的<strong>合并单元格、展开逻辑</strong>，怎么处理比较优雅？    </p>
+</li>
+<li>
+<p><strong>布局算法</strong>是怎么处理这几种<code>HierarchyType</code>的    </p>
+</li>
+</ol>
+<h2 id="_4">源码</h2>
+<p>在 7.2 的「自动组织维度树」小节中，我们知道了 <code>Dataset</code> 模块的 <code>setRecords</code>方法中，会根据从原始数据中收集到的维度成员<code>rowKeys</code>，<strong>调用 </strong><code>**ArrToTree**</code><strong>组装好维度树，储存在 </strong><code>**Dataset.rowHeaderTree**</code><strong>中</strong>。    </p>
+<p>后续 PivotTable 会根据<code>rowHeaderTree</code>继续做一些处理，渲染树形表头，我们一起来看下这整个链路的细节    </p>
+<h3 id="datasetrowheadertree-colheadertree">Dataset.rowHeaderTree / colHeaderTree</h3>
+<ul>
+<li>
+<p>如果用户传自定义树<code>customRowTree/colHeaderTree</code>，就直接赋值给 <code>dataset.rowHeaderTree / colHeaderTree</code>    </p>
+</li>
+<li>
+<p>否则就用 <code>ArrToTree</code> 和 <code>ArrToTree1</code>将维度成员<code>rowKeys</code>和<code>colKeys</code> 转为树形结构，再进行赋值    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// packages/vtable/src/dataset/dataset.ts
+export class Dataset {
+    ...
+
+    setRecords(records: any[] | Record&lt;string, any[]&gt;) {
+        ...
+
+        if (this.customRowTree) {
+            this.rowHeaderTree = this.customRowTree;
+        } else {
+            if (this.rowHierarchyType === 'tree') {
+                this.rowHeaderTree = this.ArrToTree1(...)
+            } else {
+                this.rowHeaderTree = this.ArrToTree(...)
+            }
+        }
+
+        if (this.customColTree) {
+            this.colHeaderTree = this.customColTree;
+        } else {
+            this.colHeaderTree = this.ArrToTree(...)
+        }
+    }
+}    
+</code></pre>
+
+<h3 id="dimensiontree">DimensionTree</h3>
+<ul>
+<li>会从 <code>dataset.rowHeaderTree / colHeaderTree</code> 或用户<code>自定义表头树</code>，作为参数传给 <code>DimensionTree</code> 类，实例化生成<code>rowDimensionTree / columnDimensionTree</code>    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// packages/vtable/src/PivotTable.ts
+export class PivotTable extends BaseTable implements PivotTableAPI {
+    constructor(...) {
+        ...
+
+        const keysResults = parseColKeyRowKeyForPivotTable(this, options);
+        let { columnDimensionTree, rowDimensionTree } = keysResults;
+
+        ...
+
+        if (!options.columnTree) {
+
+            **columnDimensionTree = new DimensionTree(**
+                (this.dataset.colHeaderTree as ITreeLayoutHeadNode[]) ?? [],
+                ...
+            );
+        }
+
+        if (!options.rowTree) {
+
+            **rowDimensionTree = new DimensionTree(**
+                (this.dataset.rowHeaderTree as ITreeLayoutHeadNode[]) ?? [],
+                ...
+            )
+
+        }
+
+
+    }    
+}    
+</code></pre>
+
+<ul>
+<li>
+<p><code>DimensionTree</code> 类的 <code>constructor</code> 函数中，核心逻辑在<code>this.setTreeNode(this.tree, 0, this.tree)</code>。<code>setTreeNode</code>是一个递归函数，会<strong>遍历树</strong>，对每个节点都做<code>setTreeNode</code>处理    </p>
+</li>
+<li>
+<p>生成节点<code>id</code>    </p>
+</li>
+<li>
+<p><strong>根据 </strong><code>**hierarchyType**</code><strong>配置和</strong><code>**node.hierarchyState**</code><strong>，更新节点的 </strong><code>**level**</code><strong> 属性</strong>（后续将用于布局），更新 <code>DimensionTree</code>的<code>totalLevel</code>和<code>size</code>属性    </p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/HV3nbhEezo70flxd4sHcKPVtnqh.gif' alt='' width='1000' height='auto'></p>
+<h3 id="pivotheaderlayoutmap">PivotHeaderLayoutMap</h3>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">**layoutMap 是 PivotTable 的核心参数之一，**将直接决定单元格的布局、宽高等    
+</div>
+
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/PivotTable.ts
+export class PivotTable extends BaseTable implements PivotTableAPI {
+    constructor(...) {
+        ...
+
+        **this.internalProps.layoutMap = new PivotHeaderLayoutMap**(
+            this,
+            this.dataset,
+            columnDimensionTree,
+            rowDimensionTree
+        );
+    }    
+}    
+</code></pre>
+
+<p>我们来看下 <code>PivotHeaderLayoutMap</code> 类做了哪些事情：    </p>
+<ol>
+<li><strong>确定合并单元格、节点折叠状态的逻辑</strong>。下面这个4个属性会决定 <code>cornerHear</code>, <code>columnHear</code>, <code>rowHeader</code>的展示内容、合并单元格逻辑    </li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/layout/pivot-header-layout.ts
+export class PivotHeaderLayoutMap implements LayoutMapAPI {
+    /**下面四份代表实际展示的 如果隐藏了某部分表头 那这里就会相比上面的数组少了隐藏掉的id 例如收hideIndicatorName影响*/
+    _cornerHeaderCellIds: number[][] = [];
+    private _columnHeaderCellIds: number[][] = [];
+    private _rowHeaderCellIds: number[][] = [];
+    private _rowHeaderCellIds_FULL: number[][] = []; //分页需求新增  为了保存全量的id  当页的是_rowHeaderCellIds
+
+    // 记录单元格 HeaderData 对象
+    cornerHeaderObjs: HeaderData[];
+    columnHeaderObjs: HeaderData[] = [];
+    rowHeaderObjs: HeaderData[] = [];
+    ...  
+}    
+</code></pre>
+
+<ul>
+<li>当 <code>rowHierarchyType</code>为<code>grid</code>的时候，<code>_rowHeaderCellIds</code> 这个二维数组分别指定单元格对应的唯一Id，Id相同则为合并单元格情况。如下左图中Id:23为合并情况，Id:27为不合并的情况    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YGiqbH16soUzrexxVECcdcgrn6c.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>当 <code>rowHierarchyType</code>为<code>tree</code>的时候，所有的维度会归到同一列展示，<code>_rowHeaderCellIds</code>会如下图：    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/P8hzbi3dYoUKJ2xC41GcYuEenxe.gif' alt='' width='842' height='auto'></p>
+<ul>
+<li>并且<code>node.hierarchyState</code> 会记录节点的折叠状态    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KqblbdKpPopXLSxjxQvc11VTn3c.gif' alt='' width='870' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ItXHbqqswodGP9xCpJMcWINTnSg.gif' alt='' width='710' height='auto'></p>
+<ol>
+<li>可以看到具体生成行头、列头单元格数据的逻辑在<code>this._addHeaders()</code>、<code>this._addHeadersForGridTreeMode()</code>和<code>this._addHeadersForTreeMode()</code>中    </li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/layout/pivot-header-layout.ts
+export class PivotHeaderLayoutMap implements LayoutMapAPI {
+    ...
+
+    constructor(...) {
+
+        // 生成列表头单元格
+        this._generateColHeaderIds();
+        // 生成行表头单元格
+        this._generateRowHeaderIds();
+    }
+
+    _generateRowHeaderIds() {
+        if (this.rowDimensionTree.tree.children?.length &gt;= 1) {
+            if (this.rowHierarchyType === 'tree') {
+                **this._addHeadersForTreeMode(...)**
+            } else if (this.rowHierarchyType === 'grid-tree') {
+                const startRow = 0;
+                **this._addHeadersForGridTreeMode(...)**
+            } else {
+                **this._addHeaders(...)**
+            }
+    }
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>三个 <code>this._addHeadersXX()</code>方法逻辑类似，都会和 <code>dealHeaderXX()</code> 方法组合成递归逻辑，<strong>遍历树，生成</strong><code>**HeaderData**</code><strong>类型的单元格数据</strong>，并做适当的存储    </p>
+</li>
+<li>
+<p>生成<code>cornerHeadr</code>单元格数据；设置列宽    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/layout/pivot-header-layout.ts
+export class PivotHeaderLayoutMap implements LayoutMapAPI {
+    ...
+
+    constructor(...) {
+
+        this.cornerHeaderObjs = this._addCornerHeaders(
+          colDimensionKeys,
+          rowDimensionKeys,
+          this.columnsDefine.concat(...this.rowsDefine, ...extensionRowDimensions)
+        );
+
+        ...
+
+        this.setColumnWidths();
+    }
+}    
+</code></pre>
+
+<h3 id="_5">创建场景树 &amp; 渲染</h3>
+<p>创建场景树，发布事件，完结撒花！    </p>
+<blockquote>
+<p><code>scenegraph.createSceneGraph()</code> 实际属于<strong>渲染引擎 </strong>(packages/vtable/src/scenegraph/scenegraph.ts)，不属于本章讨论范围，这里不做过多分析    </p>
+</blockquote>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/PivotTable.ts
+export class PivotTable extends BaseTable implements PivotTableAPI {
+    constructor(...) {
+        ...
+
+        // 生成单元格场景树
+        this.scenegraph.createSceneGraph();
+
+        // 为了确保用户监听得到这个事件 这里做了异步 确保vtable实例已经初始化完成
+        setTimeout(() =&gt; {
+            this.fireListeners(TABLE_EVENT_TYPE.INITIALIZED, null);
+        }, 0);
+    }    
+}    
+</code></pre>
+
+<h2 id="_6">流程总结</h2>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RGnzwGRjAhmCgHbthx5cXdWLngR.gif" /></p>
+<h1 id="_7">自定义表头</h1>
+<p>在<a href="https://www.visactor.io/vtable/guide/table_type/Pivot_table/custom_header"> VTable 自定义表头章节</a> 中，除了下面介绍了两种功能，还兼容了多种自定义维度树的 edge case，eg. 补全指标节点、自定义树不规则情况等。我们选取下面两种功能进行源码分析。    </p>
+<h2 id="_8">自定义表头维度树</h2>
+<h3 id="_9">需求</h3>
+<p>在某些业务场景中，业务方可能期望行列维度树是完全按照自己指定的方式展示，那么可以自行传入维度树 <code>rowTree</code> 和 <code>columnTree</code> 的方式来实现    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DZeCb7UjXosoZVxECiRcKY1Fnze.gif' alt='' width='1000' height='auto'></p>
+<h3 id="_10">源码</h3>
+<ul>
+<li>
+<p>Dataset    </p>
+</li>
+<li>
+<p>可以看到如果用户传自定义行头树列头树，就直接赋值给 <code>dataset.rowHeaderTree / colHeaderTree</code>    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">export class Dataset {
+    ...
+
+    setRecords(records: any[] | Record&lt;string, any[]&gt;) {
+        ...
+
+        if (this.customRowTree) {
+            this.rowHeaderTree = this.customRowTree;
+        }
+        if (this.customColTree) {
+            this.colHeaderTree = this.customColTree;
+        }
+      }
+    }
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>DimensionTree    </p>
+</li>
+<li>
+<p>可以看到如果用户传自定义行头树列头树，会直接用用户传的树去 <code>new DimensionTree</code>    </p>
+</li>
+<li>
+<p>实际就不是用 <code>dataset.rowHeaderTree / colHeaderTree</code> 去生成 <code>DimensionTree</code> 了    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/PivotTable.ts
+export class PivotTable extends BaseTable implements PivotTableAPI {
+    constructor(...) {
+        ...
+
+        const keysResults = parseColKeyRowKeyForPivotTable(this, options);
+        let { columnDimensionTree, rowDimensionTree } = keysResults;
+    }    
+}
+
+// packages/vtable/src/layout/layout-helper.ts
+export function parseColKeyRowKeyForPivotTable(table: PivotTable, options: PivotTableConstructorOptions) {
+
+    if (options.columnTree) {
+        columnDimensionTree = new DimensionTree(
+            **(table.internalProps.columnTree as ITreeLayoutHeadNode[]) ?? [],**
+            ...
+        );
+    }
+    if (options.rowTree) {
+        rowDimensionTree = new DimensionTree(
+            **(table.internalProps.rowTree as ITreeLayoutHeadNode[]) ?? [],**
+            ...
+        );
+    }
+
+    return {
+        ...
+        columnDimensionTree,
+        rowDimensionTree
+    };
+}    
+</code></pre>
+
+<ul>
+<li>后面的流程就跟「树形展示」的流程一致了，即生成<code>layoutMap</code>、创建场景树    </li>
+</ul>
+<h2 id="_11">自定义表头跨列合并</h2>
+<h3 id="_12">需求</h3>
+<p>在自定义<code>rowTree</code>和<code>columnTree</code>的节点配置中，有一个<code>levelSpan</code>字段，可以用来<strong>指定表头单元格合并的范围</strong>，默认为1。    </p>
+<ul>
+<li>case1：对“淘宝旗舰店”设置 <code>levelSpan: 2</code>    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/H9e7bFDploGmPsxbXAvccTXlneh.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Fr4EbJPGUoqds5xQAt8cq0RFntd.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>case2：对“淘宝”设置 <code>levelSpan: 2</code>    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YQ1RbVMN3o9clmxsbzJcZuEhnQc.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/PPF4brVESoMIhWxdnfGc7aBnnid.gif' alt='' width='1000' height='auto'></p>
+<p>从上面两个case可以看出，设置了<code>levelSpan</code>的节点，会<strong>向下合并</strong>对应层级的单元格；其后代节点会正常渲染，但表头的总深度不变，<strong>超过深度的节点会被隐藏</strong>。业务方可以根据需要设置<code>levelSpan</code>，渲染灵活度更高的自定义表头树    </p>
+<h3 id="_13">源码</h3>
+<ul>
+<li>DimensionTree    </li>
+</ul>
+<p>如果传了 <code>columnTree</code> 并给某个节点设置了 <code>levelSpan</code>，会影响<code>DimensionTree.setTreeNode</code>的逻辑。    </p>
+<ul>
+<li>
+<p>可以看到 <code>node.afterSpanLevel = node.afterSpanLevel + node.levelSpan</code>    </p>
+</li>
+<li>
+<p><code>level</code>: 节点所在真正的 level    </p>
+</li>
+<li>
+<p><code>**afterSpanLevel**</code><strong>: 计算节点跨占（+spanLevel）情况下的level</strong>    </p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Nktfblz6Xok6ibxe3Yhc9TT2nac.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KdxibjVd2oHhA4xIcAAc07bVnkd.gif' alt='' width='680' height='auto'></p>
+<ul>
+<li>
+<p>PivotHeaderLayoutMap    </p>
+</li>
+<li>
+<p>会影响 <code>this._columnHeaderCellIds</code> 的生成。经过 <code>this._addHeaders</code> 和 <code>dealHeader</code> 遍历列头树之后，最终如下图    </p>
+</li>
+</ul>
+<div style="display: flex;"><div style="flex: 37; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NOFmbYwAPoRgUIx1Gh4cWklfnWf.gif' alt='' width='1000' height='auto'>
+</div><div style="flex: 62; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SC3IbtJ4YoNtKvxSILBcGKsVn4f.gif' alt='' width='758' height='auto'>
+</div></div>
+
+<h1 id="_14">典型交互的实现</h1>
+<h2 id="_15">展开 &amp; 折叠维度树</h2>
+<h3 id="_16">交互效果</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/T7aHbjZZpoGAoxxFSrbcMZqZnhG.gif' alt='' width='1000' height='auto'></p>
+<h3 id="_17">源码</h3>
+<p>我们以从<strong>折叠维度树节点</strong>（<code>HierarchyState</code>从 <code>expand</code> -&gt; <code>collapse</code>）为例展开分析    </p>
+<h4 id="pivottabletogglehierarchystate">PivotTable.toggleHierarchyState</h4>
+<p>该方法为入口方法。可以看到：    </p>
+<ul>
+<li>
+<p>实际是调用 <code>this._refreshHierarchyState()</code>    </p>
+</li>
+<li>
+<p>完成后对外发布<code>PIVOT_TABLE_EVENT_TYPE.TREE_HIERARCHY_STATE_CHANGE</code>事件    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">toggleHierarchyState(col: number, row: number, recalculateColWidths: boolean = true) {
+    const hierarchyState = this.getHierarchyState(col, row);
+    if (hierarchyState === HierarchyState.expand) {
+        **this._refreshHierarchyState(col, row, recalculateColWidths);**
+        **this.fireListeners(PIVOT_TABLE_EVENT_TYPE.TREE_HIERARCHY_STATE_CHANGE,** {
+            col: col,
+            row: row,
+            hierarchyState: HierarchyState.collapse
+        });
+    } 
+    ...
+}    
+</code></pre>
+
+<h4 id="pivottable_refreshhierarchystate">PivotTable._refreshHierarchyState</h4>
+<p>可以看到核心逻辑是：    </p>
+<ul>
+<li>
+<p>调用 <code>layoutMap.toggleHierarchyState()</code>获取 增、删、改 的行的信息    </p>
+</li>
+<li>
+<p>最后调用<code>this.scenegraph.updateRow()</code>触发场景树对行重新绘制    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">_refreshHierarchyState(col: number, row: number, recalculateColWidths: boolean = true, beforeUpdateCell?: Function) {
+
+    ...
+    // 更新hover图标
+    this.stateManager.updateHoverIcon(col, row, undefined, undefined);
+
+    const isChangeRowTree = this.internalProps.layoutMap.isRowHeader(col, row);
+    // 获取 增、删、改 的行的信息
+    const **result**: {
+      addCellPositionsRowDirection?: CellAddress[];
+      removeCellPositionsRowDirection?: CellAddress[];
+      updateCellPositionsRowDirection?: CellAddress[];
+      addCellPositionsColumnDirection?: CellAddress[];
+      removeCellPositionsColumnDirection?: CellAddress[];
+      updateCellPositionsColumnDirection?: CellAddress[];
+    } = isChangeRowTree
+      ? **(this.internalProps.layoutMap as PivotHeaderLayoutMap).toggleHierarchyState(col, row)**
+      : (this.internalProps.layoutMap as PivotHeaderLayoutMap).toggleHierarchyStateForColumnTree(col, row);
+
+    // 更新折叠图标
+    this.scenegraph.updateHierarchyIcon(col, row);
+
+    // 触发场景树更新行绘制
+    **this.scenegraph.updateRow**(
+        result.removeCellPositionsRowDirection,
+        result.addCellPositionsRowDirection,
+        result.updateCellPositionsRowDirection,
+        recalculateColWidths
+     );
+}    
+</code></pre>
+
+<h4 id="pivotheaderlayoutmaptogglehierarchystate">PivotHeaderLayoutMap.toggleHierarchyState</h4>
+<p>可以看到这个函数的逻辑跟 <code>PivotHeaderLayoutMap</code> 构造函数的逻辑有点类似    </p>
+<ul>
+<li>
+<p>重置 <code>rowDimensionTree</code>    </p>
+</li>
+<li>
+<p>调 <code>_addHeadersForTreeMode</code><strong> </strong>遍历树，重新收集<code>_rowHeaderCellFullPathIds</code>    </p>
+</li>
+<li>
+<p>调 <code>diffCellAddress</code>收集增、删、改 行的信息，并最后 return    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">export class PivotHeaderLayoutMap implements LayoutMapAPI {
+     // 点击某个单元格的展开折叠按钮 改变该节点的状态 维度树重置
+     toggleHierarchyState(col: number, row: number) {
+
+         this.rowDimensionTree.reset(this.rowDimensionTree.tree.children);
+         this._rowHeaderCellFullPathIds_FULL = [];
+         if (this.rowHierarchyType === 'tree') {
+             // 递归树重新生成
+             **this._addHeadersForTreeMode**(
+                this._rowHeaderCellFullPathIds_FULL,
+                0,
+                this.rowDimensionTree.tree.children,
+                [],
+                this.rowDimensionTree.totalLevel,
+                true,
+                this.rowsDefine,
+                this.rowHeaderObjs
+             );
+         }
+
+         ...
+         this._rowHeaderCellFullPathIds_FULL = transpose(this._rowHeaderCellFullPathIds_FULL);
+
+         let diffCell: {
+             addCellPositionsRowDirection?: CellAddress[];
+             removeCellPositionsRowDirection?: CellAddress[];
+             updateCellPositionsRowDirection?: CellAddress[];
+             addCellPositionsColumnDirection?: CellAddress[];
+             removeCellPositionsColumnDirection?: CellAddress[];
+             updateCellPositionsColumnDirection?: CellAddress[];
+         };
+         if (this.rowHierarchyType === 'tree') {
+             diffCell = diffCellAddress(
+               col,
+               row,
+               oldRowHeaderCellIds.map(oldCellId =&gt; oldCellId[col - this.leftRowSeriesNumberColumnCount]),
+               this._rowHeaderCellFullPathIds_FULL.map(newCellId =&gt; newCellId[col - this.leftRowSeriesNumberColumnCount]),
+               oldRowHeaderCellPositons,
+               this
+             );
+         }
+
+         ...
+         this.generateCellIdsConsiderHideHeader();
+
+         ...
+         return diffCell;
+     }
+}    
+</code></pre>
+
+<h4 id="scenegraphupdaterow">Scenegraph.updateRow</h4>
+<p>大概逻辑落如下：    </p>
+<ul>
+<li>
+<p>调<code>updateRow()</code>方法，对行做增、删    </p>
+</li>
+<li>
+<p>调<code>this.recalculateColWidths()</code>重新计算列宽    </p>
+</li>
+<li>
+<p>调<code>this.component.updateScrollBar()</code>更新滚动条    </p>
+</li>
+<li>
+<p>最后调<code>this.updateNextFrame()</code>重新渲染    </p>
+</li>
+</ul>
+<h3 id="_18">流程总结</h3>
+<ul>
+<li>
+<p>核心逻辑在 <code>PivotHeaderLayoutMap.toggleHierarchyState</code>中：会重新递归树生成新的表头树单元格信息（<code>_columnHeaderCellIds</code>、<code>_rowHeaderCellIds</code>）；并收集增、删、改 行的信息    </p>
+</li>
+<li>
+<p>最后由生成的变更信息重新渲染表格    </p>
+</li>
+</ul>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

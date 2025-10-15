@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>0. How to achieve a bar chart similar to the stacked column chart</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="title">Title</h2>
+<p>How to achieve a bar chart similar to the stacked column chart</br></p>
+<h2 id="description">Description</h2>
+<p>Seemly to https://www.visactor.io/vchart/demo/bar-chart/stack-column,  how to make bars of different colors start from the y-axis zero scale and overlap with each other rather than stacking vertically?</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HbpVbp1HroQTRAxL33mcqo2an7e.gif' alt='' width='812' height='510'></p>
+<h2 id="solution">Solution</h2>
+<p>The solution varies depending on the chart library being used. Based on the provided demo, you simply need to set the corresponding field to false in order to disable stacking.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/IkPqbHLOoo0tMpxth37cjCOIn2b.gif' alt='' width='331' height='457'></p>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'bar',
+  data: [
+    {
+      id: 'barData',
+      values: [
+        {
+          State: 'WY',
+          Age: 'Under 5 Years',
+          Population: 25635
+        },
+        {
+          State: 'WY',
+          Age: '5 to 13 Years',
+          Population: 1890
+        },
+        {
+          State: 'WY',
+          Age: '14 to 17 Years',
+          Population: 9314
+        },
+        {
+          State: 'DC',
+          Age: 'Under 5 Years',
+          Population: 30352
+        },
+        {
+          State: 'DC',
+          Age: '5 to 13 Years',
+          Population: 20439
+        },
+        {
+          State: 'DC',
+          Age: '14 to 17 Years',
+          Population: 10225
+        },
+        {
+          State: 'VT',
+          Age: 'Under 5 Years',
+          Population: 38253
+        },
+        {
+          State: 'VT',
+          Age: '5 to 13 Years',
+          Population: 42538
+        },
+        {
+          State: 'VT',
+          Age: '14 to 17 Years',
+          Population: 15757
+        },
+        {
+          State: 'ND',
+          Age: 'Under 5 Years',
+          Population: 51896
+        },
+        {
+          State: 'ND',
+          Age: '5 to 13 Years',
+          Population: 67358
+        },
+        {
+          State: 'ND',
+          Age: '14 to 17 Years',
+          Population: 18794
+        },
+        {
+          State: 'AK',
+          Age: 'Under 5 Years',
+          Population: 72083
+        },
+        {
+          State: 'AK',
+          Age: '5 to 13 Years',
+          Population: 85640
+        },
+        {
+          State: 'AK',
+          Age: '14 to 17 Years',
+          Population: 22153
+        }
+      ]
+    }
+  ],
+  xField: 'State',
+  yField: 'Population',
+  seriesField: 'Age',
+  stack: false,
+  legends: {
+    visible: true
+  },
+  bar: {
+    // The state style of bar
+    state: {
+      hover: {
+        stroke: '#000',
+        lineWidth: 1
+      }
+    },
+
+  }
+};&lt;/br&gt;
+</code></pre>
+
+<h2 id="results">Results</h2>
+<p>Online demo：https://codesandbox.io/s/bar-chart-stack-false-cr6667</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AKy3bMbbOoUloVx8UiQcvukRn9c.gif' alt='' width='756' height='640'></p>
+<h2 id="related-documentation">Related Documentation</h2>
+<p>Stacked Bar Chart Demo：https://www.visactor.io/vchart/demo/bar-chart/stack-column</br>
+Bar Chart Tutorial：https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Types/Bar</br>
+Related api：https://www.visactor.io/vchart/option/barChart#stack</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

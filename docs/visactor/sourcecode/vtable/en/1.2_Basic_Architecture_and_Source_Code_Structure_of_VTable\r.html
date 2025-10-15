@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1.2 Basic Architecture and Source Code Structure of VTable\r</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h3 id="vtable-core-architecture">VTable Core Architecture</h3>
+<h4 id="structural-analysis">Structural Analysis</h4>
+<p>VTable can be roughly divided into several modules: data processing layer, layout module, rendering module, event module, interaction module, state management, component communication.</p>
+<ul>
+<li>
+<p>The data processing layer is responsible for managing the raw data, handling operations such as row-column transposition and built-in sorting, and then handing the processed data back to the table rendering;\r</p>
+</li>
+<li>
+<p>The layout module is mainly responsible for the basic header layout, pivot table header layout, cell layout, and the calculation algorithm for row and column heights, and then hands over the calculated layout to the rendering layer for rendering.\r</p>
+</li>
+<li>
+<p>The rendering module mainly calls <code>vrender</code> for rendering charts and various graphic elements and relies on the layout module.\r</p>
+</li>
+<li>
+<p>The interaction module handles various user click operations, such as clicking the header to sort, editing cells, etc.;</p>
+</li>
+<li>
+<p>The event module handles internal custom events, including lifecycle events, column width and row height adjustments, table scrolling, etc.;</p>
+</li>
+<li>
+<p>The status module handles the storage of states such as hover, select, menu, sort, etc.;</p>
+</li>
+</ul>
+<p>Different modules implement publish-subscribe through <code>EventTarget</code>.</p>
+<h4 id="data-processing-layer">Data Processing Layer</h4>
+<p>This layer mainly receives incoming data and stores it, while performing basic transformations on the data, including aggregation and sorting operations.</p>
+<p>During the initialization of <code>ListTable</code>, some basic operations are performed on the incoming data. First, <code>options.records</code> or <code>options.dataSource</code> is passed to <code>CachedDataSource</code> for instantiation, and then the instance is placed in <code>table.internalProps.dataSource</code> for internal use by the component, such as when performing layout calculations for the table.</p>
+<p>Initialization of the data layer:</p>
+<ul>
+<li>
+<p>First step: When initializing ListTable, handle dataSource or records</p>
+</li>
+<li>
+<p>Step two: Use different judgments to put dataSource or records into internalProps, so that subsequent data changes can directly operate on the dataSource object\r</p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/AO2NwkOfkhJR3IbEIUmcoEvYnjg.gif' alt='' width='820' height='auto'></p>
+<ul>
+<li>VTable\packages\vtable\src\ListTable.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">constructor(container?: HTMLElement | ListTableConstructorOptions, options?: ListTableConstructorOptions) {
+    //...
+    if (options.dataSource) {
+      _setDataSource(this, options.dataSource);
+    } else if (options.records) {
+      this.setRecords(options.records as any, { sortState: internalProps.sortState });
+    } else {
+      this.setRecords([]);
+    }
+    //...
+}
+</code></pre>
+
+<ul>
+<li><code>setDataSource</code> and <code>setRecords</code> methods: VTable\packages\vtable\src\core\tableHelper.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// addReleaseObj 方法可以粗略概括为调用回调函数去更新组件内部的数据
+export function _setDataSource(table: BaseTableAPI, dataSource: DataSource): void {
+  _dealWithUpdateDataSource(table, () =&gt; {
+    if (dataSource) {
+      if (dataSource instanceof DataSource) {
+        table.internalProps.dataSource = dataSource;
+      } else {
+        // 如果是初次调用该方法，会将 dataSource 初始化为 CachedDataSource 的实例，后续如果更新就不会重复 new
+        const newDataSource = (table.internalProps.dataSource = new CachedDataSource(dataSource));
+        table.addReleaseObj(newDataSource);
+      }
+    } else {
+      table.internalProps.dataSource = DataSource.EMPTY;
+    }
+    table.internalProps.records = null;
+  });
+}
+
+export function _setRecords(table: ListTableAPI, records: any[] = []): void {
+  _dealWithUpdateDataSource(table, () =&gt; {
+    table.internalProps.records = records;
+    // 这里通过调用 CachedDataSource.ofArray 方法将records转换为实例所需的dataSource结构
+    const newDataSource = (table.internalProps.dataSource = CachedDataSource.ofArray(
+      records,
+      table.internalProps.dataConfig,
+      table.pagination,
+      table.internalProps.columns,
+      table.internalProps.layoutMap.rowHierarchyType,
+      getHierarchyExpandLevel(table)
+    ));
+    // 可以看到这里调用 addReleaseObj 方法将 CachedDataSource 处理过的records 存放进 table.internalProps.dataSource 中
+    table.addReleaseObj(newDataSource);
+  });
+}
+</code></pre>
+
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">  The CachedDataSource.ofArray method internally also uses new CachedDataSource to adapt the records.
+</div>
+<ul>
+<li>VTable/packages/src/data/CachedDataSource.ts</li>
+</ul>
+<p>In this class, caching operations are implemented for the DataSource. It also inherits from <code>DataSource</code>.</p>
+<pre class="codehilite"><code class="language-javascript">export class CachedDataSource extends DataSource {
+  // ...
+  static ofArray(
+    array: any[],
+    dataConfig?: IListTableDataConfig,
+    pagination?: IPagination,
+    columns?: ColumnsDefine,
+    rowHierarchyType?: 'grid' | 'tree',
+    hierarchyExpandLevel?: number
+  ): CachedDataSource {
+    return new CachedDataSource(
+      {
+        get: (index: number): any =&gt; {
+          return array[index];
+        },
+        length: array.length,
+        records: array
+      },
+      dataConfig,
+      pagination,
+      columns,
+      rowHierarchyType,
+      hierarchyExpandLevel
+    );
+  }
+  //...
+}
+</code></pre>
+
+<ul>
+<li>VTable/src/data/DataSource.ts</li>
+</ul>
+<p>In the <code>DataSource</code> class, you can see that the management operations for <code>records</code> are implemented in DataSource, and the processing of raw data is abstracted into this module.</p>
+<pre class="codehilite"><code class="language-javascript"> export interface DataSourceParam {
+  get?: (index: number) =&gt; any; // 这里是对数据的代理
+  length?: number;
+  */** 需要异步加载的情况 请不要设置records 请提供get接口 */*
+  records?: any;
+  // records 的增删操作
+  added?: (index: number, count: number) =&gt; any;
+  deleted?: (index: number[]) =&gt; any;
+  canChangeOrder?: (sourceIndex: number, targetIndex: number) =&gt; boolean;
+  changeOrder?: (sourceIndex: number, targetIndex: number) =&gt; void;
+}
+
+export class DataSource extends EventTarget implements DataSourceAPI {
+ constructor(
+    dataSourceObj?: DataSourceParam,
+    dataConfig?: IListTableDataConfig,
+    pagination?: IPagination,
+    columns?: ColumnsDefine,
+    rowHierarchyType?: 'grid' | 'tree',
+    hierarchyExpandLevel?: number
+  ) {
+    super();
+    // ...
+    this.dataSourceObj = dataSourceObj;
+    this.dataConfig = dataConfig;
+    this._get = dataSourceObj?.get;
+    this.columns = columns;
+    this._source = dataSourceObj?.records ? this.processRecords(dataSourceObj?.records) : dataSourceObj;
+    }
+}
+</code></pre>
+
+<p>The logic layer mainly involves various types of logic processing, such as chart transposition, data sorting, filtering logic, and aggregation. The main data processing logic is stored in these files, including APIs exposed for external calls. The data initialization mentioned earlier is done by calling the methods in these files:</p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">VTable\packages\vtable\src\data\CachedDataSource.ts
+VTable\packages\vtable\src\data\DataSource.ts
+VTable\packages\vtable\src\dataset\dataset.ts
+VTable\packages\vtable\src\dataset\dataset-pivot-table.ts
+</div>
+<p>For example, the core logic of the following two APIs:</p>
+<div style="display: flex;"><div style="flex: 47; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DOdsb0Qw3oGSpzxETiNcspR2n5f.gif' alt='' width='500' height='auto'>
+
+</div><div style="flex: 52; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OgycbIbePoB6DnxGstzcliagnic.gif' alt='' width='503' height='auto'>
+
+</div></div>
+<ul>
+<li>VTable\packages\vtable\src\data\DataSource.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// 树形结构的展开和收起
+toggleHierarchyState(index: number, bodyStartIndex: number, bodyEndIndex: number) {
+    //... 
+ }
+
+*/***
+** 修改多条数据recordIndexs*
+**/*
+updateRecords(records: any[], recordIndexs: (number | number[])[]) {
+  //...
+}
+//...
+</code></pre>
+
+<h4 id="layout-module">Layout Module</h4>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">The core files of the layout module are located in VTable\packages\vtable\src\layout
+</div>
+<p>The Layout module is the core module of the VTable component, including the header of the basic table, the header of the pivot table, the layout of chart cells, the logic of tree headers and tree cells. After adjustments are completed through the layout module, it is then handed over to the rendering layer for rendering. In addition, this file also contains a lot of auxiliary logic for layout adjustments.</p>
+<h4 id="rendering-module">Rendering Module</h4>
+<p>VTable 的核心渲染能力是通过 <a href="https://github.com/VisActor/VRender">VRender</a> 实现的，其内部借用了 <code>VRender</code>的能力去实现表格的初始化渲染、数据更新与删除后的重新渲染、用户拖拽后的重新渲染等等。</p>
+<p>Inside the VTable, a scenegraph is maintained, which defines the core rendering logic within the VTable.</p>
+<p>The initialization of the scene tree and the definition of the <code>render</code> method are located in <code>BaseTable</code>:</p>
+<ul>
+<li>VTable/packages/vtable/src/core/BaseTable.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">export abstract class BaseTable extends EventTarget implements BaseTableAPI {
+  //....
+  constructor(container: HTMLElement, options: BaseTableConstructorOptions = {}) {
+  //...
+      this.scenegraph = new Scenegraph(this);
+   //...
+  }
+
+  */***
+*   * 重绘表格(同步绘制)*
+*   */*
+  render(): void {
+    this.scenegraph.renderSceneGraph();
+  }
+ }
+</code></pre>
+
+<ul>
+<li>VTable/packages/vtable/src/scenegrpah/scenegrapg.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">*/***
+* * @description: 表格场景树，存储和管理表格全部的场景图元*
+* * @return {*}*
+* */*
+export class Scenegraph {
+  //...
+  stage: IStage;
+  //...
+
+  */***
+*   * @description: 绘制场景树*
+*   * @param {any} element*
+*   * @param {CellRange} visibleCoord*
+*   * @return {*}*
+*   */*
+  renderSceneGraph() {
+    this.stage.render();
+  }
+</code></pre>
+
+<p>The entry point for the initial rendering is the BaseTable.render method, which internally calls renderSceneGraph in the scenegraph. It then uses the render method on the Stage created by createStage in VRender to draw the table to the specified DOM node. At this point, the first step of rendering is complete, and the subsequent rendering layer logic is invoked through the scenegraph.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ATKxwhs4khU0WobZpwxcDh7pnmc.gif' alt='' width='1000' height='auto'></p>
+<h4 id="interaction-module">Interaction Module</h4>
+<p>The interaction module mainly handles two tasks:</p>
+<ul>
+<li>
+<p>Listen to table custom events</p>
+</li>
+<li>
+<p>Change table-related status, re-render the table</p>
+</li>
+</ul>
+<p>The interaction module mainly consists of the event module and state management, completing operations such as hover highlighting, select highlighting, and table scrolling.</p>
+<h4 id="event-module">Event Module</h4>
+<ul>
+<li>VTable\packages\vtable\src\event\event.ts</li>
+</ul>
+<p>event.ts exposes <code>EventManager</code>, <code>EventManager</code> is used to manage various events of the table, including mouse events (such as click, double-click to auto-adjust column width, mouse movement, etc.) and keyboard events (such as mouse scroll, enter key to submit edited content, etc.).</p>
+<p>VTable internally listens to most custom events within the table, including wheel and click events, through <code>Stage.addEventListener</code> provided by VRender. For example, the wheel event is used to implement table scrolling; click is used to change the selectState and simultaneously trigger the externally passed click_cell callback.</p>
+<h4 id="state-management">State Management</h4>
+<p><strong>Global State Management</strong>: The state here exists independently of the table, and when the state changes, it will redraw the table. <code>StateManager</code> mainly includes the following parts:</p>
+<ul>
+<li>
+<p>hoverState table hover configuration and the currently hovered cell</p>
+</li>
+<li>
+<p>selectState table currently selected cell</p>
+</li>
+<li>
+<p>frozen rows or columns</p>
+</li>
+<li>
+<p>scroll The current table's horizontal and vertical scroll position</p>
+</li>
+<li>
+<p>Highlight state of sparkLine mini chart</p>
+</li>
+<li>
+<p>Custom sorting within sort</p>
+</li>
+</ul>
+<p>These data are defined in <code>StateManager</code> and generated during table initialization. By updating the State, the table can be redrawn. The core file of <code>StateManager</code> is defined in: <code>VTable\packages\vtable\src\state\state.ts</code></p>
+<h4 id="component-communication">Component Communication</h4>
+<p>The component communication part of VTable relies on the <code>EventTarget</code> class. By observing the source code structure, it can be found that most modules inherit from <code>EventTarget</code> and implement event communication through <code>EventTarget</code>.</p>
+<ul>
+<li>vtable/src/data/Datasource.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">export class DataSource extends EventTarget implements DataSourceAPI { //...
+</code></pre>
+
+<ul>
+<li>vtable/src/core/BaseTable.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">export abstract class BaseTable extends EventTarget implements BaseTableAPI { //...
+</code></pre>
+
+<ul>
+<li>vtable/src/header-helper/style/Style.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">export class Style extends EventTarget implements ColumnStyle {
+</code></pre>
+
+<p><code>EventTarget</code> internal structure:</p>
+<ul>
+<li>vtable/src/event/EventTarget.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">import type {
+  TableEventListener,
+  EventListenerId,
+  TableEventHandlersEventArgumentMap,
+  TableEventHandlersReturnMap
+} from '../ts-types';
+import { isValid } from '@visactor/vutils';
+
+let idCount = 1;
+
+export class EventTarget {
+  private listenersData: {
+    listeners: { [TYPE in keyof TableEventHandlersEventArgumentMap]?: TableEventListener&lt;TYPE&gt;[] };
+    listenerData: {
+      [id: number]: {
+        type: string;
+        listener: TableEventListener&lt;keyof TableEventHandlersEventArgumentMap&gt;;
+        remove: () =&gt; void;
+      };
+    };
+  } = {
+    listeners: {},
+    listenerData: {}
+  };
+
+  */***
+*   * 监听事件*
+*   * @param type 事件类型*
+*   * @param listener 事件监听器*
+*   * @returns 事件监听器id*
+*   */*
+  on&lt;TYPE extends keyof TableEventHandlersEventArgumentMap&gt;(                        
+    type: TYPE,
+    listener: TableEventListener&lt;TYPE&gt;
+  ): EventListenerId {
+    ...
+  }
+
+  off(type: string, listener: TableEventListener&lt;keyof TableEventHandlersEventArgumentMap&gt;): void;
+  off(id: EventListenerId): void;
+  off(
+    idOrType: EventListenerId | string,
+    listener?: TableEventListener&lt;keyof TableEventHandlersEventArgumentMap&gt;
+  ): void {
+     // ...
+  }
+
+   // 添加事件监听
+  addEventListener&lt;TYPE extends keyof TableEventHandlersEventArgumentMap&gt;(
+    type: TYPE,
+    listener: TableEventListener&lt;TYPE&gt;,
+    option?: any
+  ): void {
+    this.on(type, listener);
+  }
+
+  // 移除事件监听
+  removeEventListener(type: string, listener: TableEventListener&lt;keyof TableEventHandlersEventArgumentMap&gt;): void {
+      // ...
+  }
+
+  hasListeners(type: string): boolean {
+      // ...
+  }
+
+  // 触发事件
+  fireListeners&lt;TYPE extends keyof TableEventHandlersEventArgumentMap&gt;(
+    type: TYPE,
+    event: TableEventHandlersEventArgumentMap[TYPE]
+  ): TableEventHandlersReturnMap[TYPE][] {
+      // ...
+  }
+
+  // 释放事件监听
+  release(): void {
+    delete this.listenersData;
+  }
+}
+</code></pre>
+
+<ul>
+<li>
+<p>Internal component communication:</p>
+</li>
+<li>
+<p>Communication between different layers is carried out through events, function calls, or data sharing. For example, when the interaction module receives a user's sorting operation request, it will call the sorting function of the logic processing layer and pass the sorting result to the rendering layer for re-rendering.</p>
+</li>
+<li>
+<p>The rendering layer may update based on the data from the data layer, triggering certain operations in the interaction module, such as updating the display of the selected state, etc.</p>
+</li>
+<li>
+<p>External callback:</p>
+</li>
+<li>
+<p>External incoming event subscriptions are called back through <code>fireListeners</code>, for example, different lifecycle events will be promptly called back to the user through <code>fireListeners</code>.</p>
+</li>
+</ul>
+<h4 id="overall-module-design">Overall Module Design</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/EvQ6bQHFhoosf0x7SkBc8PDbnwd.gif' alt='' width='1000' height='auto'></p>
+<h3 id="vtable-source-code-structure">VTable Source Code Structure</h3>
+<h4 id="vtable-module-overview">VTable Module Overview</h4>
+<ul>
+<li>Data Processing Layer</li>
+</ul>
+<p><code>Options</code> The table configuration passed in by the user, used to describe the structure, content, and style of the table.</p>
+<p><code>DataSource</code> is responsible for managing data, defining methods for reading and manipulating data;</p>
+<p><code>Dataset</code> Pivot table data parsing module;</p>
+<ul>
+<li>Layout Module</li>
+</ul>
+<p><code>Layout</code> is responsible for the layout calculation of basic tables and pivot table headers, as well as the calculation of cell row and column heights, etc.;</p>
+<ul>
+<li>Rendering Module</li>
+</ul>
+<p><code>Scenegraph</code> module is responsible for the creation and updating of table scene nodes;</p>
+<p><code>SceneProxy</code> is a submodule of Scenegraph, responsible for calculating the maximum number of display rows and columns, initializing the scene tree logic, and the logic for progressive table rendering.</p>
+<p><code>Theme</code> manages the global styles of the module table, providing styles for the cells; </p>
+<ul>
+<li>State Management</li>
+</ul>
+<p><code>StateManager</code> is responsible for managing the current state of the table, including frozen, selected, hover, scroll, and other table states.</p>
+<ul>
+<li>Event Module</li>
+</ul>
+<p><code>EventManager</code> is responsible for managing the definition and listening of custom events.</p>
+<ul>
+<li>Component Communication</li>
+</ul>
+<p><code>EventTarget</code> provides a publish-subscribe pattern, responsible for event communication between different modules;</p>
+<h4 id="vtable-directory-structure">Vtable Directory Structure</h4>
+<p>By observing the directory under the <code>src</code> folder, you can see the general project structure, which is strictly divided according to modules. Basically, each file exports a Class, and by constructing instances at different times and places, the initialization of the VTable is completed.</p>
+<p>The diagram below roughly shows the code structure of VTable and the functions of each file.</p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/VFfewdljLhX2CabukvQc9aRonGg.gif" /></p>
+<h4 id="path-analysis">Path Analysis</h4>
+<p>Starting from <code>src/index.ts</code>, you can see that VTable exposes the two most commonly used components, ListTable and PivotTable, from here. This is where different components of VTable converge.</p>
+<ul>
+<li>vtable/packages/vtable/src/index.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">import { graphicUtil, registerForVrender } from '@src/vrender';
+registerForVrender();
+// ...
+import { ListTableAll as ListTable } from './ListTable-all';
+import { PivotTableAll as PivotTable } from './PivotTable-all';
+//...
+export {
+  //...,
+  ListTable,
+  //...
+  PivotTable,
+  PivotChart,
+};
+//...
+</code></pre>
+
+<p>Enter <code>ListTable-all</code>, you can see that the necessary components are registered during the initialization of <code>ListTable</code> so that the chart instance can be called in different places.</p>
+<ul>
+<li>VTable\packages\vtable\src\ListTable-all.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">import { ListTable } from './ListTable';
+// ...
+
+registerAxis(); // 注册坐标轴
+registerEmptyTip(); // 注册 EmptyTip 组件
+// ...
+registerVideoCell();
+export class ListTableAll extends ListTable {}
+</code></pre>
+
+<ul>
+<li>VTable/packages/vtable/src/ListTable.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">export class ListTable extends BaseTable implements ListTableAPI {
+</code></pre>
+
+<p>In BaseTable, the most core modules are defined.</p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">Scenegraph  Scene Tree
+StateManager  State Management
+EventManager Interaction Event Management
+</div>
+<ul>
+<li>VTable/packages/vtable/src/core/BaseTable.ts</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">export abstract class BaseTable extends EventTarget implements BaseTableAPI {
+  constructor {
+      ...
+      this.scenegraph = new Scenegraph(this);
+      this.stateManager = new StateManager(this);
+      this.eventManager = new EventManager(this);   
+      this.animationManager = new TableAnimationManager(this);
+      ...
+  }     
+}
+</code></pre>
+
+<p>BaseTable inherits from the EventTarget class to implement publish-subscribe operations.</p>
+<ul>
+<li>After performing path analysis on VTable, we can draw a rough reference diagram of the ListTable modules:</li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XLzHwVyQMhwn0ybjI9DcFIZRn4e.gif" /></p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">PivotTable also adopts a similar architecture, inheriting from BaseTable just like `ListTable`.</div>
+</div>
+<h3 id="conclusion">Conclusion</h3>
+<p>VTable, through reasonable modular management of various functions, can maximize development efficiency and reduce the learning curve.</p>
+<p>This article divides the structure of VTable into layers, categorizing it into data layer, logic layer, rendering layer, and interaction module. By analyzing different layers, it introduces the basic architecture of VTable.</p>
+<p>Then, starting from the directory, it introduces the source code structure of VTable, the division of various modules, and the functions responsible for different modules. After analyzing from two perspectives, one can have a certain understanding of the overall architecture of VTable. \r</p>
+<h1 id="this-document-is-provided-by-the-following-personnel">This document is provided by the following personnel</h1>
+<p>taiiiyang( https://github.com/taiiiyang) </p>
+</body>
+</html>

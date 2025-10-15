@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14.2.2 Taro-VChart Source Code Explanation</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="compatibility-with-host-environment">Compatibility with Host Environment</h2>
+<p>The Taro framework, based on the React technology stack, provides cross-platform component development capabilities (https://taro-docs.jd.com/docs/component). A Taro component consists of the following files:</p>
+<ul>
+<li>
+<p>index.config.ts: Component compilation configuration (optional)</p>
+</li>
+<li>
+<p>index.tsx: Component logic and template content</p>
+</li>
+<li>
+<p>index.module.scss: Component styles (CSS Modules scheme recommended)</p>
+</li>
+</ul>
+<h3 id="file-description">File Description</h3>
+<ol>
+<li><strong>index.tsx</strong></li>
+</ol>
+<p>Main component file, includes:</p>
+<ul>
+<li>
+<p>Define the component using <code>function Component() { ... }</code> or <code>class Component extends Component { ... }</code></p>
+</li>
+<li>
+<p>Write component structure using JSX template syntax</p>
+</li>
+<li>
+<p>Export the component through export default</p>
+</li>
+<li>
+<p>Component lifecycle management (using Hooks or Class lifecycle)</p>
+</li>
+<li>
+<p>Event handling (following React synthetic event specifications)</p>
+</li>
+<li>
+<p><strong>index.module.scss</strong></p>
+</li>
+</ul>
+<p>Component style file:</p>
+<ul>
+<li>
+<p>Supports Sass/Scss preprocessing</p>
+</li>
+<li>
+<p>Use CSS Modules to avoid style pollution</p>
+</li>
+<li>
+<p>Import using <code>import styles from './index.module.scss'</code></p>
+</li>
+<li>
+<p>Bind styles using className={styles.container}</p>
+</li>
+<li>
+<p><strong>index.config.ts</strong> (optional)</p>
+</li>
+</ul>
+<p>Component compilation configuration:</p>
+<ul>
+<li>
+<p>Define component name: <code>defineCustomComponent({ name: 'my-component' })</code></p>
+</li>
+<li>
+<p>Set default values for component properties</p>
+</li>
+<li>
+<p>Configure native mini-program components needed by the component</p>
+</li>
+<li>
+<p>Cross-platform compatibility configuration</p>
+</li>
+</ul>
+<h3 id="1-core-entry-module">1. Core Entry Module</h3>
+<p><code>index.tsx</code> is the entry file of the entire library, exporting two core components <code>VChart</code> and <code>VChartSimple</code>:</p>
+<pre class="codehilite"><code class="language-xml">import { VChartSimple } from './simple';
+import { VChart } from './vchart';
+
+export * from './charts';  // 导出所有图表组件
+export { VChart, VChartSimple };  // 导出核心适配器
+export default VChart;  // 默认导出    
+</code></pre>
+
+<p>Three-layer export strategy is implemented here:</p>
+<ul>
+<li>
+<p>Chart component set: Export all predefined charts in bulk through export *</p>
+</li>
+<li>
+<p>Core adapters: Individually export the two main components, VChart and VChartSimple</p>
+</li>
+<li>
+<p>Default export: Maintain compatibility with the original VChart API</p>
+</li>
+</ul>
+<h2 id="2-environment-adaptation-layer">2. Environment Adaptation Layer</h2>
+<h3 id="21-vchart-component">2.1 VChart Component</h3>
+<p><code>vchart.tsx</code> is the main environment adaptation component, which will choose the appropriate rendering strategy based on the current environment:</p>
+<pre class="codehilite"><code class="language-xml">const strategies = {
+  lark: () =&gt; &lt;GeneralChart mode=&quot;miniApp&quot;/&gt;,
+  tt: () =&gt; &lt;GeneralChart mode=&quot;tt&quot;/&gt;,
+  weapp: () =&gt; &lt;GeneralChart mode=&quot;wx&quot;/&gt;,
+  web: () =&gt; &lt;WebChart /&gt;,
+  h5: () =&gt; &lt;WebChart mode=&quot;mobile-browser&quot;/&gt;
+};    
+</code></pre>
+
+<p>Key Design Points:</p>
+<ul>
+<li>
+<p>Use strategy pattern to handle different environments</p>
+</li>
+<li>
+<p>Automatically register environment-specific configurations (such as registerLarkEnv)</p>
+</li>
+<li>
+<p>Pass in specific mode parameters to adapt to different mini-program platforms</p>
+</li>
+</ul>
+<h3 id="22-vchartsimple-component">2.2 VChartSimple Component</h3>
+<p><code>simple.tsx</code> is a simplified version of VChart, without environment registration logic:</p>
+<pre class="codehilite"><code class="language-xml">export function VChartSimple({ type, ...args }: IVChartProps) {
+  const env = (type ?? Taro.getEnv()).toLocaleLowerCase();
+  const strategies = {
+    lark: () =&gt; &lt;GeneralChart {...args} mode=&quot;miniApp&quot; /&gt;,
+    tt: () =&gt; &lt;GeneralChart {...args} mode=&quot;tt&quot; /&gt;,
+    // ...其他环境
+  };
+
+  // 环境选择逻辑
+}    
+</code></pre>
+
+<p>This component is used for on-demand loading scenarios to reduce package size.\r\n\r\n## Chart Factory System\r\n\r\n<code>charts/generate-charts.tsx</code> implements the factory pattern for chart components, providing:\r\n\r\n<em> Unified component creation process\r\n\r\n</em> Automatic registration of chart dependency modules\r\n\r\n* Type safety (through generic constraints)\r\n\r\nUsing the factory pattern to uniformly generate chart components (such as <code>BoxPlotChart</code>), which includes all available chart type components. Each chart is created through the createChart method, standardizing parameters:\r\n\r</p>
+<pre class="codehilite"><code class="language-xml">export const Chart = createChart&lt;ISpec&gt;(
+  'ChartName',
+  { chartConstructor: VChart }, // 核心图表构造器
+  [registerModules] // 按需注册的图表模块
+);    
+</code></pre>
+
+<h2 id="rendering-component-layer">Rendering Component Layer</h2>
+<p>After configuring the corresponding charts, we enter the rendering component layer, which includes a general chart component and a browser chart component. Their functions are the same, mainly to cater to different platforms. A brief flowchart is as follows:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Tbrabgo1ro1M6YxmMGicefwLnGg.gif' alt='' width='908' height='auto' /></p>
+<h3 id="general-chart-component">General Chart Component</h3>
+<p><code>components/general-chart/index.tsx</code> is the core rendering component in the mini program environment, with the following key technical points:</p>
+<ul>
+<li>
+<p>Asynchronous DOM acquisition mechanism (solving Feishu mini program issues)</p>
+</li>
+<li>
+<p>Three-canvas rendering architecture (main canvas, interactive canvas, auxiliary canvas)</p>
+</li>
+<li>
+<p>Event delegation and redirection</p>
+</li>
+<li>
+<p>Environment-specific configuration</p>
+</li>
+</ul>
+<h3 id="web-chart-component">Web Chart Component</h3>
+<p><code>components/web-chart/index.tsx</code> is the rendering component for the browser environment, with the main differences from the mini program component:</p>
+<ul>
+<li>
+<p>Single container rendering (vs. three-canvas structure)</p>
+</li>
+<li>
+<p>Synchronous DOM acquisition (vs. asynchronous loop attempts)</p>
+</li>
+<li>
+<p>Direct event binding (vs. event delegation)</p>
+</li>
+</ul>
+<h2 id="chart-control-layer">Chart Control Layer</h2>
+<p><code>utils/tt-canvas/index.ts</code> is the controller for chart instances, TTCanvas is responsible for managing VChart instances, receiving props passed by GeneralChart, and achieving seamless integration of chart capabilities in the mini program ecosystem through abstract general interfaces.</p>
+<p>The core responsibilities of TTCanvas:</p>
+<ul>
+<li>
+<p>Lifecycle management (creation, rendering, updating, releasing)</p>
+</li>
+<li>
+<p>Cross-end parameter bridging (converting mini program parameters to VChart usable format)</p>
+</li>
+<li>
+<p>Event system adaptation (binding custom events)</p>
+</li>
+<li>
+<p>Rendering strategy control (environment-specific configuration)</p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KpZ9bwQXjoB15jx9Lkqc7CM2nZg.gif' alt='' width='1000' height='auto' /></p>
+<p># This document was revised and organized by the following person 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>48. 如何以 React 的方式， 自定义图例？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何以 React 的方式， 自定义图例？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>很多场景下， 需要让图例拥有更丰富的效果， 例如在长图例存在时， 添加...缩略， 并提供 Tooltip， 通常情况下， 图表库默认提供的图例功能， 并不能完美满足用户的需求。</br></p>
+<h2 id="_3">解决方案</h2>
+<p>不同图表库的解决方案不一样， VChart 对图例功能进行了抽象， 提供<code>getLegendSelectedDataByIndex</code> 与 <code>setLegendSelectedDataByIndex</code> 接口， 让用户通过<code>html</code> 自定义图例， 实现预期的效果。</br>
+可以迅速使用 react 将自定义 VChart 图表的图例。</br>
+步骤一： 将图例配置设置为不可见， 即<code>visible: false</code></br>
+步骤二： 通过<code>getLegendSelectedDataByIndex</code> 判断图例需要选中或取消选中</br>
+步骤三： 通过<code>setLegendSelectedDataByIndex</code> 使用 API 操作图例的选中或取消。</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>import { StrictMode, useEffect, useRef, useState, useCallback } from &quot;react&quot;;
+import { createRoot } from &quot;react-dom/client&quot;;
+
+const rootElement = document.getElementById(&quot;root&quot;);
+const root = createRoot(rootElement);
+
+import VChart from &quot;@visactor/vchart&quot;;
+
+const App = () =&gt; {
+  const ref = useRef(null);
+  const data = [
+    { year: &quot;2000&quot;, type: &quot;A&quot;, sales: 22 },
+    { year: &quot;2000&quot;, type: &quot;B&quot;, sales: 11 },
+
+    { year: &quot;2001&quot;, type: &quot;A&quot;, sales: 22 },
+    { year: &quot;2001&quot;, type: &quot;B&quot;, sales: 11 },
+  ];
+  const spec = {
+    type: &quot;bar&quot;,
+    data: [
+      {
+        id: &quot;barData&quot;,
+        values: data,
+      },
+    ],
+    legends: {
+      visible: false,
+    },
+    xField: [&quot;year&quot;, &quot;type&quot;],
+    yField: &quot;sales&quot;,
+    seriesField: &quot;type&quot;,
+  };
+
+  useEffect(() =&gt; {
+    const vchart = new VChart(spec, { dom: &quot;chart&quot; });
+    ref.current = vchart;
+    vchart.renderSync();
+
+    return () =&gt; {
+      vchart.release();
+    };
+  }, []);
+
+  const handleSelect = (value) =&gt; () =&gt; {
+    const selected = ref.current.getLegendSelectedDataByIndex();
+
+    if (selected.includes(value)) {
+      // cancel
+      const newSelected = [...selected];
+      const index = newSelected.indexOf(value);
+      newSelected.splice(index, 1);
+      ref.current.setLegendSelectedDataByIndex(0, newSelected);
+    } else {
+      // select
+      ref.current.setLegendSelectedDataByIndex(0, [...selected, value]);
+    }
+  };
+
+  const customLegend = Array.from(new Set(data.map((d) =&gt; d.type))).map(
+    (name) =&gt; {
+      return (
+        &lt;div
+          onClick={handleSelect(name)}
+          style={{
+            textAlign: &quot;center&quot;,
+            border: &quot;1px solid gray&quot;,
+            marginBottom: 8,
+            cursor: &quot;pointer&quot;,
+          }}
+        &gt;
+          {/* do any custom thing using html  */}
+          {name + &quot;....................................&quot;}
+        &lt;/div&gt;
+      );
+    }
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;
+      {customLegend}
+    &lt;/div&gt;
+  );
+};
+
+root.render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;
+);
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>Online Demo: https://codesandbox.io/p/sandbox/vchart-react-tooltip-df558t?file=%2Fsrc%2Findex.js%3A58%2C1</br></p>
+<h2 id="_6">相关文档</h2>
+<p>Legend Event API: https://visactor.io/vchart/api/API/vchart</br>
+Github: https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

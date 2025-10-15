@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4.3 Built-in Event Definition and Implementation</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="introduction">Introduction</h2>
+<p>VTable internally listens to two types of events: native DOM events and built-in custom events.    \r</p>
+<p>This article will explain the definition of custom events and matters related to custom events in the VTable.    </p>
+<h2 id="custom-events">Custom Events</h2>
+<p>In front-end development, communication between Javascript and HTML is done through events, such as blur, click, mouse movement, etc. Events are a form of communication, and we can complete page interaction functions by listening to events.    \r</p>
+<p>However, for complex projects, basic events cannot meet business needs, and this is where <strong>custom events</strong> can be introduced.**    \r</p>
+<p>Regular events use the observer pattern, and they are triggered when the user performs the corresponding operation. Custom events, on the other hand, use the publish-subscribe pattern, allowing developers to decide when to register and trigger them.</p>
+<p>Custom events need to be registered first, as shown in the figure below. In module E, register and pass in the corresponding callback first, and then you can trigger custom events in other modules to execute the corresponding callback.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/BxnIbI1s2oY5mkx04UYc319dnFd.gif' alt='' width='1000' height='auto'></p>
+<p>In VTable, custom modules are primarily used for the following process: when a user interacts, the corresponding custom event is triggered, the state module is changed, and the table component is re-rendered, achieving the interactive system in VTable.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Zrh8bJscKoG9qgxAy46cGEYTn8c.gif' alt='' width='1000' height='auto'></p>
+<p>Custom events can be used not only for communication between different modules, but also for business parties to register custom events and implement custom logic.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/JTi5bDQvnoCYKSxuIObckj9hnUb.gif' alt='' width='1000' height='auto'></p>
+<h2 id="built-in-event-categories">Built-in Event Categories</h2>
+<p>Inside the VTable, more than 50 built-in events are provided, introduced below according to different categories:    \r</p>
+<ul>
+<li>
+<p>Cell related    </p>
+</li>
+<li>
+<p>CLICK_CELL   <em>Mouse click cell event</em>    </p>
+</li>
+<li>
+<p>DBLCLICK_CELL <em>Mouse double-click cell event</em>    </p>
+</li>
+<li>
+<p>SELECTED_CELL <em>Cell selection state change event</em>    </p>
+</li>
+<li>
+<p>SELECTED_CLEAR <em>Cell selection state change event</em>    </p>
+</li>
+<li>
+<p>DRAG_SELECT_END <em>Drag to select cells mouse release event</em>     </p>
+</li>
+<li>
+<p>MOUSEDOWN_CELL <em>Mouse down event on the cell</em>     </p>
+</li>
+<li>
+<p>MOUSEUP_CELL <em>Cell mouse up event</em>     </p>
+</li>
+<li>
+<p>MOUSEMOVE_CELL <em>Mouse move event on a cell</em>    </p>
+</li>
+<li>
+<p>MOUSEENTER_CELL <em>Mouse enter cell event</em>    </p>
+</li>
+<li>
+<p>MOUSELEAVE_CELL <em>Mouse leave cell event</em>    </p>
+</li>
+<li>
+<p>CHANGE_CELL_VALUE <em>Event to change cell value</em> \r</p>
+</li>
+<li>
+<p>COPY_DATA <em>Cell content copy event</em>    </p>
+</li>
+<li>
+<p>CONTEXTMENU_CELL <em>Cell right-click event</em>    </p>
+</li>
+<li>
+<p>Keyboard related events    </p>
+</li>
+<li>
+<p>KEYDOWN <em>Keyboard key press event</em>    </p>
+</li>
+<li>
+<p>Table related events    </p>
+</li>
+<li>
+<p>MOUSEENTER_TABLE <em>Mouse enter table event</em>    </p>
+</li>
+<li>
+<p>MOUSELEAVE_TABLE <em>Mouse leave table event</em>    </p>
+</li>
+<li>
+<p>MOUSEDOWN_TABLE <em>Mouse click table event</em>    </p>
+</li>
+<li>
+<p>MOUSEMOVE_TABLE <em>Mouse move event on the table</em>    </p>
+</li>
+<li>
+<p>Row height and column width adjustment event    </p>
+</li>
+<li>
+<p>RESIZE_COLUMN <em>Column width adjustment event</em>    </p>
+</li>
+<li>
+<p>RESIZE_COLUMN_END <em>Column width adjustment end event</em>    </p>
+</li>
+<li>
+<p>RESIZE_ROW <em>Row height adjustment event</em>    \r</p>
+</li>
+<li>
+<p>RESIZE_ROW_END <em>Row height adjustment end event</em>    </p>
+</li>
+<li>
+<p>Event of dragging the header to move position    </p>
+</li>
+<li>
+<p>CHANGE_HEADER_POSITION_START <em>Drag the header or drag the row to start the move position event</em>    \r</p>
+</li>
+<li>
+<p>CHANGE_HEADER_POSITION <em>Event for dragging the header or row to move position</em>    </p>
+</li>
+<li>
+<p>CHANGING_HEADER_POSITION  <em>Event during the process of dragging the header or dragging the row</em>    </p>
+</li>
+<li>
+<p>CHANGE_HEADER_POSITION_FAIL <em>The event of failing to drag the header or row to move the position</em>    </p>
+</li>
+<li>
+<p>Sorting related events    </p>
+</li>
+<li>
+<p>SORT_CLICK <em>Click to sort icon event.</em><strong><em>ListTable exclusive event</em></strong>    \r</p>
+</li>
+<li>
+<p>PIVOT_SORT_CLICK <em>Pivot table sort icon click event.</em><strong><em>PivotTable exclusive event</em></strong>    \r</p>
+</li>
+<li>
+<p>AFTER_SORT * Event executed after sorting. <strong><em>*ListTable proprietary event</em></strong>** ** \r</p>
+</li>
+<li>
+<p>Icon event    </p>
+</li>
+<li>
+<p>ICON_CLICK <em>icon icon click event</em>     </p>
+</li>
+<li>
+<p>FREEZE_CLICK <em>Click the fixed column icon to freeze or unfreeze the event</em> \r</p>
+</li>
+<li>
+<p>DRILLMENU_CLICK <em>Drill button click event.</em><strong><em>Pivot table specific event</em></strong>    \r</p>
+</li>
+<li>
+<p>Scroll event    </p>
+</li>
+<li>
+<p>SCROLL <em>Scroll table event</em>    </p>
+</li>
+<li>
+<p>SCROLL_HORIZONTAL_END <em>Horizontal scroll to the right end event</em>    \r</p>
+</li>
+<li>
+<p>SCROLL_VERTICAL_END <em>Vertical scrollbar scroll to bottom event</em>    \r</p>
+</li>
+<li>
+<p>Sparklines event    </p>
+</li>
+<li>
+<p>MOUSEOVER_CHART_SYMBOL <em>Mouseover mini chart symbol event</em>    </p>
+</li>
+<li>
+<p>Dropdown menu event    </p>
+</li>
+<li>
+<p>DROPDOWN_MENU_CLICK <em>Click event of dropdown menu option</em>     </p>
+</li>
+<li>
+<p>DROPDOWN_ICON_CLICK <em>Click the dropdown menu button</em>    </p>
+</li>
+<li>
+<p>DROPDOWN_MENU_CLEAR <em>Clear dropdown menu event (clicking other areas when the menu is displayed)</em> \r</p>
+</li>
+<li>
+<p>SHOW_MENU <em>Display Menu Event</em>     </p>
+</li>
+<li>
+<p>HIDE_MENU <em>Hide menu event</em> \r</p>
+</li>
+<li>
+<p>Legend event    </p>
+</li>
+<li>
+<p>LEGEND_ITEM_CLICK <em>Legend item click event.</em><strong><em>Legend specific event</em></strong>** **    \r</p>
+</li>
+<li>
+<p>LEGEND_ITEM_HOVER <em>Legend item hover event.</em><strong><em>Legend specific event</em></strong>** **    \r</p>
+</li>
+<li>
+<p>LEGEND_ITEM_UNHOVER <em>Legend item hover to unhover event.</em><strong><em>Legend specific event</em></strong>** **    \r</p>
+</li>
+<li>
+<p>LEGEND_CHANGE * The event is triggered after the color legend, size legend, and user operation legend range. <strong><em>*Legend-specific event</em></strong>** **    \r</p>
+</li>
+<li>
+<p>Perspective view axis event    </p>
+</li>
+<li>
+<p>MOUSEENTER_AXIS <em>Mouse enter event on the axis.</em><strong><em>Axis-specific event</em></strong>** **    \r</p>
+</li>
+<li>
+<p>MOUSELEAVE_AXIS <em>Mouse leave axis event.</em><strong><em>Axis-specific event</em></strong>** **    \r</p>
+</li>
+<li>
+<p>Status change    </p>
+</li>
+<li>
+<p>CHECKBOX_STATE_CHANGE <em>Change the checkbox state.</em><strong><em>ListTable proprietary event</em></strong>** **    \r</p>
+</li>
+<li>
+<p>RADIO_STATE_CHANGE <em>Change the radio checkbox state.</em><strong><em>ListTable table exclusive event</em></strong>** **    \r</p>
+</li>
+<li>
+<p>TREE_HIERARCHY_STATE_CHANGE <em>Tree structure expand/collapse click event</em>    </p>
+</li>
+<li>
+<p>Lifecycle    </p>
+</li>
+<li>
+<p>AFTER_RENDER <em>Triggered after each render is completed</em>     </p>
+</li>
+<li>
+<p>INITIALIZED <em>Triggered after successful initialization</em>     \r</p>
+</li>
+<li>
+<p>Fill handle event    </p>
+</li>
+<li>
+<p>DRAG_FILL_HANDLE_END <em>Drag fill handle end event</em>     </p>
+</li>
+<li>
+<p>MOUSEDOWN_FILL_HANDLE <em>Drag fill handle click event</em> \r</p>
+</li>
+<li>
+<p>DBLCLICK_FILL_HANDLE <em>Double-click event for dragging fill handle</em>     </p>
+</li>
+<li>
+<p>Empty data prompt    </p>
+</li>
+<li>
+<p>EMPTY_TIP_CLICK <em>Empty data tip click event</em>    </p>
+</li>
+<li>
+<p>EMPTY_TIP_DBLCLICK <em>Empty data tip double-click event</em>    </p>
+</li>
+</ul>
+<p>Reference Document:    </p>
+<ul>
+<li>https://visactor.com/vtable/api/events    </li>
+</ul>
+<h2 id="implementation-of-custom-events">Implementation of Custom Events</h2>
+<p>Implementation of custom events, based on the <code>EventTarget</code> module.    </p>
+<p>The module provides an on method, which allows for custom event registration. The type of custom events can also be defined by the developer.    \r</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\EventTarget.ts
+export class EventTarget {
+  private listenersData: {
+    listeners,
+    listenerData
+  } = {
+    listeners: {},
+    listenerData: {}
+  };
+  on(type, listener) {
+    const list: TableEventListener&lt;TYPE&gt;[] =
+      this.listenersData.listeners[type] || (this.listenersData.listeners[type] = []);
+    list.push(listener);
+
+    const id = idCount++;
+    this.listenersData.listenerData[id] = {
+      type,
+      listener,
+      remove: (): void =&gt; {
+        delete this.listenersData.listenerData[id];
+        const index = list.indexOf(listener);
+        list.splice(index, 1);
+        if (!this.listenersData.listeners[type].length) {
+          delete this.listenersData.listeners[type];
+        }
+      }
+    };
+    return id;
+  }
+  off(idOrType, listener): void {
+      //...
+  }
+  addEventListener(type, listener, option): void {
+      //...
+  }
+  removeEventListener(type, listener) {
+      //...
+  }
+  hasListeners(type) {
+      //...
+  }
+  fireListeners(type, event){
+      //...
+  }
+  release(): void {
+      //...
+  }
+}    
+</code></pre>
+
+<p>Observing the on method, we can see that it collects the registered custom event callbacks internally and assigns a unique id to each callback, which can be used later to unregister the callback.    </p>
+<p>The triggering of custom events is done through <code>fireListeners</code>.    </p>
+<hr />
+<p>Take double-clicking to auto-fit column width as an example:    \r</p>
+<ol>
+<li>Register the <code>DBLCLICK_CELL</code> event in <code>EventManager</code>    </li>
+</ol>
+<pre class="codehilite"><code class="language-xml">// packages\vtable\src\event\event.ts
+export class EventManager {
+    constructor() {
+        // ...
+        bindSelfEvent();
+        // ...
+    }
+    bindSelfEvent() {
+        // ...
+            this.table.on(TABLE_EVENT_TYPE.DBLCLICK_CELL, () =&gt; {
+                // 处理双击自动列宽
+            })
+        // ...
+    }
+}
+</code></pre>
+
+<ol>
+<li>In the callback of the double-click event, trigger the <code>DBLCLICK_CELL</code> event to execute the logic for automatically adjusting column width on double-click.    </li>
+</ol>
+<pre class="codehilite"><code class="language-xml">// packages\vtable\src\event\listener\table-group.ts
+  eventManager.gesture.on('doubletap', e =&gt; {
+    dblclickHandler(e, table);
+  });
+
+  function dblclickHandler(e: FederatedPointerEvent, table: BaseTableAPI) {
+      // ...
+      table.fireListeners(TABLE_EVENT_TYPE.DBLCLICK_CELL, cellsEvent);
+      //...
+  }    
+</code></pre>
+
+<h2 id="event-registration-timing">Event Registration Timing</h2>
+<p>Most of the built-in event registrations in VTable are completed in the <code>EventManager</code> event management module, while a few other built-in events are registered separately in other component modules, including <code>MenuHandler</code>, <code>EditManager</code>, <code>TooltipHandler</code>, etc. Let's take a brief look at which events are registered by each module.    </p>
+<ul>
+<li>
+<p>EventManager    </p>
+</li>
+<li>
+<p>ICON_CLICK    </p>
+</li>
+<li>
+<p>DROPDOWN_MENU_CLICK    </p>
+</li>
+<li>
+<p>DBLCLICK_CELL    </p>
+</li>
+<li>
+<p>MOUSEMOVE_CELL    </p>
+</li>
+<li>
+<p>MOUSELEAVE_TABLE    </p>
+</li>
+<li>
+<p>...    </p>
+</li>
+<li>
+<p>MenuHandler    </p>
+</li>
+<li>
+<p>DROPDOWN_ICON_CLICK    </p>
+</li>
+<li>
+<p>DROPDOWN_MENU_CLEAR    </p>
+</li>
+<li>
+<p>CONTEXTMENU_CELL    </p>
+</li>
+<li>
+<p>EditManager    </p>
+</li>
+<li>
+<p>DBLCLICK_CELL    </p>
+</li>
+<li>
+<p>CLICK_CELL    </p>
+</li>
+<li>
+<p>TooltipHandler    </p>
+</li>
+<li>
+<p>MOUSEENTER_CELL    </p>
+</li>
+<li>
+<p>MOUSEMOVE_CELL    </p>
+</li>
+<li>
+<p>MOUSELEAVE_CELL    </p>
+</li>
+<li>
+<p>SELECTED_CELL    </p>
+</li>
+<li>
+<p>MOUSELEAVE_TABLE    </p>
+</li>
+<li>
+<p>SCROLL    </p>
+</li>
+<li>
+<p>...    </p>
+</li>
+</ul>
+<h2 id="conclusion">Conclusion</h2>
+<p>VTable provides a wealth of built-in events. By registering these built-in events, businesses can accomplish the majority of custom business logic. The existence of built-in events makes the table more flexible.    \r</p>
+<h1 id="this-document-is-provided-by-the-following-personnel">This document is provided by the following personnel</h1>
+<p>taiiiyang（https://github.com/taiiiyang）    </p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10.2 Global Morphing Animation</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="102-global-morphing-animation">10.2 Global Morphing Animation</h2>
+<p>Score: 8    </p>
+<ol>
+<li>
+<p>Global Animation:    </p>
+</li>
+<li>
+<p>Code Entry: <code>packages/vchart/src/animation/</code>    </p>
+</li>
+<li>
+<p>Key Points:    </p>
+</li>
+<li>
+<p>Implementation of Global Animation    </p>
+</li>
+<li>
+<p>Other Reference Documents:    </p>
+</li>
+</ol>
+<p>https://www.visactor.io/vchart/guide/tutorial_docs/Animation/Animation_Types    </p>
+<p>https://www.visactor.io/vrender/guide/asd/Basic_Tutorial/Animate    </p>
+<p>https://visactor.io/vgrammar/guide/guides/animation    </p>
+<p><a href="https://juejin.cn/post/7275270809777520651">Magic Frame (Part 1): The Principle of Animation Implementation in Front-end Chart Libraries - A vivid visualization work often involves animation. Whether it's various charts or narrative works, organizing the week - Juejin</a>    </p>
+<p>In 10.1, we initially learned about the design of the animation system in VChart and the creation examples of charts. This section continues to introduce the transition design when switching between different chart configurations in VChart.    </p>
+<h3 id="definition">Definition</h3>
+<p>VChart provides morphing animations for switching between related series, which we call <strong>global morphing animations</strong>.    </p>
+<p>When updating the chart configuration through <code>updateSpec</code>, VChart will detect whether the two related series of the old and new charts meet the conditions for morphing animation, thereby executing dynamic transitions between <strong>one-to-one, one-to-many, or many-to-one graphics</strong>. Global morphing animations allow users to have a better visual experience when the type of chart being displayed changes, avoiding the feeling of instantaneous change. After all, visual comfort is an important factor we should focus on in the process of displaying and analyzing data.    </p>
+<blockquote>
+<p>https://visactor.com/vchart/api/API/vchart Reference API Documentation  <br />
+</p>
+</blockquote>
+<pre class="codehilite"><code class="language-Typescript">updateSpec
+异步spec 更新，会自动渲染图表不需要再调用 renderAsync() 等渲染方法。
+/**
+ * spec 更新
+ * @param spec
+ * @param forceMerge 是否强制合并，默认为 false
+ * @param morphConfig morph 动画配置
+ * @returns
+ */
+updateSpec: (spec: ISpec, forceMerge?: boolean, morphConfig?: IMorphConfig) =&gt; Promise&lt;IVChart&gt;;    
+</code></pre>
+
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YBiQwnvXThucKNbgo5Kc9W6En0d.gif" /></p>
+<h3 id="example-of-effects">Example of Effects</h3>
+<p>Below are two example configurations to illustrate the effects of this type of transition animation:</p>
+<h4 id="one-to-one-animation">One-to-One Animation</h4>
+<p>One-to-one animation refers to the transition animation between two different graphics. For example, in the example below, it shows the global animation when switching between a pie chart and a bar chart:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/LN0zbhR5LoijKjxV6CZclJiensd.gif' alt='' width='885' height='auto' /></p>
+<pre class="codehilite"><code class="language-xml">/**
+ * 自1.12.0后，全局形变动画需要手动注册才能生效
+ *
+ * import { registerMorph } from '@visactor/vchart';
+ *
+ * registerMorph();
+ */
+
+VCHART_MODULE.registerMorph();
+
+const pieSpec = {
+  type: 'pie',
+  data: [
+    {
+      values: [
+        { type: '1', value: Math.random() },
+        { type: '2', value: Math.random() },
+        { type: '3', value: Math.random() }
+      ]
+    }
+  ],
+  outerRadius: 0.8,
+  innerRadius: 0.6,
+  valueField: 'value',
+  categoryField: 'type',
+  tooltip: false
+};
+
+const barSpec = Object.assign({}, pieSpec, {
+  type: 'bar',
+  xField: 'type',
+  yField: 'value',
+  seriesField: 'type'
+});
+
+const specs = [pieSpec, barSpec];
+
+const vchart = new VChart(specs[0], { dom: CONTAINER_ID });
+
+vchart.renderSync();
+let count = 1;
+setInterval(() =&gt; {
+  vchart.updateSpec(specs[count % 2]);
+  count++;
+}, 2000);
+</code></pre>
+
+<h4 id="one-to-many-animation">One-to-Many Animation</h4>
+<p>One-to-many animation refers to the transition of a single graphic element into multiple graphic elements. For example, in the example below, a global animation is shown when switching between a bar chart and a scatter plot, where the animation of splitting a large bar into multiple scatter points is a one-to-many animation.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/VYI0bZ9OOohoBKx0VbEc4k2rnld.gif' alt='' width='906' height='auto' /></p>
+<pre class="codehilite"><code class="language-javascript">/**
+ * 自1.12.0后，全局形变动画需要手动注册才能生效
+ *
+ * import { registerMorph } from '@visactor/vchart';
+ *
+ * registerMorph();
+ */
+
+VCHART_MODULE.registerMorph();
+
+function calculateAverage(data, dim) {
+  let total = 0;
+  for (let i = 0; i &lt; data.length; i++) {
+    total += data[i][dim];
+  }
+  return (total /= data.length);
+}
+
+function generateData(type) {
+  const data = [];
+  for (let i = 0; i &lt; 10; i++) {
+    data.push({ x: i, y: Math.random(), type });
+  }
+  return data;
+}
+const DataA = generateData('A');
+
+const DataB = generateData('B');
+
+const barSpec = {
+  type: 'common',
+  series: [
+    {
+      type: 'bar',
+      data: { values: [{ value: calculateAverage(DataA, 'y'), type: 'A' }] },
+      xField: 'type',
+      yField: 'value',
+      morph: {
+        morphKey: 'A'
+      }
+    },
+    {
+      type: 'bar',
+      data: { values: [{ value: calculateAverage(DataB, 'y'), type: 'B' }] },
+      xField: 'type',
+      yField: 'value',
+      morph: {
+        morphKey: 'B'
+      }
+    }
+  ],
+  axes: [
+    { orient: 'left', type: 'linear', max: 1 },
+    { orient: 'bottom', type: 'band' }
+  ]
+};
+
+const scatterSpec = {
+  type: 'common',
+  series: [
+    {
+      type: 'scatter',
+      data: { values: DataA },
+      xField: 'x',
+      yField: 'y',
+      seriesField: 'type',
+      morph: {
+        morphKey: 'A',
+        morphElementKey: 'type'
+      }
+    },
+    {
+      type: 'scatter',
+      data: { values: DataB },
+      xField: 'x',
+      yField: 'y',
+      seriesField: 'type',
+      morph: {
+        morphKey: 'B',
+        morphElementKey: 'type'
+      }
+    }
+  ],
+  axes: [
+    { orient: 'left', type: 'linear', zero: false, max: 1 },
+    { orient: 'bottom', type: 'band' }
+  ]
+};
+
+const specs = [barSpec, scatterSpec];
+
+const vchart = new VChart(specs[0], { dom: CONTAINER_ID });
+
+vchart.renderSync();
+let count = 1;
+setInterval(() =&gt; {
+  vchart.updateSpec(specs[count % 2]);
+  count++;
+}, 3000);
+</code></pre>
+
+<h4 id="many-to-one-animation">Many-to-One Animation</h4>
+<p>Many-to-one animation refers to multiple graphic elements transitioning into one element. For example, in the example above, we can have multiple points of a scatter series merge into one large column.</p>
+<h3 id="interpretation-of-the-source-code-execution-process-for-effect-implementation">Interpretation of the Source Code Execution Process for Effect Implementation</h3>
+<p>The transition between different charts can be explained by updating the configuration, and with morphing animation enabled, the transition effects of series elements are automatically recognized. Below is an explanation of the default effect settings.</p>
+<h3 id="draft-interpretation-of-global-animation-implementation">Draft Interpretation of Global Animation Implementation</h3>
+<p>Global animations refer to those animation effects that apply at the entire chart level. They can be applied to the overall entrance animation when the chart loads, the unified change animation when data updates, and the overall exit animation before the chart is destroyed. In VChart, the design and implementation of global animations rely on several core components and mechanisms, including the <code>Factory</code> class, <code>AnimateManager</code> class, <code>IAnimationSpec</code> interface, etc.</p>
+<h4 id="1-animation-registration-and-management">1. Animation Registration and Management</h4>
+<p><strong>Factory Class</strong></p>
+<p>The <code>Factory</code> class is a key player in the animation system, responsible for managing and registering various types of animations. Through the static method <code>registerAnimation</code>, we can associate specific animation logic with a name for subsequent use.</p>
+<pre class="codehilite"><code class="language-xml">class Factory {
+  static registerAnimation(key: string, animation: (params?: any, preset?: any) =&gt; MarkAnimationSpec) {
+    Factory._animations[key] = animation;
+  }
+}    
+</code></pre>
+
+<p>When you need to add animation to a chart element, you can use <code>Factory.getAnimationInKey</code> to obtain a registered animation and apply it to the corresponding graphic or graphical element.</p>
+<h4 id="2-animation-configuration-structure">2. Animation Configuration Structure</h4>
+<p><strong>IAnimationSpec Interface</strong></p>
+<p>The <code>IAnimationSpec</code> interface defines the basic structure of animation configuration, covering various states from entry (<code>animationAppear</code>) to exit (<code>animationDisappear</code>). Each state can accept a boolean value (enable/disable), a preset configuration object, or a custom configuration object as a parameter.</p>
+<pre class="codehilite"><code class="language-xml">interface IAnimationSpec&lt;MarkName extends string, Preset extends string&gt; {
+  animationAppear?: boolean | IStateAnimateSpec&lt;Preset&gt; | IMarkAnimateSpec&lt;MarkName&gt;;
+  animationEnter?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+  animationUpdate?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+  animationExit?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+  animationDisappear?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+  animationState?: boolean | IStateAnimationConfig;
+  animationNormal?: IMarkAnimateSpec&lt;MarkName&gt;;
+}    
+</code></pre>
+
+<p>These configuration options allow developers to flexibly control the behavior of animations in different states, such as setting duration, easing functions, animation types, etc.</p>
+<h4 id="3-animation-state-management">3. Animation State Management</h4>
+<p><strong>AnimateManager Class</strong></p>
+<p><code>AnimateManager</code> inherits from <code>StateManager</code> and implements the <code>IAnimate</code> interface, used to manage the state of animations. It provides methods to update animation states and trigger corresponding animation logic based on the current state.</p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.update) {
+      // 更新状态下的动画逻辑
+    } else if (state === AnimationStateEnum.appear) {
+      // 出现状态下的动画逻辑
+    } else {
+      // 其他状态下的动画逻辑
+    }
+  }
+}    
+</code></pre>
+
+<p>In addition, <code>AnimateManager</code> is also responsible for generating unique identifiers (IDs) and signal names to ensure that each animation instance can be correctly identified and managed.    </p>
+<h4 id="4-animation-configuration-generation">4. Animation Configuration Generation</h4>
+<p><strong>animationConfig Function</strong>    </p>
+<p>To simplify the merging process between user configurations and default configurations, VChart provides a helper function called <code>animationConfig</code>. This function iterates through all possible animation states and constructs the final animation configuration object based on the user-provided configuration or the default configuration.    </p>
+<pre class="codehilite"><code class="language-xml">function animationConfig&lt;Preset extends string&gt;(
+  defaultConfig: MarkAnimationSpec = {},
+  userConfig?: Partial&lt;Record&lt;IAnimationState, boolean | IStateAnimateSpec&lt;Preset&gt; | IAnimationConfig | IAnimationConfig[]&gt;&gt;,
+  params?: { dataIndex: (datum: any, params: any) =&gt; number; dataCount: () =&gt; number; }
+): MarkAnimationSpec {
+  const config = {} as MarkAnimationSpec;
+
+  for (let i = 0; i &lt; AnimationStates.length; i++) {
+    const state = AnimationStates[i];
+    const userStateConfig = userConfig ? userConfig[state] : undefined;
+
+    if (userStateConfig === false) continue;
+
+    if (state === 'normal') {
+      userStateConfig &amp;&amp; (config.normal = userStateConfig as IAnimationTypeConfig);
+      continue;
+    }
+
+    let defaultStateConfig: IAnimationConfig[];
+    if (isArray(defaultConfig[state])) {
+      defaultStateConfig = defaultConfig[state] as IAnimationConfig[];
+    } else {
+      defaultStateConfig = [{ ...DEFAULT_ANIMATION_CONFIG[state], ...defaultConfig[state] } as any];
+    }
+
+    config[state] = defaultStateConfig;
+  }
+
+  return config;
+}    
+</code></pre>
+
+<p>This function handles the merging of default configurations and user configurations, considering that certain states (such as <code>normal</code>) can directly use the user-provided configuration without additional processing.</p>
+<h4 id="5-specific-implementation-of-global-animation">5. Specific Implementation of Global Animation</h4>
+<p><strong>Registration of Global Animation</strong></p>
+<p>Taking line charts or area charts as an example, the <code>registerVGrammarLineOrAreaAnimation</code> function demonstrates how to batch register a series of animation methods. These animations cover effects such as point growth, point movement, and clipping, and are applicable to both the X-axis and Y-axis directions.</p>
+<pre class="codehilite"><code class="language-xml">const registerVGrammarLineOrAreaAnimation = () =&gt; {
+  View.useRegisters([
+    registerGrowPointsInAnimation,
+    registerGrowPointsOutAnimation,
+    registerGrowPointsXInAnimation,
+    registerGrowPointsXOutAnimation,
+    registerGrowPointsYInAnimation,
+    registerGrowPointsYOutAnimation,
+    registerClipInAnimation,
+    registerClipOutAnimation
+  ]);
+};    
+</code></pre>
+
+<p><strong>Initialization of Global Animation</strong>    </p>
+<p>In the implementation files of specific series (such as bar charts, pie charts, etc.), the <code>initAnimation</code> method is usually called during the initialization phase to set up animation configurations. This method combines user-provided configurations with default configurations to generate the final animation configuration and applies it to the corresponding graphic elements or shapes.    </p>
+<pre class="codehilite"><code class="language-xml">initAnimation(): void {
+  const animationParams = getGroupAnimationParams(this);
+  const appearPreset = (this._spec?.animationAppear as IStateAnimateSpec&lt;ScatterAppearPreset&gt;)?.preset;
+  this._symbolMark.setAnimationConfig(
+    animationConfig(
+      Factory.getAnimationInKey('scatter')?.({}, appearPreset),
+      userAnimationConfig(SeriesMarkNameEnum.point, this._spec, this._markAttributeContext),
+      animationParams
+    )
+  );
+}    
+</code></pre>
+
+<p>Here, the <code>animationConfig</code> function is used to merge default configurations and user configurations, while <code>userAnimationConfig</code> is responsible for extracting the animation configuration information provided by the user. Finally, the generated configuration is applied to specific graphic elements through the <code>setAnimationConfig</code> method.</p>
+<h4 id="6-execution-of-animation-tasks">6. Execution of Animation Tasks</h4>
+<p><strong>IAnimationTask Interface</strong></p>
+<p>For complex animation sequences, VChart introduces the <code>IAnimationTask</code> interface to describe the data structure of animation tasks. Each task includes time offsets, action queues, and successor task lists, forming a chain-like animation execution mechanism.</p>
+<pre class="codehilite"><code class="language-xml">interface IAnimationTask {
+  timeOffset: number;
+  actionList: Action[];
+  nextTaskList: IAnimationTask[];
+}    
+</code></pre>
+
+<p>This design allows multiple animation tasks to be executed sequentially or concurrently, enabling more complex and delicate animation effects.</p>
+<h4 id="7-example-creating-a-global-entrance-animation">7. Example: Creating a Global Entrance Animation</h4>
+<p>Suppose we want to add a global fade-in entrance animation to a newly created bar chart. Here are the detailed implementation steps:</p>
+<ul>
+<li><strong>Define Animation Configuration</strong>: First, specify <code>animationAppear</code> as <code>true</code> in the chart configuration to enable the entrance animation. Additionally, you can further customize the specific behavior of the animation, such as choosing a fade-in effect, setting the duration, and easing function.</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  // ... 其他配置 ...
+  animationAppear: {
+    type: 'fadeIn',
+    duration: 1000,
+    easing: 'easeInOutQuad'
+  },
+  series: [
+    {
+      type: 'bar',
+      data: [/* 数据数组 */]
+    }
+  ]
+};    
+</code></pre>
+
+<ul>
+<li><strong>Register Fade-in Animation</strong>: Next, we need to ensure that the fade-in animation has been correctly registered in the system. This step is usually completed at project startup or explicitly called where needed.    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { Appear_FadeIn } from './series/bar/animation';
+
+Factory.registerAnimation('fadeIn', Appear_FadeIn);    
+</code></pre>
+
+<ul>
+<li><strong>Initialize the chart instance</strong>: With the above configuration, we can initialize a <code>VChart</code> instance and pass the configuration to it. This will trigger the chart rendering process and apply the corresponding animation effects.    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/vchart';
+
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});    
+</code></pre>
+
+<ul>
+<li>
+<p><strong>Trigger Animation</strong>: Once the chart is rendered, any changes in data will automatically trigger animations. For example, when the page first loads, all bars will gradually appear with a fade-in effect; when new data is added, new bars will enter in the same way.    </p>
+</li>
+<li>
+<p><strong>Manual Control of Animation</strong>: If you need more precise control over the animation, such as pausing or resuming it, you can use the relevant methods provided by the <code>VChart</code> instance.    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// 暂停所有正在进行的动画
+chart.pauseAnimation();
+
+// 恢复之前暂停的动画
+chart.resumeAnimation();    
+</code></pre>
+
+<h4 id="summary">Summary</h4>
+<p>Through the above steps, we have detailed the implementation principles of global animation in VChart. The animation system of VChart cleverly combines the factory pattern, state manager pattern, and modular animation configuration, providing not only a rich set of built-in animation effects but also supporting highly customizable needs. Developers can flexibly configure and combine different animations according to actual application scenarios to create visual effects that are both beautiful and practical.</p>
+<p># This document was revised and organized by the following personnel
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

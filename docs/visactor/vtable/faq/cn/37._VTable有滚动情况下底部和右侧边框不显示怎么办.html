@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>15. VTable有滚动情况下底部和右侧边框不显示怎么办？</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VTable有滚动情况下底部和右侧边框不显示怎么办？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>如截图效果，VTable中表格内容显示不完整（有滚动条的情况下），如何能让表格中的右侧边框和底部边框都显示？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OGSEb9vzjoHOR7xz3crcz6Hanbc.gif' alt='' width='432' height='628'></p>
+<h2 id="_3">解决方案</h2>
+<p>可通过在theme主题中的<strong>frameStyle</strong>添加<strong>borderLineWidth</strong>和<strong>borderColor</strong>配置<strong>，不过添加上述配置后，表格顶部和左侧的边框和单元格的边框会有两层边框 效果也不好。</strong></br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/EFnGbl6sWoClKfx403uctm2Gnub.gif' alt='' width='437' height='131'></p>
+<p>进一步研究配置，发现了<strong>cellInnerBorder</strong>配置项，专门为了处理这种情况的配置，将其设置为false，则边缘的单元格的边框线将不再绘制。</br>
+用到的配置项定义如下：</br></p>
+<pre class="codehilite"><code>/** frameStyle 是配置表格整体的样式 */
+frameStyle ?:FrameStyle;
+/** 单元格是否绘制内边框,如果为true，边界单元格靠近边界的边框会被隐藏 */
+cellInnerBoder?:boolean;  // true | false&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>  const option = {
+    records,
+    columns,
+    autoWrapText: true,
+    limitMaxAutoWidth: 600,
+    heightMode: 'autoHeight',
+    theme:{
+      frameStyle:{ // 配置的表格整体的边框
+         borderLineWidth: 1, //  设置边框宽度
+         borderColor: &quot;#CBCBCB&quot; //  设置边框颜色
+      },
+      cellInnerBorder:true  // 单元格是否绘制内边框，可结合情况设置true或false
+    }
+  };
+  const tableInstance = new VTable.ListTable(container, option);&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>在线效果参考：https://codesandbox.io/p/sandbox/vtable-frame-border-demo-forked-zn4n9j</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XiCbbqs3QoCgbOx1PblcjgTjnRf.gif' alt='' width='421' height='615'></p>
+<h2 id="_6">相关文档</h2>
+<p>设置表格边框demo：https://codesandbox.io/p/sandbox/vtable-frame-border-demo-forked-zn4n9j</br>
+相关api：https://www.visactor.io/vtable/option/ListTable#theme.cellInnerBorder </br>
+https://www.visactor.io/vtable/option/ListTable#theme.frameStyle.borderLineWidth</br>
+https://www.visactor.io/vtable/option/ListTable#theme.frameStyle.borderColor</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

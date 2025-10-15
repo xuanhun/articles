@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>49. 如何更改图例的颜色？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何更改图例的颜色？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>期望单独控制图例的颜色， 不与图形保持一致。</br></p>
+<h2 id="_3">解决方案</h2>
+<p>不同图表库的解决方案不一样，通常情况下， VChart 的图例会和主要图元的颜色保持一致， 为用户提供颜色说明。 但某些场景下， 可能需要单独优化图例的样式， 例如添加边框或增加透明的颜色。 VChart 的图例配置项， 支持单独控制填充颜色。</br>
+方式一： 使用<code>legends.data</code>， 在回调函数中处理每个图例的<code>shape</code>属性， 从而达到修改图例样式的效果。</br>
+方式二： 使用<code>legends.item.shape</code>， 可以显示的控制每个图例的样式。</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>import { StrictMode, useEffect } from &quot;react&quot;;
+import { createRoot } from &quot;react-dom/client&quot;;
+
+const rootElement = document.getElementById(&quot;root&quot;);
+const root = createRoot(rootElement);
+
+import VChart from &quot;@visactor/vchart&quot;;
+
+const App = () =&gt; {
+  useEffect(() =&gt; {
+    const spec = {
+      type: &quot;scatter&quot;,
+      xField: &quot;revenues_mm&quot;,
+      yField: &quot;profit_mm&quot;,
+      seriesField: &quot;category&quot;,
+      color: [&quot;#ff0000&quot;, &quot;#00ff00&quot;, &quot;#0000ff&quot;, &quot;#ffff00&quot;, &quot;#ff00ff&quot;, &quot;#00ffff&quot;],
+      legends: {
+        type: &quot;discrete&quot;,
+        visible: true,
+        orient: &quot;top&quot;,
+        position: &quot;end&quot;,
+        data: (items) =&gt;
+          items.map((item) =&gt; {
+            item.shape.outerBorder = {
+              stroke: item.shape.fill,
+              distance: 2,
+              lineWidth: 1,
+            };
+
+            return item;
+          }),
+      },
+      data: [
+        {
+          id: &quot;data&quot;,
+          values: [
+            {
+              company: &quot;Johnson &amp; Johnson&quot;,
+              revenues_mm: 71890,
+              profit_mm: 18540,
+              profit_as_of_revenues: 0.2578940047294478,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Procter &amp; Gamble&quot;,
+              revenues_mm: 71726,
+              profit_mm: 10508,
+              profit_as_of_revenues: 0.14650196581434904,
+              category: &quot;Household &amp; Personal Products&quot;,
+            },
+            {
+              company: &quot;Abbvie&quot;,
+              revenues_mm: 25638,
+              profit_mm: 5953,
+              profit_as_of_revenues: 0.23219439893907481,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Amgen&quot;,
+              revenues_mm: 22991,
+              profit_mm: 7722,
+              profit_as_of_revenues: 0.33587055804445215,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Eli Lilly&quot;,
+              revenues_mm: 21222,
+              profit_mm: 2738,
+              profit_as_of_revenues: 0.12901705777023842,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Bristol-Myers Squibb&quot;,
+              revenues_mm: 19427,
+              profit_mm: 4457,
+              profit_as_of_revenues: 0.22942296803417925,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Altria Group&quot;,
+              revenues_mm: 19337,
+              profit_mm: 14239,
+              profit_as_of_revenues: 0.7363603454517247,
+              category: &quot;Tobacco&quot;,
+            },
+            {
+              company: &quot;Kimberly-Clark&quot;,
+              revenues_mm: 18202,
+              profit_mm: 2166,
+              profit_as_of_revenues: 0.11899791231732777,
+              category: &quot;Household &amp; Personal Products&quot;,
+            },
+            {
+              company: &quot;General Mills&quot;,
+              revenues_mm: 16563,
+              profit_mm: 1697,
+              profit_as_of_revenues: 0.10245728430839823,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Colgate-Palmolive&quot;,
+              revenues_mm: 15195,
+              profit_mm: 2441,
+              profit_as_of_revenues: 0.16064494899638038,
+              category: &quot;Household &amp; Personal Products&quot;,
+            },
+            {
+              company: &quot;Conagra Brands&quot;,
+              revenues_mm: 14134,
+              profit_mm: -677,
+              profit_as_of_revenues: -0.04789868402433847,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Land O'Lakes&quot;,
+              revenues_mm: 13233,
+              profit_mm: 245,
+              profit_as_of_revenues: 0.01851432025995617,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Pepsico&quot;,
+              revenues_mm: 62789,
+              profit_mm: 6329,
+              profit_as_of_revenues: 0.1007979104620236,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Kellogg&quot;,
+              revenues_mm: 13014,
+              profit_mm: 694,
+              profit_as_of_revenues: 0.053327186107269095,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Reynolds American&quot;,
+              revenues_mm: 12503,
+              profit_mm: 6073,
+              profit_as_of_revenues: 0.48572342637766935,
+              category: &quot;Tobacco&quot;,
+            },
+            {
+              company: &quot;Biogen&quot;,
+              revenues_mm: 11449,
+              profit_mm: 3703,
+              profit_as_of_revenues: 0.32343436107957024,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Estee Lauder&quot;,
+              revenues_mm: 11262,
+              profit_mm: 1115,
+              profit_as_of_revenues: 0.09900550523885633,
+              category: &quot;Household &amp; Personal Products&quot;,
+            },
+            {
+              company: &quot;Celgene&quot;,
+              revenues_mm: 11229,
+              profit_mm: 1999,
+              profit_as_of_revenues: 0.17802119511977915,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Hormel Foods&quot;,
+              revenues_mm: 9523,
+              profit_mm: 890,
+              profit_as_of_revenues: 0.09345794392523364,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Campbell Soup&quot;,
+              revenues_mm: 7961,
+              profit_mm: 563,
+              profit_as_of_revenues: 0.07071975882426831,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;J. M. Smucker&quot;,
+              revenues_mm: 7811,
+              profit_mm: 689,
+              profit_as_of_revenues: 0.08820893611573422,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Dean Foods&quot;,
+              revenues_mm: 7710,
+              profit_mm: 120,
+              profit_as_of_revenues: 0.01556420233463035,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Hershey&quot;,
+              revenues_mm: 7440,
+              profit_mm: 720,
+              profit_as_of_revenues: 0.0967741935483871,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Pfizer&quot;,
+              revenues_mm: 52824,
+              profit_mm: 7215,
+              profit_as_of_revenues: 0.13658564288959563,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Constellation Brands&quot;,
+              revenues_mm: 6548,
+              profit_mm: 1055,
+              profit_as_of_revenues: 0.16111789859499084,
+              category: &quot;Beverages&quot;,
+            },
+            {
+              company: &quot;Dr. Pepper Snapple Group&quot;,
+              revenues_mm: 6440,
+              profit_mm: 847,
+              profit_as_of_revenues: 0.13152173913043477,
+              category: &quot;Beverages&quot;,
+            },
+            {
+              company: &quot;HRG Group&quot;,
+              revenues_mm: 6403,
+              profit_mm: -199,
+              profit_as_of_revenues: -0.031079181633609246,
+              category: &quot;Household &amp; Personal Products&quot;,
+            },
+            {
+              company: &quot;Treehouse Foods&quot;,
+              revenues_mm: 6175,
+              profit_mm: -229,
+              profit_as_of_revenues: -0.03708502024291498,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Avon Products&quot;,
+              revenues_mm: 5853,
+              profit_mm: -108,
+              profit_as_of_revenues: -0.018452075858534086,
+              category: &quot;Household &amp; Personal Products&quot;,
+            },
+            {
+              company: &quot;Clorox&quot;,
+              revenues_mm: 5761,
+              profit_mm: 648,
+              profit_as_of_revenues: 0.11248047214025343,
+              category: &quot;Household &amp; Personal Products&quot;,
+            },
+            {
+              company: &quot;Coca-Cola&quot;,
+              revenues_mm: 41863,
+              profit_mm: 6527,
+              profit_as_of_revenues: 0.15591333635907603,
+              category: &quot;Beverages&quot;,
+            },
+            {
+              company: &quot;Merck&quot;,
+              revenues_mm: 39807,
+              profit_mm: 3920,
+              profit_as_of_revenues: 0.09847514256286583,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Gilead Sciences&quot;,
+              revenues_mm: 30390,
+              profit_mm: 13501,
+              profit_as_of_revenues: 0.4442579795985522,
+              category: &quot;Pharmaceuticals&quot;,
+            },
+            {
+              company: &quot;Philip Morris International&quot;,
+              revenues_mm: 26685,
+              profit_mm: 6967,
+              profit_as_of_revenues: 0.2610830054337643,
+              category: &quot;Tobacco&quot;,
+            },
+            {
+              company: &quot;Kraft Heinz&quot;,
+              revenues_mm: 26487,
+              profit_mm: 3632,
+              profit_as_of_revenues: 0.1371238720881942,
+              category: &quot;Food&quot;,
+            },
+            {
+              company: &quot;Mondelez International&quot;,
+              revenues_mm: 25923,
+              profit_mm: 1659,
+              profit_as_of_revenues: 0.06399722254368707,
+              category: &quot;Food&quot;,
+            },
+          ],
+        },
+      ],
+    };
+    const vchart = new VChart(spec, { dom: &quot;chart&quot; });
+    vchart.renderSync();
+
+    return () =&gt; {
+      vchart.release();
+    };
+  }, []);
+
+  return &lt;div id=&quot;chart&quot;&gt;&lt;/div&gt;;
+};
+
+root.render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;
+);
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>Online Demo: https://codesandbox.io/p/sandbox/vchart-legend-color-9qjhrw?file=%2Fsrc%2Findex.js%3A1%2C1-314%2C1</br></p>
+<h2 id="_6">相关文档</h2>
+<p>Legend Custom Style Demo: https://visactor.io/vchart/demo/legend/custom-interaction</br>
+Legend API: https://visactor.io/vchart/option/barChart-legends-discrete#data</br>
+Github: https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2.5 Scene Tree Update</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="trigger-update"><strong>Trigger Update</strong></h2>
+<p>Under what circumstances does the scene tree update occur? Generally, it is triggered in three situations: data change-driven, user interaction, and layout change.</p>
+<ul>
+<li>
+<p><strong>Data-driven</strong>: When the attributes of the table change, such as width, height, or element changes: trigger <code>updateColWidth</code> / <code>updateRowHeight</code> / <code>updateCell</code> respectively.    </p>
+</li>
+<li>
+<p><strong>User Interaction</strong>: Users interact with the table: trigger <code>resize</code> (drag column width) / <code>updateSortIcon</code> (sort icon)    </p>
+</li>
+<li>
+<p><strong>Layout Change</strong>: Changes in device size and display mode trigger changes in layout, which will also lead to table updates: <code>dealWidthMode</code> (adaptive layout)    </p>
+</li>
+</ul>
+<h2 id="update-process">Update Process</h2>
+<h5 id="1-attribute-modification-core-method-setattribute"><strong>1. Attribute Modification (Core Method: </strong><code>**setAttribute**</code><strong>,)</strong>​**</h5>
+<p>Directly modify element attributes (such as position, size, style)    </p>
+<ul>
+<li><strong>Column Width Update</strong>: Modify the <code>width</code> attribute of the column container using <code>setAttribute</code>.    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">updateColWidth(col: number, deltaX: number) {
+  const columnGroup = this.getColGroup(col);
+  columnGroup.setAttribute('width', newWidth); *// 直接修改列宽（触发脏标记）*
+  this.updateContainer(true);                  *// 触发布局更新*
+}    
+</code></pre>
+
+<ul>
+<li><strong>Line Height Update</strong>: Adjust the \u0060height\u0060 attribute of the line container to synchronously update the vertical layout.    \r</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">updateRowHeight(row: number, deltaY: number) {
+  const rowGroup = this.getRowGroup(row);
+  rowGroup.setAttribute('height', newHeight); *// 修改行高*
+  this._updateContainerHeight(row, deltaY);    *// 联动容器高度*    
+</code></pre>
+
+<hr />
+<h5 id="2-layout-recalculation-core-methods-updatecontainerdealwidthmode"><strong>2. Layout Recalculation (Core Methods: </strong><code>**updateContainer**</code><strong>/</strong><code>**dealWidthMode**</code><strong>)​</strong></h5>
+<p>Recalculate container coordinates and dimensions based on attribute changes, specifically controlling the update process through the <code>needUpdateContainer</code> flag. This ensures that layout calculations (column width/coordinate adjustments), size synchronization (table/frozen area), component status (scroll bar), and other steps are executed sequentially only when updates are needed, followed by rendering submission (<code>updateNextFrame</code>). The rendering engine is triggered (rendering the next frame) through <code>stage.renderNextFrame</code>.</p>
+<pre class="codehilite"><code class="language-xml">  updateContainer(async: boolean = false) {
+    if (async) {
+      if (!this._needUpdateContainer) {
+        this._needUpdateContainer = true;
+        setTimeout(() =&gt; {
+          this.updateContainerSync();
+        }, 0);
+      }
+    } else {
+      this._needUpdateContainer = true;
+      this.updateContainerSync();
+    }
+  }
+
+ updateContainerSync() {
+    if (!this._needUpdateContainer) {
+      return;
+    }
+    this._needUpdateContainer = false;
+    this.updateContainerAttrWidthAndX();
+    this.updateTableSize();
+    this.component.updateScrollBar();
+
+    this.updateDomContainer();
+
+    this.updateNextFrame();
+  }
+</code></pre>
+
+<p><strong>Adaptive Layout</strong>: Dynamically allocate remaining space, overriding manual adjustment results. My interpretation focuses on <code>dealHeightMode</code> and <code>dealwitdhMode</code>:    </p>
+<p><code>dealWidthMode()</code> method is responsible for handling the adaptive layout and auto-fill logic of table column widths: When <code>widthMode: 'adaptive'</code> is enabled, it first clears the historical column width cache, calculates the fixed total width of the row header and the right frozen columns, and proportionally allocates the remaining canvas space to non-frozen columns. If <code>autoFillWidth</code> is enabled, it checks whether the total content width is less than the canvas width, and if insufficient, it proportionally enlarges the non-frozen columns. After completing the column width calculation, it traverses the sub-column elements of the body area (<code>bodyGroup</code>), column header area (<code>colHeaderGroup</code>), row header area (<code>rowHeaderGroup</code>), and corner header area (<code>cornerHeaderGroup</code>), accumulates the actual width of each column, and dynamically sets the total width of the container. Finally, it adjusts the coordinate positions of the column header and the body to ensure that the column header is closely aligned to the right of the corner header and the body area is closely aligned to the right of the row header, forming a complete horizontal layout flow. Ultimately, the container property update drives the rendering engine to synchronize the visual performance.</p>
+<p><code>dealHeightMode</code> The logic for handling height and width is highly similar and symmetrical. Both conform to the core idea of table adaptive layout;    </p>
+<hr />
+<h5 id="3-dirty-marking-vrender-internal-mechanism"><strong>3. Dirty Marking (VRender Internal Mechanism)</strong></h5>
+<p>Mark the primitives that need to be redrawn to avoid full rendering. Dirty marking is a <strong>performance optimization technique</strong> used to identify data or objects that need updating, avoiding full computation or rendering, thereby improving efficiency. In graphics rendering, it tracks the changed parts and only processes the "dirty" areas instead of the entire scene.    \r</p>
+<hr />
+<h5 id="4-asynchronous-rendering-submission-core-method-rendernextframe"><strong>4. Asynchronous Rendering Submission (Core Method: </strong><code>**renderNextFrame**</code><strong>)​</strong></h5>
+<ul>
+<li><strong>Unified submission entry</strong>: All updates ultimately call <code>stage.renderNextFrame()</code>.    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">updateNextFrame() {
+  this.stage.renderNextFrame();
+}    
+</code></pre>
+
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

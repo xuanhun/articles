@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11 Data Editing</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="introduction">Introduction</h1>
+<h2 id="11-background-introduction">1.1 <strong>Background Introduction</strong></h2>
+<p>In modern data visualization and table applications, the demand for editing table data is increasing. VTable, as a powerful table component library, provides comprehensive data editing features to meet this demand. <code>vtable</code> is an open-source table project aimed at providing users with flexible and efficient data management and editing capabilities. Data editing is one of the core functions of table applications, allowing users to modify, validate, and save data in tables. To achieve this functionality, <code>vtable</code> adopts an object-oriented design approach, defining a base editor class and various specific editors to meet the editing needs of different types of data.</p>
+<h2 id="12-document-purpose">1.2 <strong>Document Purpose</strong>:</h2>
+<p>This source code interpretation document aims to deeply analyze the implementation principles of the VTable data editing function, helping developers better understand its design concepts, module division, and core processes, so as to use and extend this function more efficiently in actual projects. We will start from three aspects: concept introduction, code design, and core processes, to help readers understand the design philosophy and implementation method of the editor.</p>
+<h1 id="introduction-to-concepts">Introduction to Concepts</h1>
+<h2 id="21-the-role-of-the-editor-base-class">2.1 The Role of the Editor Base Class</h2>
+<p>The editor base class is the core framework of the entire editing functionality. It defines the interfaces that all specific editors must implement, including general functions such as initialization, validation, and saving. In this way, the base class provides a unified interface for specific editors, ensuring code reusability and extensibility. At the same time, the base class is also responsible for handling some common logic, such as error handling and state management.    </p>
+<h2 id="22-specific-editor-design-concepts">2.2 Specific Editor Design Concepts</h2>
+<p>Specific editors are customized implementations for specific data types (such as text, numbers, dates, etc.). Each specific editor inherits from a base class and implements specific logic based on the data type it handles. For example, a text editor may not require complex validation logic, while number and date editors need to strictly format check the input data. Through this design, <code>vtable</code> can flexibly support the editing needs of various data types.</p>
+<h1 id="code-design">Code Design</h1>
+<h2 id="31-overall-approach">3.1 Overall Approach</h2>
+<p>The overall design of the data editing functionality of VTable follows the principles of modularity and extensibility. By breaking down the editing functionality into multiple independent modules, each responsible for specific functions such as edit management, editor implementation, type definition, etc., the code structure is clear and easy to maintain and extend. At the same time, interfaces and base classes are used to standardize the behavior of editors, ensuring that different types of editors can seamlessly collaborate with the edit management module.    \r</p>
+<h2 id="32-code-structure">3.2 Code Structure</h2>
+<h3 id="321-editor-manager">3.2.1 Editor Manager</h3>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">packages/vtable/src/edit/edit-manager.ts    
+*  **Function**: Responsible for managing the editing process of table cells, including event binding, starting editing, completing editing, and canceling editing.    
+*  **Dependencies**: The `IEditor` interface defines the behavior specifications of the editor, `TABLE_EVENT_TYPE` defines the table event types, `getCellEventArgsSet` retrieves the event argument set, `isPromise` determines whether it is a Promise, and `isValid` verifies the validity of the value.    
+packages/vtable/src/edit/editors.ts    
+*  **Function**: Defines an editor management module. It exports an editor registry `editors` and a function `get` to retrieve editors. The `get` function looks up an editor by name from the registry, and if not found, it issues a warning and returns `undefined`.    
+</div>
+<p>editors.ts defines an editor management module for managing and retrieving editor instances with different names.</p>
+<pre class="codehilite"><code class="language-Typescript">import type { IEditor } from '@visactor/vtable-editors';
+export const editors: { [key: string]: IEditor } = {};
+export function get(editorName: string): IEditor {
+  const editor = editors[editorName];
+  if (!editor) {
+    console.warn('editor should register before init table!');
+    return undefined;
+  }
+  return editors[editorName];
+}
+</code></pre>
+
+<ul>
+<li>
+<p><code>editors</code> is an exported constant object used to store all registered editor instances. Its type is a map type with keys as strings (<code>key: string</code>) and values as instances of type <code>IEditor</code>. Initially, this object is empty.    </p>
+</li>
+<li>
+<p><code>get</code> is an exported function used to obtain the corresponding editor instance from the <code>editors</code> object based on the editor name <code>editorName</code>.    </p>
+</li>
+<li>
+<p>First, try to get the editor instance with the specified name through <code>editors[editorName]</code> and assign it to the variable <code>editor</code>.    </p>
+</li>
+<li>
+<p>Then, check if <code>editor</code> exists. If it does not exist, it means the editor has not been registered, a warning message <code>'editor should register before init table!'</code> will be output to the console, and <code>undefined</code> will be returned.    </p>
+</li>
+<li>
+<p>If <code>editor</code> exists, directly return <code>editors[editorName]</code>, which is the editor instance with the specified name.    </p>
+</li>
+</ul>
+<p>Therefore, the editor needs to be instantiated with new before use and registered in register.ts:</p>
+<pre class="codehilite"><code class="language-Typescript">export function editor(name: string, editor?: IEditor): IEditor {
+  if (editor !== null &amp;&amp; editor !== undefined) {
+    return register(editors, name, editor);
+  }
+  return editors[name];
+}    
+</code></pre>
+
+<p>The function accepts two parameters:    </p>
+<ul>
+<li>
+<p>name: Represents the name of the editor to register    </p>
+</li>
+<li>
+<p>editor: Optional parameter, represents the editor instance    </p>
+</li>
+</ul>
+<p>The return type of the function is IEditor    </p>
+<p>Function logic:    </p>
+<ul>
+<li>
+<p>When the <code>editor</code> parameter passed in is not <code>null</code> and not <code>undefined</code>, the <code>register</code> function is called to register this editor instance with <code>name</code> as the key into the <code>editors</code> object, and returns the old editor instance originally under that key.    </p>
+</li>
+<li>
+<p>If the <code>editor</code> parameter is not passed, the function will attempt to retrieve the editor instance with the <code>name</code> key from the <code>editors</code> object and return it. If the key does not exist, it returns <code>undefined</code>.    </p>
+</li>
+</ul>
+<p><code>EditManager</code> is a class used for managing table cell editing. It is responsible for handling user-triggered editing events (such as double-click or click), initiating the editor, validating the edited values, and updating the table data after editing is completed.</p>
+<h4 id="main-attributes">Main Attributes</h4>
+<ul>
+<li>
+<p><strong>table</strong>: Table instance, type is <code>ListTableAPI</code>.    </p>
+</li>
+<li>
+<p><strong>editingEditor</strong>: The editor instance currently in use, type is <code>IEditor</code>.    </p>
+</li>
+<li>
+<p><strong>isValidatingValue</strong>: Indicates whether value validation is in progress, type is <code>boolean</code>.    </p>
+</li>
+<li>
+<p><strong>editCell</strong>: The position of the cell being edited, containing the <code>col</code> and <code>row</code> attributes.    </p>
+</li>
+</ul>
+<h4 id="method-analysis">Method Analysis</h4>
+<h5 id="bindevent">bindEvent</h5>
+<p>Bind event listeners on the table to handle double-click and click events to start editing.    </p>
+<pre class="codehilite"><code class="language-xml">bindEvent() {
+  // 绑定双击事件
+  this.table.on(TABLE_EVENT_TYPE.DBLCLICK_CELL, e =&gt; {
+    if (满足编辑条件) {
+      const { col, row } = e;
+      this.startEditCell(col, row);
+    }
+  });
+
+  // 绑定点击事件
+  this.table.on(TABLE_EVENT_TYPE.CLICK_CELL, e =&gt; {
+    if (满足编辑条件) {
+      const { col, row } = e;
+      this.startEditCell(col, row);
+    }
+  });
+}    
+</code></pre>
+
+<h5 id="starteditcell">startEditCell</h5>
+<p>Start cell editing.    </p>
+<pre class="codehilite"><code class="language-xml">startEditCell(col: number, row: number, value?: string | number) {
+    // ...
+    // 启动编辑器
+    editor.onStart?.({
+      value: dataValue,
+      endEdit: () =&gt; {
+        this.completeEdit();
+      },
+      referencePosition,
+      container: this.table.getElement(),
+      table: this.table,
+      col,
+      row
+    });
+  }
+}    
+</code></pre>
+
+<h5 id="completeedit">completeEdit</h5>
+<p>Complete the edit operation, verify the edited values, and update the table data.    </p>
+<pre class="codehilite"><code class="language-xml">completeEdit(e?: Event): boolean | Promise&lt;boolean&gt; {
+  // ...
+  // 获取新旧值并进行验证
+  if (this.editingEditor.validateValue) {
+    this.isValidatingValue = true;
+    const newValue = this.editingEditor.getValue();
+    const oldValue = this.table.getCellOriginValue(this.editCell.col, this.editCell.row);
+
+    const maybePromiseOrValue = this.editingEditor.validateValue(newValue, oldValue, this.editCell, this.table);
+
+    if (isPromise(maybePromiseOrValue)) {
+      return new Promise((resolve, reject) =&gt; {
+        maybePromiseOrValue
+          .then(result =&gt; dealWithValidateValue(result, this, oldValue, resolve))
+          .catch(err =&gt; {
+            this.isValidatingValue = false;
+            console.error('VTable Error:', err);
+            reject(err);
+          });
+      });
+    }
+
+    return dealWithValidateValue(maybePromiseOrValue, this, oldValue);
+  }
+
+  this.doExit();
+  return true;
+}    
+</code></pre>
+
+<h5 id="doexit">doExit</h5>
+<p>Exit edit mode and update table data.    </p>
+<pre class="codehilite"><code class="language-xml">doExit() {
+  // ...
+  for (let row = range.start.row; row &lt;= range.end.row; row++) {
+    const rowChangedValues = [];
+    for (let col = range.start.col; col &lt;= range.end.col; col++) {
+      rowChangedValues.push(changedValue);
+    }
+    changedValues.push(rowChangedValues);
+  }
+
+  (this.table as ListTableAPI).changeCellValues(range.start.col, range.start.row, changedValues);
+  this.editingEditor.onEnd?.();
+  this.editingEditor = null;
+  this.isValidatingValue = false;
+}    
+</code></pre>
+
+<h5 id="canceledit">cancelEdit</h5>
+<p>Cancel the edit operation.    </p>
+<pre class="codehilite"><code class="language-xml">cancelEdit() {
+  if (this.editingEditor) {
+    this.editingEditor.onEnd?.();
+    this.editingEditor = null;
+  }
+}    
+</code></pre>
+
+<h5 id="dealwithvalidatevalue">dealWithValidateValue</h5>
+<p>Process the validation results and decide whether to exit editing based on the validation results.    </p>
+<pre class="codehilite"><code class="language-xml">function dealWithValidateValue(
+  // ...
+  switch (validateValue) {
+    case 'validate-exit':
+    case true:
+      editManager.doExit();
+      resolve?.(true);
+      return true;
+
+    case 'invalidate-exit':
+      (editManager.editingEditor as any).setValue(oldValue);
+      editManager.doExit();
+      resolve?.(true);
+      return true;
+
+    case 'validate-not-exit':
+    case 'invalidate-not-exit':
+      resolve?.(false);
+      return false;
+
+    default:
+      resolve?.(false);
+      return false;
+  }
+}    
+</code></pre>
+
+<h4 id="summary">Summary</h4>
+<p><code>EditManager</code> class initiates and manages the cell editing process by listening to table events, ensuring the editor is correctly launched, validating the edited values, and updating the table data upon completion. The class also provides the ability to cancel editing and handles the lifecycle methods of the editor (such as start and end).</p>
+<h3 id="322-specific-editors">3.2.2 Specific Editors</h3>
+<h4 id="code-structure">Code Structure</h4>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">packages/vtable-editors: Various editor components    
+*  **base-editor.ts**: Base editor class, implements basic methods of the `IEditor` interface.    
+*  **input-editor.ts**: Editor for text input, inherits from `BaseEditor`.    
+*  **list-editor.ts**: Editor for selecting list items, inherits from `BaseEditor`.    
+*  **textArea-editor.ts**: Editor for multi-line text input, inherits from `BaseEditor`.    
+*  **date-input-editor.ts**: Editor for date input, inherits from `InputEditor`.    
+*  **types.ts**: Defines related interfaces for custom editor types.    
+*  **index.ts**: Exports all editor classes.    
+
+</div>
+
+<h4 id="editor-parsing">Editor Parsing</h4>
+<h5 id="typests">types.ts</h5>
+<ul>
+<li>
+<p><strong>Functionality</strong>: Defines the custom editor <code>IEditor</code> and related types.    </p>
+</li>
+<li>
+<p><strong>Main Interfaces and Types</strong>:    </p>
+</li>
+</ul>
+<h6 id="1-ieditor-interface">1. <code>IEditor</code> Interface</h6>
+<pre class="codehilite"><code class="language-xml">// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface IEditor&lt;V = any, T = any&gt; {
+  // ...
+}    
+</code></pre>
+
+<ul>
+<li>
+<p><code>IEditor</code> is a generic interface, <code>V</code> represents the value type of the cell, and <code>T</code> represents the type of the table instance, both default to <code>any</code>.    </p>
+</li>
+<li>
+<p><code>onStart</code> method:    </p>
+</li>
+<li>
+<p>Called when the cell enters edit mode.    \r</p>
+</li>
+<li>
+<p>Receives an <code>EditContext</code> object as a parameter, which contains contextual information during editing. \r</p>
+</li>
+<li>
+<p>If this method is not provided, a warning will be thrown after removing <code>beginEditing</code>.    </p>
+</li>
+<li>
+<p><code>onEnd</code> method:    </p>
+</li>
+<li>
+<p>Called when the cell exits edit mode.    \r</p>
+</li>
+<li>
+<p>If this method is not provided, a warning will be thrown after removing <code>exit</code>.    </p>
+</li>
+<li>
+<p><code>isEditorElement</code> method:    </p>
+</li>
+<li>
+<p>Called when the editor is in edit mode and the user clicks somewhere.    \r</p>
+</li>
+<li>
+<p>Receive a <code>HTMLElement</code> type parameter <code>target</code>, representing the element clicked by the user.    \r</p>
+</li>
+<li>
+<p>If it returns <code>false</code>, the VTable will exit edit mode; if it returns <code>true</code> or this method is undefined, no action will be taken, and you need to manually call <code>endEdit</code> to end edit mode.    </p>
+</li>
+<li>
+<p><code>validateValue</code> method:    </p>
+</li>
+<li>
+<p>Before setting new values into the table, used to validate the validity of the values.    \r</p>
+</li>
+<li>
+<p>Receives new value <code>newValue</code>, old value <code>oldValue</code>, cell position <code>position</code>, and table instance <code>table</code> as parameters.    </p>
+</li>
+<li>
+<p>Can return a <code>boolean</code> type, <code>ValidateEnum</code> enum value, or <code>Promise&lt;boolean | ValidateEnum&gt;</code> type.    </p>
+</li>
+<li>
+<p><code>getValue</code> method:    </p>
+</li>
+<li>
+<p>Called when the editor exits edit mode in any way. \r</p>
+</li>
+<li>
+<p>Expected to return the current value of the cell.    \r</p>
+</li>
+<li>
+<p><code>beginEditing</code> method:    </p>
+</li>
+<li>
+<p>Called when the cell enters edit mode.    \r</p>
+</li>
+<li>
+<p>Deprecated, it is recommended to use <code>onStart</code> instead.    </p>
+</li>
+<li>
+<p><code>exit</code> method:    </p>
+</li>
+<li>
+<p>Deprecated, it is recommended to use <code>onEnd</code> instead.    </p>
+</li>
+<li>
+<p><code>targetIsOnEditor</code> method:    </p>
+</li>
+<li>
+<p>Deprecated, it is recommended to use <code>isEditorElement</code> instead.    </p>
+</li>
+<li>
+<p><code>bindSuccessCallback</code> method:    </p>
+</li>
+<li>
+<p>Called when the cell enters edit mode, receiving a callback function to end the edit mode.    \r</p>
+</li>
+<li>
+<p>Deprecated, the callback function is provided as <code>endEdit</code> in <code>EditContext</code>, it is recommended to use <code>onStart</code> instead.    </p>
+</li>
+</ul>
+<h6 id="editcontext-interface"><code>EditContext</code> Interface</h6>
+<pre class="codehilite"><code class="language-xml">// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface EditContext&lt;V = any, T = any&gt; {
+  // ...
+}    
+</code></pre>
+
+<ul>
+<li>
+<p><code>EditContext</code> is a generic interface used to provide context information during editing.    </p>
+</li>
+<li>
+<p><code>container</code> property: The container element of the VTable instance.    </p>
+</li>
+<li>
+<p><code>referencePosition</code> attribute: The position information of the cell being edited.    </p>
+</li>
+<li>
+<p><code>value</code> attribute: The value of the cell before editing.    </p>
+</li>
+<li>
+<p><code>endEdit</code> method: A callback function used to end edit mode.    </p>
+</li>
+<li>
+<p><code>table</code> attribute: table instance.    </p>
+</li>
+<li>
+<p><code>col</code> attribute: The column index of the cell.    </p>
+</li>
+<li>
+<p><code>row</code> attribute: The index of the row where the cell is located.    </p>
+</li>
+</ul>
+<h6 id="rectprops-interface"><code>RectProps</code> Interface</h6>
+<pre class="codehilite"><code class="language-xml">export interface RectProps {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}    
+</code></pre>
+
+<ul>
+<li>The <code>RectProps</code> interface defines the properties of a rectangle, including the coordinates of the top-left corner <code>left</code> and <code>top</code>, as well as the <code>width</code> and <code>height</code>.</li>
+</ul>
+<h6 id="4-placement-enumeration">4. <code>Placement</code> Enumeration</h6>
+<pre class="codehilite"><code class="language-xml">export enum Placement {
+  top = 'top',
+  bottom = 'bottom',
+  left = 'left',
+  right = 'right'
+}    
+</code></pre>
+
+<ul>
+<li><code>Placement</code> enum defines four possible positions: top, bottom, left, and right.    </li>
+</ul>
+<h6 id="5-referenceposition-interface">5. <code>ReferencePosition</code> Interface</h6>
+<pre class="codehilite"><code class="language-xml">export interface ReferencePosition {
+  rect: RectProps;
+  placement?: Placement;
+}    
+</code></pre>
+
+<ul>
+<li><code>ReferencePosition</code> interface defines a reference position, containing a rectangle of type <code>RectProps</code> and an optional <code>Placement</code> enum value.    </li>
+</ul>
+<h6 id="6-validateenum-enumeration">6. <code>ValidateEnum</code> Enumeration</h6>
+<pre class="codehilite"><code class="language-xml">export enum ValidateEnum {
+  validateExit = 'validate-exit',
+  invalidateExit = 'invalidate-exit',
+  validateNotExit = 'validate-not-exit',
+  invalidateNotExit = 'invalidate-not-exit'
+}    
+</code></pre>
+
+<ul>
+<li><code>ValidateEnum</code> enum defines four validation results: validation passed and exit edit mode, validation failed and exit edit mode, validation passed but do not exit edit mode, validation failed but do not exit edit mode.    </li>
+</ul>
+<h6 id="7-celladdress-type">7. <code>CellAddress</code> Type</h6>
+<pre class="codehilite"><code class="language-xml">export type CellAddress = {
+  col: number;
+  row: number;
+};    
+</code></pre>
+
+<ul>
+<li><code>CellAddress</code> type defines the address of a cell, containing the column index <code>col</code> and the row index <code>row</code>.    </li>
+</ul>
+<h5 id="base-editorts">base-editor.ts</h5>
+<ul>
+<li><strong>Functionality</strong>: Defines a basic editor class <code>BaseEditor</code>, serving as a base class for other editors (mentioned in the comments that it might not be needed).    </li>
+</ul>
+<h5 id="input-editorts">input-editor.ts</h5>
+<ul>
+<li>
+<p><strong>Function</strong>: Implements a regular input editor <code>InputEditor</code>, inheriting from the <code>IEditor</code> interface.    </p>
+</li>
+<li>
+<p><strong>Main Methods</strong>:    </p>
+</li>
+<li>
+<p><code>createElement()</code>: Create and configure input elements.    </p>
+</li>
+<li>
+<p><code>setValue(value: string)</code>: Set the value of the input box.    </p>
+</li>
+<li>
+<p><code>getValue()</code>: Get the value of the input box.    </p>
+</li>
+<li>
+<p><code>onStart(context: EditContext&lt;string&gt;)</code>: Initialize the editor, including creating elements, setting values, and adjusting positions.    </p>
+</li>
+<li>
+<p><code>adjustPosition(rect: RectProps)</code>: Adjust the position of the input box according to the given rectangle information.    </p>
+</li>
+<li>
+<p><code>endEditing()</code> and <code>onEnd()</code>: Clean up editor resources.    </p>
+</li>
+<li>
+<p><code>isEditorElement(target: HTMLElement)</code>: Determine whether the target element is an element of the current editor.    </p>
+</li>
+<li>
+<p><code>validateValue(newValue?: any, oldValue?: any, position?: CellAddress, table?: any)</code>: Validate the new value.    </p>
+</li>
+</ul>
+<h5 id="list-editorts">list-editor.ts</h5>
+<ul>
+<li>
+<p><strong>Functionality</strong>: Implements a dropdown list editor <code>ListEditor</code>, inheriting from the <code>IEditor</code> interface.    \r</p>
+</li>
+<li>
+<p><strong>Main Methods</strong>:    </p>
+</li>
+<li>
+<p><code>createElement(value: string)</code>: Create and configure the dropdown list element.    </p>
+</li>
+<li>
+<p><code>setValue(value: string)</code>: Set the value of the dropdown list.    </p>
+</li>
+<li>
+<p><code>getValue()</code>: Get the value of the dropdown list.    </p>
+</li>
+<li>
+<p><code>onStart(context: EditContext)</code>: Initialize the editor, including creating elements, setting values, and adjusting positions.    </p>
+</li>
+<li>
+<p><code>adjustPosition(rect: RectProps)</code>: Adjust the position of the dropdown list based on the given rectangle information.    </p>
+</li>
+<li>
+<p><code>endEditing()</code> and <code>onEnd()</code>: Clean up editor resources.    </p>
+</li>
+<li>
+<p><code>isEditorElement(target: HTMLElement)</code>: Determine whether the target element is an element of the current editor.    </p>
+</li>
+</ul>
+<h5 id="textarea-editorts">textArea-editor.ts</h5>
+<ul>
+<li>
+<p><strong>Functionality</strong>: Implements a text area editor <code>TextAreaEditor</code>, inheriting from the <code>IEditor</code> interface.    </p>
+</li>
+<li>
+<p><strong>Main Methods</strong>:    </p>
+</li>
+<li>
+<p><code>createElement()</code>: Create and configure a text area element.    </p>
+</li>
+<li>
+<p><code>setValue(value: string)</code>: Set the value of the text area.    </p>
+</li>
+<li>
+<p><code>getValue()</code>: Get the value of the text area.    </p>
+</li>
+<li>
+<p><code>onStart(context: EditContext&lt;string&gt;)</code>: Initialize the editor, including creating elements, setting values, and adjusting positions.    </p>
+</li>
+<li>
+<p><code>adjustPosition(rect: RectProps)</code>: Adjust the position of the text area based on the given rectangle information.    </p>
+</li>
+<li>
+<p><code>endEditing()</code> and <code>onEnd()</code>: Clean up editor resources.    </p>
+</li>
+<li>
+<p><code>isEditorElement(target: HTMLElement)</code>: Determine whether the target element is an element of the current editor.    </p>
+</li>
+</ul>
+<h5 id="date-input-editorts">date-input-editor.ts</h5>
+<ul>
+<li>
+<p><strong>Functionality</strong>: Implements the date input editor <code>DateInputEditor</code>, inheriting from the <code>InputEditor</code> class.    </p>
+</li>
+<li>
+<p><strong>Main Methods</strong>:    </p>
+</li>
+<li>
+<p><code>createElement()</code>: Create and configure a date input element.    </p>
+</li>
+<li>
+<p>Other methods are inherited from <code>InputEditor</code>.    </p>
+</li>
+</ul>
+<h5 id="indexts">index.ts</h5>
+<ul>
+<li>
+<p><strong>Functionality</strong>: Export all editor classes and type definitions.    </p>
+</li>
+<li>
+<p><strong>Content</strong>: Imported and exported <code>InputEditor</code>, <code>DateInputEditor</code>, <code>ListEditor</code>, and <code>TextAreaEditor</code>, as well as all type definitions imported from <code>types.ts</code>.    </p>
+</li>
+</ul>
+<h4 id="relationships-between-files">Relationships between Files</h4>
+<ol>
+<li>
+<p><strong>Interface and Implementation</strong>:    </p>
+</li>
+<li>
+<p>All specific editor classes (such as <code>TextAreaEditor</code>, <code>ListEditor</code>, <code>InputEditor</code>, <code>DateInputEditor</code>) implement the <code>IEditor</code> interface.    </p>
+</li>
+<li>
+<p><strong>Inheritance Relationship</strong>:    </p>
+</li>
+<li>
+<p><code>DateInputEditor</code> inherits from <code>InputEditor</code>, reusing some of its logic.    </p>
+</li>
+<li>
+<p><code>BaseEditor</code> is commented out, possibly to simplify the design by directly using the <code>IEditor</code> interface.    </p>
+</li>
+<li>
+<p><strong>Dependencies</strong>:    </p>
+</li>
+<li>
+<p>Each editor class depends on the interfaces and types defined in <code>types.ts</code>.    </p>
+</li>
+<li>
+<p><code>index.ts</code> is responsible for exporting all editor classes and type definitions for use by external modules.    </p>
+</li>
+<li>
+<p><strong>Common Logic</strong>:    </p>
+</li>
+<li>
+<p>Multiple editor classes (such as <code>TextAreaEditor</code>, <code>ListEditor</code>, <code>InputEditor</code>) share similar method structures, such as <code>createElement()</code>, <code>setValue()</code>, <code>getValue()</code>, etc., indicating that they follow the same editor lifecycle management.    </p>
+</li>
+</ol>
+<h1 id="core-process">Core Process</h1>
+<h2 id="initialization">Initialization</h2>
+<p>When creating an <code>EditManager</code> instance, the constructor <code>constructor</code> is called, which takes a <code>table</code> object as a parameter and calls the <code>bindEvent</code> method to bind events.</p>
+<pre class="codehilite"><code class="language-xml">constructor(table: T) {
+  this.table = table;
+  this.bindEvent();
+}    
+</code></pre>
+
+<h2 id="event-binding">Event Binding</h2>
+<p><code>bindEvent</code> method is responsible for binding double-click and single-click events on the table, and determines the way to trigger editing based on the <code>editCellTrigger</code> configuration.</p>
+<pre class="codehilite"><code class="language-xml">bindEvent() {
+  const editCellTrigger = this.table.options.editCellTrigger;
+  this.table.on(TABLE_EVENT_TYPE.DBLCLICK_CELL, e =&gt; {
+    if (
+      !editCellTrigger || //默认为双击
+      editCellTrigger === 'doubleclick' ||
+      (Array.isArray(editCellTrigger) &amp;&amp; editCellTrigger.includes('doubleclick'))
+    ) {
+      const { col, row } = e;
+      // 取双击自动列宽逻辑
+      const eventArgsSet = getCellEventArgsSet(e.federatedEvent);
+      const resizeCol = this.table.scenegraph.getResizeColAt(
+        eventArgsSet.abstractPos.x,
+        eventArgsSet.abstractPos.y,
+        eventArgsSet.eventArgs?.targetCell
+      );
+      if (this.table._canResizeColumn(resizeCol.col, resizeCol.row) &amp;&amp; resizeCol.col &gt;= 0) {
+        // 判断同双击自动列宽的时间监听的DBLCLICK_CELL
+        // 如果是双击自动列宽 则编辑不开启
+        return;
+      }
+      this.startEditCell(col, row);
+    }
+  });
+  // ...
+}    
+</code></pre>
+
+<h2 id="start-editing">Start Editing</h2>
+<p>When the user triggers a double-click or single-click event, the <code>startEditCell</code> method is called to start editing the cell.    </p>
+<pre class="codehilite"><code class="language-xml">startEditCell(col: number, row: number, value?: string | number) {
+// ...
+    editor.onStart?.({
+      value: dataValue,
+      endEdit: () =&gt; {
+        this.completeEdit();
+      },
+      referencePosition,
+      container: this.table.getElement(),
+      table: this.table,
+      col,
+      row
+    });
+  }
+}    
+</code></pre>
+
+<p>The method checks if it is currently being edited, and if so, it returns immediately. Then it obtains the editor of the cell and checks if the cell is editable. If it is editable, it sets the currently edited cell and editor, and calls the <code>editor.onStart</code> method to start editing.</p>
+<h2 id="end-editing">End Editing</h2>
+<p><code>completeEdit</code> method is used to end the editing process. It checks whether the value is being validated and whether the event target is within the editor. If value validation is needed, it calls the <code>editor.validateValue</code> method for validation.    </p>
+<pre class="codehilite"><code class="language-xml">completeEdit(e?: Event): boolean | Promise&lt;boolean&gt; {
+// ...
+  if (this.editingEditor.validateValue) {
+    this.isValidatingValue = true;
+    const newValue = this.editingEditor.getValue();
+    const oldValue = this.table.getCellOriginValue(this.editCell.col, this.editCell.row);
+
+    const maybePromiseOrValue = this.editingEditor.validateValue?.(newValue, oldValue, this.editCell, this.table);
+
+    if (isPromise(maybePromiseOrValue)) {
+      this.isValidatingValue = true;
+      return new Promise((resolve, reject) =&gt; {
+        maybePromiseOrValue
+          .then(result =&gt; {
+            dealWithValidateValue(result, this, oldValue, resolve);
+          })
+          .catch((err: Error) =&gt; {
+            this.isValidatingValue = false;
+            console.error('VTable Error:', err);
+            reject(err);
+          });
+      });
+    }
+    return dealWithValidateValue(maybePromiseOrValue, this, oldValue);
+  }
+  this.doExit();
+  return true;
+}    
+</code></pre>
+
+<h2 id="processing-validation-results">Processing Validation Results</h2>
+<p><code>dealWithValidateValue</code> function decides whether to exit the edit state based on the validation result.    </p>
+<pre class="codehilite"><code class="language-xml">function dealWithValidateValue(
+// ...
+  if (validateValue === 'validate-exit') {
+    editManager.doExit();
+    resolve?.(true);
+    return true;
+  } else if (validateValue === 'invalidate-exit') {
+    (editManager.editingEditor as any).setValue(oldValue);
+    editManager.doExit();
+    resolve?.(true);
+    return true;
+  } else if (validateValue === 'validate-not-exit') {
+    resolve?.(false);
+    return false;
+  } else if (validateValue === 'invalidate-not-exit') {
+    resolve?.(false);
+    return false;
+  } else if (validateValue === true) {
+    editManager.doExit();
+    resolve?.(true);
+    return true;
+  }
+// ...
+}    
+</code></pre>
+
+<h2 id="exit-editing">Exit Editing</h2>
+<p><code>doExit</code> method is used to exit the editing state, update the value of the table cell, and call the <code>editor.onEnd</code> method.    </p>
+<pre class="codehilite"><code class="language-xml">doExit() {
+// ...
+  for (let row = range.start.row; row &lt;= range.end.row; row++) {
+    const rowChangedValues = [];
+    for (let col = range.start.col; col &lt;= range.end.col; col++) {
+      rowChangedValues.push(changedValue);
+    }
+    changedValues.push(rowChangedValues);
+  }
+  (this.table as ListTableAPI).changeCellValues(range.start.col, range.start.row, changedValues);
+  this.editingEditor.onEnd?.();
+  this.editingEditor = null;
+  this.isValidatingValue = false;
+}    
+</code></pre>
+
+<h2 id="cancel-editing">Cancel Editing</h2>
+<p><code>cancelEdit</code> method is used to cancel the edit state, call <code>editor.onEnd</code> method and clear the editor.    </p>
+<h2 id="flowchart">Flowchart</h2>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Jl6HwHXC3h2z6EbQzEUchmAOnWc.gif" /></p>
+<h1 id="practical-application">Practical Application</h1>
+<p>In the current project, the <code>EditManager</code> class in <code>edit-manager.ts</code> provides support for table editing functionality, while <code>PivotTable.ts</code> and <code>ListTable.ts</code> use this class to implement their respective table editing features. Below is a detailed introduction to the use of <code>EditManager</code> in these two files:</p>
+<h3 id="usage-in-pivottablets">Usage in <code>PivotTable.ts</code></h3>
+<ol>
+<li>Import <code>EditManager</code>    </li>
+</ol>
+<p>At the beginning of the <code>PivotTable.ts</code> file, import the <code>EditManager</code> class:    </p>
+<pre class="codehilite"><code class="language-xml">import { EditManager } from './edit/edit-manager';    
+</code></pre>
+
+<ol>
+<li>Create an <code>EditManager</code> instance    </li>
+</ol>
+<p>In the <code>PivotTable</code> class constructor, create an <code>EditManager</code> instance:    </p>
+<pre class="codehilite"><code class="language-xml">this.editManager = new EditManager(this);    
+</code></pre>
+
+<p>Here, the <code>PivotTable</code> instance <code>this</code> is passed as a parameter to the constructor of <code>EditManager</code>.    </p>
+<ol>
+<li>Call <code>EditManager</code> method    </li>
+</ol>
+<p>In the <code>PivotTable</code> class, the <code>startEditCell</code> and <code>completeEditCell</code> methods are defined to call the corresponding methods of the <code>EditManager</code> instance:    </p>
+<pre class="codehilite"><code class="language-xml">startEditCell(col?: number, row?: number, value?: string | number) {
+  this.editManager.startEditCell(col, row, value);
+}
+
+completeEditCell() {
+  this.editManager.completeEdit();
+}    
+</code></pre>
+
+<p><code>startEditCell</code> method calls the <code>EditManager</code> instance's <code>startEditCell</code> method to start cell editing; <code>completeEditCell</code> method calls the <code>EditManager</code> instance's <code>completeEdit</code> method to end cell editing.</p>
+<p><code>EditManager</code> class provides support for cell editing functionality for <code>PivotTable</code> and <code>ListTable</code>. In the constructors of these two classes, an instance of <code>EditManager</code> is created, and the instance itself is passed as a parameter to the constructor of <code>EditManager</code>. In the subsequent implementation of editing functionality, methods of the <code>EditManager</code> instance are called to handle cell editing operations.</p>
+<h1 id="summary_1">Summary</h1>
+<p>Through the design of base classes and specific editors, the data editing functionality of <code>vtable</code> achieves high reusability and extensibility. This design not only simplifies the code structure but also makes it easier to support new data types. At the same time, with the unified definition of interfaces, the interaction between different editors becomes more flexible.</p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3 How to "assemble" a VChart chart</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>In the previous chapters, we talked about the composition and basic principles of charts. Now let's see how to assemble a VChart chart using declarative syntax.    </p>
+<h1 id="31-interface-definition">3.1 Interface Definition</h1>
+<p>A basic spec needs to include the following parts:    </p>
+<ul>
+<li>
+<p><code>type</code> Chart type    </p>
+</li>
+<li>
+<p><code>data</code> Data source    </p>
+</li>
+<li>
+<p>Data mapping, in most cases in a Cartesian coordinate system as <code>xField</code> and <code>yField</code>, in a polar coordinate system as <code>categoryField</code> and <code>valueField</code>    </p>
+</li>
+<li>
+<p>Series configuration, VChart charts are composed of series, which include elements and labels. The configuration of elements and labels is in the series configuration    </p>
+</li>
+<li>
+<p>Component configuration, such as <code>legends</code>, <code>axes</code>, etc. Except for composite charts that must configure <code>axes</code>, the configuration of components for other charts is actually optional and can be configured as needed    </p>
+</li>
+</ul>
+<h2 id="311-chart-type">3.1.1 Chart Type</h2>
+<p>In the spec, we first need to decide the chart type, for example:    </p>
+<pre class="codehilite"><code class="language-Typescript">{
+  &quot;type&quot;: &quot;bar&quot;
+}    
+</code></pre>
+
+<p>Common chart types include <code>bar</code>, <code>line</code>, <code>pie</code>, and more chart types can be referenced in the API documentation: https://www.visactor.io/vchart/option    </p>
+<p>Note that there is a special chart type called <code>common</code>, which is a composite chart type series. Examples will be provided later.    </p>
+<h2 id="312-data-source">3.1.2 Data Source</h2>
+<p>Data is the foundation of chart visualization, and we need to specify the data source in the spec. Typically, data is represented in JSON format, using the <code>data</code> field to specify it. For example, we can specify the data source in the following format:    </p>
+<pre class="codehilite"><code class="language-Typescript">{
+  &quot;data&quot;: [
+    {
+      &quot;id&quot;: &quot;barData&quot;,
+      &quot;values&quot;: [
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;1930&quot;, &quot;value&quot;: 129 },
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;1940&quot;, &quot;value&quot;: 133 },
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;1950&quot;, &quot;value&quot;: 130 },
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;1960&quot;, &quot;value&quot;: 126 },
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;1970&quot;, &quot;value&quot;: 117 },
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;1980&quot;, &quot;value&quot;: 114 },
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;1990&quot;, &quot;value&quot;: 111 },
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;2000&quot;, &quot;value&quot;: 89 },
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;2010&quot;, &quot;value&quot;: 80 },
+        { &quot;type&quot;: &quot;A&quot;, &quot;year&quot;: &quot;2018&quot;, &quot;value&quot;: 80 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;1930&quot;, &quot;value&quot;: 22 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;1940&quot;, &quot;value&quot;: 13 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;1950&quot;, &quot;value&quot;: 25 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;1960&quot;, &quot;value&quot;: 29 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;1970&quot;, &quot;value&quot;: 38 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;1980&quot;, &quot;value&quot;: 41 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;1990&quot;, &quot;value&quot;: 57 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;2000&quot;, &quot;value&quot;: 87 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;2010&quot;, &quot;value&quot;: 98 },
+        { &quot;type&quot;: &quot;B&quot;, &quot;year&quot;: &quot;2018&quot;, &quot;value&quot;: 99 }
+      ]
+    }
+  ]
+}    
+</code></pre>
+
+<p>The <code>id</code> field is used to identify the data source, and the <code>values</code> field is used to specify the data of the data source.    </p>
+<p>In VChart, in most cases, we expect to use <code>flattened</code> data objects. The difference between <code>flattened</code> and <code>non-flattened</code> data objects is shown in the example below    </p>
+<pre class="codehilite"><code class="language-Typescript">// 非展平数据对象
+[
+    {date: &quot;Monday&quot;, class No.1: 20, class No.2: 30},
+    {date: &quot;Tuesday&quot;, class No.1: 25, class No.2: 28},
+]
+// 展平数据对象
+[
+    { date: &quot;Monday&quot;, class: &quot;class No.1&quot;, score: 20 },
+    { date: &quot;Monday&quot;, class: &quot;class No.2&quot;, score: 30 },
+
+    { date: &quot;Tuesday&quot;, class: &quot;class No.1&quot;, score: 25 },
+    { date: &quot;Tuesday&quot;, class: &quot;class No.2&quot;, score: 28 },
+]    
+</code></pre>
+
+<p>The most important significance of flattening data is that it allows for a one-to-one correspondence between data and graphics.    </p>
+<h2 id="313-data-mapping">3.1.3 Data Mapping</h2>
+<p>Next, we need to map the data to the basic graphical elements (marks) of the chart. For the grouped bar chart in this tutorial, we specify <code>xField</code>, <code>yField</code>, and <code>seriesField</code>. Here, <code>xField</code> and <code>yField</code> are used for position mapping, and <code>seriesField</code> is used for color mapping    </p>
+<pre class="codehilite"><code class="language-Typescript">{
+  &quot;xField&quot;: [&quot;year&quot;, &quot;type&quot;],
+  &quot;yField&quot;: &quot;value&quot;,
+  &quot;seriesField&quot;: &quot;type&quot;
+}    
+</code></pre>
+
+<h2 id="314-series-configuration">3.1.4 Series Configuration</h2>
+<p>A series refers to the main body of the chart in the image, such as the line in a line chart, which will be introduced in more detail later.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MyP0bDrC5oCnraxw194cdlkAnac.gif' alt='' width='1000' height='auto' /></p>
+<h2 id="315-component-configuration">3.1.5 Component Configuration</h2>
+<p>VChart also supports configuring various components of the chart, such as axes, legends, crosshair, and tooltip. Currently, the components supported by VChart are:</p>
+<h1 id="32-series">3.2 Series</h1>
+<h2 id="321-concept-and-types">3.2.1 Concept and Types</h2>
+<p>In VChart, Series are the core building blocks of visual charts, responsible for mapping data into visual expressions. A series represents a set of related data items that share the same visual representation (such as line, bar, etc.). Series are converters from data to graphics, including data processing, coordinate mapping, visual encoding, and other functions. Each series type corresponds to a specific visual representation form, with unique data structure requirements and visual mapping rules.</p>
+<h3 id="basic-and-coordinate-system-classes">Basic and Coordinate System Classes</h3>
+<ul>
+<li>
+<p>base: Basic implementation of series, providing common functions for all series</p>
+</li>
+<li>
+<p>cartesian: Cartesian coordinate system base class, used for X-Y axis series</p>
+</li>
+<li>
+<p>polar: Polar coordinate system base class, used for circular and radial series</p>
+</li>
+<li>
+<p>geo: Geographic coordinate system base class, used for map-related series</p>
+</li>
+</ul>
+<h3 id="cartesian-coordinate-system-series">Cartesian Coordinate System Series</h3>
+<ul>
+<li>
+<p>bar: Bar chart, used for category data comparison</p>
+</li>
+<li>
+<p>line: Line chart, showing data trends and changes</p>
+</li>
+<li>
+<p>area: Area chart, emphasizing cumulative changes in data volume</p>
+</li>
+<li>
+<p>scatter: Scatter plot, showing the distribution of data points</p>
+</li>
+<li>
+<p>box-plot: Box plot, displaying data distribution and outliers</p>
+</li>
+<li>
+<p>dot: Dot plot, simplified scatter plot</p>
+</li>
+<li>
+<p>heatmap: Heatmap, using color intensity to represent value size</p>
+</li>
+<li>
+<p>range-area: Range area chart, showing upper and lower boundary areas</p>
+</li>
+<li>
+<p>range-column: Range column chart, showing data range</p>
+</li>
+<li>
+<p>waterfall: Waterfall chart, showing cumulative effects</p>
+</li>
+</ul>
+<h3 id="polar-coordinate-system-series">Polar Coordinate System Series</h3>
+<ul>
+<li>
+<p>pie: Pie chart, showing the relationship between part and whole</p>
+</li>
+<li>
+<p>rose: Rose chart, circular display of multidimensional data</p>
+</li>
+<li>
+<p>radar: Radar chart, radial display of multivariable data</p>
+</li>
+</ul>
+<h3 id="hierarchical-series">Hierarchical Series</h3>
+<ul>
+<li>
+<p>treemap: Treemap, nested rectangle display of hierarchical structure</p>
+</li>
+<li>
+<p>sunburst: Sunburst chart, circular display of hierarchical data</p>
+</li>
+<li>
+<p>circle-packing: Circle packing chart, nested circle display of hierarchical structure</p>
+</li>
+</ul>
+<h3 id="relational-series">Relational Series</h3>
+<ul>
+<li>
+<p>sankey: Sankey diagram, showing flow and conversion relationships</p>
+</li>
+<li>
+<p>correlation: Correlation chart, showing correlations between different dimensions</p>
+</li>
+<li>
+<p>venn: Venn diagram, showing intersection relationships between sets</p>
+</li>
+<li>
+<p>link: Link chart, showing connections between entities</p>
+</li>
+</ul>
+<h3 id="special-series">Special Series</h3>
+<ul>
+<li>
+<p>funnel: Funnel chart, showing conversion rates of multi-stage processes</p>
+</li>
+<li>
+<p>gauge: Gauge chart, showing the achievement of a single indicator</p>
+</li>
+<li>
+<p>liquid: Liquid chart, using liquid fill effect to show progress</p>
+</li>
+<li>
+<p>map: Map series, displaying data in geographic space</p>
+</li>
+<li>
+<p>mosaic: Mosaic chart, using rectangle area to display multidimensional data relationships</p>
+</li>
+<li>
+<p>pictogram: Pictogram chart, using icons to represent data</p>
+</li>
+<li>
+<p>progress: Progress bar, linear display of completion</p>
+</li>
+<li>
+<p>word-cloud: Word cloud chart, displaying text data based on word frequency</p>
+</li>
+</ul>
+<h2 id="322-series-data-management">3.2.2 Series Data Management</h2>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/HO0Nw3yr0hL76IbRjkOcCzlTn1f.gif" /></p>
+<h3 id="initialization-phase">Initialization Phase</h3>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/series/base/base-series.ts
+  protected initData(): void {
+    const d = this._spec.data ?? this._option.getSeriesData(this._spec.dataId, this._spec.dataIndex);
+    if (d) {
+      this._rawData = dataToDataView(d, this._dataSet, this._option.sourceDataList);
+    }
+    this._rawData?.target?.addListener('change', this.rawDataUpdate.bind(this));
+    this._addDataIndexAndKey();
+    // 初始化viewData
+    if (this._rawData) {
+      if (this.getStack()) {
+        // 初始化viewDataFilter
+        this._viewDataFilter = dataViewFromDataView(this._rawData, this._dataSet, {
+          name: `${this.type}_${this.id}_viewDataFilter`
+        });
+      }
+
+      // 初始化viewData
+      const viewData = dataViewFromDataView(this.getStack() ? this._viewDataFilter : this._rawData, this._dataSet, {
+        name: `${this.type}_${this.id}_viewData`
+      });
+      this._data = new SeriesData(this._option, viewData);
+
+      if (this.getStack()) {
+        this._viewDataFilter.target.removeListener('change', viewData.reRunAllTransform);
+      }
+    }
+
+    this.initInvalidDataTransform();
+  }    
+</code></pre>
+
+<ol>
+<li>
+<p>Extract data from the spec's data or option and convert it into a DataView    </p>
+</li>
+<li>
+<p>Then register a Listener, which triggers the rawDataUpdate function when the data changes    </p>
+</li>
+<li>
+<p>Add index and key to the Data    </p>
+</li>
+<li>
+<p>Then we will generate DataViews of different levels    </p>
+</li>
+<li>
+<p>If stacked data is needed, we create an intermediate DataView    </p>
+</li>
+<li>
+<p>If stacked data is not needed, directly create viewData, which is used by the chart for statistics and rendering    </p>
+</li>
+</ol>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">What is a DataView?    
+It is a view encapsulation of a data set, providing a series of operations and capabilities to transform data. You can think of a DataView as an "intelligent data container" that not only stores data but also processes and transforms it in various ways.    
+</div>
+
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/series/base/base-series.ts
+protected _statisticViewData() {
+  registerDataSetInstanceTransform(this._dataSet, 'dimensionStatistics', dimensionStatistics);
+  const viewDataStatisticsName = `${this.type}_${this.id}_viewDataStatic`;
+  this._viewDataStatistics = new DataView(this._dataSet, { name: viewDataStatisticsName });
+  this._viewDataStatistics.parse([this._data.getDataView()], {
+    type: 'dataview'
+  });
+  this._viewDataStatistics.transform(
+    {
+      type: 'dimensionStatistics',
+      options: {
+        fields: () =&gt; {
+          const fields = this.getStatisticFields();
+          if (this._seriesField) {
+            mergeFields(fields, [
+              {
+                key: this._seriesField,
+                operations: ['values']
+              }
+            ]);
+          }
+          return fields;
+        },
+        target: 'latest'
+      }
+    },
+    false
+  );
+  // ...
+}    
+</code></pre>
+
+<p>Create a series of statistics, such as maximum, minimum, etc. The statistics generated by different types of charts may vary. The specific chart's series class will implement this <code>abstract function getStatisticFields</code> to control what Statistics are generated.</p>
+<pre class="codehilite"><code class="language-xml">  abstract getStatisticFields(): {
+    key: string;
+    operations: StatisticOperations;
+  }[];    
+</code></pre>
+
+<h3 id="update-data">Update Data</h3>
+<h4 id="data-layer">Data Layer</h4>
+<pre class="codehilite"><code class="language-Typescript">// 1. 原始数据视图
+protected _rawData!: DataView;
+
+// 2. 原始数据统计视图
+protected _rawDataStatistics?: DataView;
+
+// 3. 原始数据统计缓存
+protected _rawStatisticsCache: Record&lt;string, { values?: any[]; min?: number; max?: number }&gt;;
+
+// 4. 更新原始数据
+updateRawData(d: any): void {
+  if (!this._rawData) {
+    return;
+  }
+  this._rawData.updateRawData(d);
+}
+
+// 5. 原始数据更新处理
+rawDataUpdate(d: DataView): void {
+  // 重新计算统计信息
+  this._rawDataStatistics?.reRunAllTransform();
+  // 清空缓存
+  this._rawStatisticsCache = null;
+  // 触发事件
+  this.event.emit(ChartEvent.rawDataUpdate, { model: this });
+}    
+</code></pre>
+
+<h4 id="filter-layer">Filter Layer</h4>
+<pre class="codehilite"><code class="language-Typescript">// 1. 数据过滤视图
+protected _viewDataFilter: DataView = null;
+
+// 2. 过滤完成处理
+viewDataFilterOver(d: DataView): void {
+  this.event.emit(ChartEvent.viewDataFilterOver, { model: this });
+}
+
+// 3. 添加数据过滤
+addViewDataFilter(option: ITransformOptions) {
+  (this._viewDataFilter ?? this.getViewData())?.transform(option, false);
+}
+
+// 4. 重新过滤数据
+reFilterViewData() {
+  (this._viewDataFilter ?? this.getViewData())?.reRunAllTransform();
+}    
+</code></pre>
+
+<h4 id="view-layer">View Layer</h4>
+<pre class="codehilite"><code class="language-Typescript">// 1. 视图数据
+protected _data: SeriesData = null;
+
+// 2. 视图数据统计
+protected _viewDataStatistics!: DataView;
+
+// 3. 视图数据更新处理
+viewDataUpdate(d: DataView): void {
+  this.event.emit(ChartEvent.viewDataUpdate, { model: this });
+  this._data?.updateData();
+  this._viewDataStatistics &amp;&amp; this._viewDataStatistics.reRunAllTransform();
+}
+
+// 4. 统计信息更新处理
+viewDataStatisticsUpdate(d: DataView): void {
+  this.event.emit(ChartEvent.viewDataStatisticsUpdate, { model: this });
+}    
+</code></pre>
+
+<h3 id="release-phase">Release Phase</h3>
+<p>Mainly divided into the following processes:</p>
+<pre class="codehilite"><code class="language-Typescript">release(): void {
+  super.release();
+
+  // 1. 清理视图数据映射
+  this._viewDataMap.clear();
+
+  // 2. 清理原始数据转换
+  const transformIndex = this._rawData?.transformsArr?.findIndex(t =&gt; t.type === 'addVChartProperty');
+  if (transformIndex &gt;= 0) {
+    this._rawData.transformsArr.splice(transformIndex, 1);
+  }
+
+  // 3. 释放系列数据
+  this._data?.release();
+
+  // 4. 清空数据引用
+  this._dataSet = null;
+  this._data = null;
+  this._rawData = null;
+  this._rawDataStatistics = null;
+  this._viewDataStatistics = null;
+  this._viewStackData = null;
+}    
+</code></pre>
+
+<h2 id="323-creation-of-series-primitives">3.2.3 Creation of Series Primitives</h2>
+<ol>
+<li>
+<p>Root Primitive:</p>
+</li>
+<li>
+<p>Function: Acts as a container to organize and manage other primitives</p>
+</li>
+<li>
+<p>Characteristics: Must be of group type</p>
+</li>
+<li>
+<p>Position: Topmost level</p>
+</li>
+<li>
+<p>Series Primitive:</p>
+</li>
+<li>
+<p>Function: Implements the core visualization functionality of the chart, used for drawing series</p>
+</li>
+<li>
+<p>Characteristics: Related to specific chart types</p>
+</li>
+<li>
+<p>Position: Main primitive under the root primitive</p>
+</li>
+<li>
+<p>Extension Primitive:</p>
+</li>
+<li>
+<p>Function: Provides additional functional support</p>
+</li>
+<li>
+<p>Characteristics: Optional, used to enhance chart functionality, such as labels</p>
+</li>
+<li>
+<p>Position: Auxiliary primitive under the root primitive</p>
+</li>
+</ol>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/X2zBwLhMBhllo6bvdc6c8ReonPh.gif" /></p>
+<h3 id="create-entry">Create Entry</h3>
+<pre class="codehilite"><code class="language-Typescript">// BaseSeries 中的 created 方法
+created(): void {
+  super.created();
+
+  // 1. 构建图元属性上下文
+  this._buildMarkAttributeContext();
+
+  // 2. 初始化数据
+  this.initData();
+  this.initGroups();
+  this.initStatisticalData();
+
+  // 3. 初始化图元
+  this.initRootMark();
+  this.initMark();
+
+  // 4. 初始化扩展图元
+  const hasAnimation = isAnimationEnabledForSeries(this);
+  this._initExtensionMark({ hasAnimation });
+
+  // 5. 初始化样式和状态
+  this.initMarkStyle();
+  this.initMarkState();
+
+  // 6. 初始化动画
+  if (hasAnimation) {
+    this.initAnimation();
+  }
+
+  // 7. 初始化交互
+  if (!this._option.disableTriggerEvent) {
+    this.initInteraction();
+  }
+
+  this.afterInitMark();
+}    
+</code></pre>
+
+<h3 id="root-element-creation">Root Element Creation</h3>
+<pre class="codehilite"><code class="language-Typescript">initRootMark() {
+  // 1. 创建根图元
+  this._rootMark = this._createMark(
+    { 
+      type: MarkTypeEnum.group, 
+      name: `seriesGroup_${this.type}_${this.id}` 
+    },
+    {
+      parent: this._region.getGroupMark?.(),
+      dataView: false
+    }
+  ) as IGroupMark;
+
+  // 2. 设置层级
+  this._rootMark.setMarkConfig({ 
+    zIndex: this._spec.zIndex ?? this.layoutZIndex 
+  });
+}    
+</code></pre>
+
+<h3 id="series-primitive-creation">Series Primitive Creation</h3>
+<pre class="codehilite"><code class="language-Typescript">// 创建图元的通用方法
+protected _createMark&lt;M extends IMark&gt;(
+  markInfo: ISeriesMarkInfo,
+  option: ISeriesMarkInitOption = {},
+  config: ICompileMarkConfig = {}
+) {
+  const {
+    key,
+    groupKey,
+    skipBeforeLayouted,
+    themeSpec = {},
+    markSpec,
+    dataView,
+    dataProductId,
+    parent,
+    isSeriesMark,
+    depend,
+    stateSort,
+    noSeparateStyle = false
+  } = option;
+
+  // 1. 创建图元
+  const m = super._createMark&lt;M&gt;(markInfo, {
+    key: key ?? this._getDataIdKey(),
+    seriesId: this.id,
+    attributeContext: this._markAttributeContext,
+    componentType: option.componentType,
+    noSeparateStyle
+  });
+
+  if (isValid(m)) {
+    // 2. 添加到图元集合
+    this._marks.addMark(m, { name: markInfo.name });
+
+    // 3. 设置系列图元
+    if (isSeriesMark) {
+      this._seriesMark = m;
+    }
+
+    // 4. 设置父级关系
+    if (isNil(parent)) {
+      this._rootMark?.addMark(m);
+    } else if (parent !== false) {
+      parent.addMark(m);
+    }
+
+    // 5. 设置数据视图
+    if (isNil(dataView)) {
+      m.setDataView(this.getViewData(), this.getViewDataProductId());
+      m.setSkipBeforeLayouted(true);
+    } else if (dataView !== false) {
+      m.setDataView(dataView, dataProductId);
+    }
+
+    // 6. 设置其他属性
+    if (isBoolean(skipBeforeLayouted)) {
+      m.setSkipBeforeLayouted(skipBeforeLayouted);
+    }
+
+    if (isValid(depend)) {
+      m.setDepend(...array(depend));
+    }
+
+    if (!isNil(groupKey)) {
+      m.setGroupKey(groupKey);
+    }
+
+    if (stateSort) {
+      m.setStateSortCallback(stateSort);
+    }
+
+    // 7. 设置图元配置
+    const markConfig: IMarkConfig = {
+      ...config,
+      morph: config.morph ?? false,
+      support3d: is3DMark(markInfo.type as MarkTypeEnum) || 
+                (config.support3d ?? (spec.support3d || !!(spec as any).zField)),
+      morphKey: spec.morph?.morphKey || `${this.getSpecIndex()}_${this.getMarks().length}`,
+      morphElementKey: spec.morph?.morphElementKey ?? config.morphElementKey
+    };
+
+    m.setMarkConfig(markConfig);
+
+    // 8. 初始化样式
+    this.initMarkStyleWithSpec(m, mergeSpec({}, themeSpec, markSpec || spec[m.name]));
+  }
+  return m;
+}    
+</code></pre>
+
+<h3 id="extended-primitive-initialization">Extended Primitive Initialization</h3>
+<pre class="codehilite"><code class="language-Typescript">protected _initExtensionMark(options: { hasAnimation: boolean; depend?: IMark[] }) {
+  if (!this._spec.extensionMark) {
+    return;
+  }
+
+  const mainMarks = this.getMarksWithoutRoot();
+  options.depend = mainMarks;
+
+  // 创建扩展图元
+  this._spec.extensionMark?.forEach((m, i) =&gt; {
+    this._createExtensionMark(
+      m, 
+      null, 
+      this._getExtensionMarkNamePrefix(), 
+      i, 
+      options
+    );
+  });
+}
+
+private _createExtensionMark(
+  spec: IExtensionMarkSpec&lt;Exclude&lt;EnableMarkType, 'group'&gt;&gt; | IExtensionGroupMarkSpec,
+  parentMark: null | IGroupMark,
+  namePrefix: string,
+  index: number,
+  options: { hasAnimation: boolean; depend?: IMark[] }
+) {
+  // 1. 创建扩展图元
+  const mark = this._createMark(
+    { 
+      type: spec.type, 
+      name: isValid(spec.name) ? `${spec.name}` : `${namePrefix}_${index}` 
+    },
+    {
+      skipBeforeLayouted: true,
+      markSpec: spec,
+      parent: parentMark,
+      dataView: false,
+      componentType: spec.componentType,
+      depend: options.depend,
+      key: spec.dataKey
+    },
+    {
+      setCustomizedShape: spec?.customShape
+    }
+  ) as IGroupMark;
+
+  if (!mark) {
+    return;
+  }
+
+  // 2. 设置用户ID
+  if (isValid(spec.id)) {
+    mark.setUserId(spec.id);
+  }
+
+  // 3. 设置动画
+  if (options.hasAnimation) {
+    const config = animationConfig(
+      {}, 
+      userAnimationConfig(spec.type, spec as any, this._markAttributeContext)
+    );
+    mark.setAnimationConfig(config);
+  }
+
+  // 4. 处理子图元
+  if (spec.type === 'group') {
+    namePrefix = `${namePrefix}_${index}`;
+    spec.children?.forEach((s, i) =&gt; {
+      this._createExtensionMark(s as any, mark, namePrefix, i, options);
+    });
+  } 
+  // 5. 设置数据视图
+  else if (!parentMark &amp;&amp; (!isNil(spec.dataId) || !isNil(spec.dataIndex))) {
+    const dataView = this._option.getSeriesData(spec.dataId, spec.dataIndex);
+    if (dataView === this._rawData) {
+      mark.setDataView(this.getViewData(), this.getViewDataProductId());
+    } else {
+      mark.setDataView(dataView);
+      dataView.target.addListener('change', () =&gt; {
+        mark.getData().updateData();
+      });
+    }
+  }
+}    
+</code></pre>
+
+<h2 id="324-relationship-between-series-and-region">3.2.4 Relationship between Series and <code>Region</code></h2>
+<p>Region is an important concept in VChart, representing an area in the chart used to organize and layout different chart components. Each Region can contain multiple Series and is responsible for managing the layout and rendering of these Series.</p>
+<p>Series use the information of the Region to layout:</p>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/series/base/base-series.ts
+export abstract class BaseSeries&lt;T extends ISeriesSpec&gt; extends BaseModel&lt;T&gt; implements ISeries {
+  // Region 引用
+  protected _region: IRegion = null as unknown as IRegion;
+
+  // 获取关联的 Region
+  getRegion(): IRegion {
+    return this._region;
+  }
+
+  // 构造函数中设置 Region
+  constructor(spec: T, options: ISeriesOption) {
+    super(spec, options);
+    this._region = options.region;
+    this._dataSet = options.dataSet;
+    this._spec?.name &amp;&amp; (this.name = this._spec.name);
+  }
+
+  // 获取布局起始点
+  getLayoutStartPoint(): ILayoutPoint {
+    return this._region.getLayoutStartPoint();
+  }
+
+  // 获取布局矩形
+  getLayoutRect: () =&gt; ILayoutRect = () =&gt; {
+    return {
+      width: this._layoutRect.width ?? this._region.getLayoutRect().width,
+      height: this._layoutRect.height ?? this._region.getLayoutRect().height
+    };
+  };
+}    
+</code></pre>
+
+<p>Region can add or remove Series    \r\n\r</p>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/region/base/base-region.ts
+export abstract class BaseRegion extends BaseModel implements IRegion {
+  protected _series: ISeries[] = [];
+  protected _groupMark: IGroupMark;
+
+  // 添加系列
+  addSeries(series: ISeries): void {
+    this._series.push(series);
+  }
+
+  // 移除系列
+  removeSeries(series: ISeries): void {
+    const index = this._series.indexOf(series);
+    if (index &gt; -1) {
+      this._series.splice(index, 1);
+    }
+  }
+
+  // 获取所有系列
+  getSeries(): ISeries[] {
+    return this._series;
+  }
+
+  // 获取区域组图元
+  getGroupMark(): IGroupMark {
+    return this._groupMark;
+  }
+
+  // 等待所有系列过滤完成
+  async waitAllSeriesFilterOver(): Promise&lt;void&gt; {
+    const promises = this._series.map(series =&gt; {
+      return new Promise&lt;void&gt;(resolve =&gt; {
+        series.event.on(
+          ChartEvent.viewDataFilterOver,
+          { filter: ({ model }) =&gt; model?.id === series.id },
+          () =&gt; resolve()
+        );
+      });
+    });
+    await Promise.all(promises);
+  }
+}    
+</code></pre>
+
+<h1 id="33-chart-assembly">3.3 Chart Assembly</h1>
+<h2 id="331-how-to-implement-a-bar-chart">3.3.1 How to Implement a Bar Chart</h2>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XEDEwkYbbht2qtbVjejcFTLwnHh.gif" /></p>
+<p>First, we create a BarChart instance:    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/chart/bar/bar.ts
+export class BarChart&lt;T extends IBarChartSpec = IBarChartSpec&gt; extends BaseChart&lt;T&gt; {
+  static readonly type: string = ChartTypeEnum.bar;
+  static readonly seriesType: string = SeriesTypeEnum.bar;
+  static readonly transformerConstructor = BarChartSpecTransformer;
+  readonly transformerConstructor = BarChartSpecTransformer;
+  readonly type: string = ChartTypeEnum.bar;
+  readonly seriesType: string = SeriesTypeEnum.bar;
+}
+
+// 注册 Bar Chart
+export const registerBarChart = () =&gt; {
+  registerBarSeries();
+  Factory.registerChart(BarChart.type, BarChart);
+};    
+</code></pre>
+
+<p>Then it will trigger the constructor of BaseChart    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/chart/base/base-chart.ts
+constructor(spec: T, option: IChartOption) {
+  super(option);
+  this._paddingSpec = normalizeLayoutPaddingSpec(spec.padding ?? option.getTheme().padding);
+  this._event = new Event(option.eventDispatcher, option.mode);
+  this._dataSet = option.dataSet;
+  this._chartData = new ChartData(this._dataSet);
+  // ... 其他初始化
+}    
+</code></pre>
+
+<h3 id="create-element">Create Element</h3>
+<p>Layout    </p>
+<pre class="codehilite"><code class="language-Typescript">private _createLayout() {
+  this._updateLayoutRect(this._viewBox);
+  this._initLayoutFunc();
+}
+
+private _initLayoutFunc() {
+  this._layoutFunc = this._option.layout;
+  if (!this._layoutFunc) {
+    const constructor = Factory.getLayoutInKey(this._spec.layout?.type ?? 'base');
+    if (constructor) {
+      const layout = new constructor(this._spec.layout, {
+        onError: this._option?.onError
+      });
+      this._layoutFunc = layout.layoutItems.bind(layout);
+    }
+  }
+}    
+</code></pre>
+
+<p>Create Region and Series    </p>
+<pre class="codehilite"><code class="language-Typescript">protected _createRegion(constructor: IRegionConstructor, specInfo: IModelSpecInfo) {
+  if (!constructor) return;
+  const { spec, ...others } = specInfo;
+  const region = new constructor(spec, {
+    ...this._modelOption,
+    ...others
+  });
+  if (region) {
+    region.created();
+    this._regions.push(region);
+  }
+}
+
+protected _createSeries(constructor: ISeriesConstructor, specInfo: IModelSpecInfo) {
+  if (!constructor) return;
+  const { spec, ...others } = specInfo;
+
+  // 获取对应的区域
+  let region: IRegion | undefined;
+  if (isValid(spec.regionId)) {
+    region = this.getRegionsInUserId(spec.regionId);
+  } else if (isValid(spec.regionIndex)) {
+    region = this.getRegionsInIndex([spec.regionIndex])[0];
+  }
+
+  if (!region &amp;&amp; !(region = this._regions[0])) return;
+
+  // 创建系列
+  const series = new constructor(spec, {
+    ...this._modelOption,
+    ...others,
+    type: spec.type,
+    region,
+    globalScale: this._globalScale,
+    sourceDataList: this._chartData.dataList
+  });
+
+  if (series) {
+    series.created();
+    this._series.push(series);
+    region.addSeries(series);
+  }
+}    
+</code></pre>
+
+<p>Create Component    </p>
+<pre class="codehilite"><code class="language-xml">  protected _createComponent(constructor: IComponentConstructor, specInfo: IModelSpecInfo) {
+    const component = constructor.createComponent(specInfo, {
+      ...this._modelOption,
+      type: constructor.type,
+      getAllRegions: this.getAllRegions,
+      getRegionsInIndex: this.getRegionsInIndex,
+      getRegionsInIds: this.getRegionsInIds,
+      getRegionsInUserIdOrIndex: this.getRegionsInUserIdOrIndex,
+      getAllSeries: this.getAllSeries,
+      getSeriesInIndex: this.getSeriesInIndex,
+      getSeriesInIds: this.getSeriesInIds,
+      getSeriesInUserIdOrIndex: this.getSeriesInUserIdOrIndex,
+      getAllComponents: this.getComponents,
+      getComponentByIndex: this.getComponentByIndex,
+      getComponentByUserId: this.getComponentByUserId,
+      getComponentsByKey: this.getComponentsByKey,
+      getComponentsByType: this.getComponentsByType
+    });
+    if (!component) {
+      return;
+    }
+    component.created();
+    this._components.push(component);
+  }    
+</code></pre>
+
+<h3 id="other-parts-besides-chart-visual-elements">Other Parts Besides Chart Visual Elements</h3>
+<p>Initialization Event</p>
+<pre class="codehilite"><code class="language-Typescript">  private _initEvent() {
+    [ChartEvent.dataZoomChange, ChartEvent.scrollBarChange].forEach(event =&gt; {
+      this._event.on(event, ({ value }) =&gt; {
+        this._disableMarkAnimation(['exit', 'update']);
+        const enableMarkAnimate = () =&gt; {
+          this._enableMarkAnimation(['exit', 'update']);
+          this._event.off(VGRAMMAR_HOOK_EVENT.AFTER_MARK_RENDER_END, enableMarkAnimate);
+        };
+        this._event.on(VGRAMMAR_HOOK_EVENT.AFTER_MARK_RENDER_END, enableMarkAnimate);
+      });
+    });
+  }    
+</code></pre>
+
+<p>Data Stream Processing    </p>
+<pre class="codehilite"><code class="language-Typescript">reDataFlow() {
+  this._series.forEach(s =&gt; s.getRawData()?.markRunning());
+  this._series.forEach(s =&gt; s.fillData());
+  this.updateGlobalScaleDomain();
+}    
+</code></pre>
+
+<p>Layout Calculation    </p>
+<pre class="codehilite"><code class="language-xml">layout(params: ILayoutParams): void {
+  if (this.getLayoutTag()) {
+    this._event.emit(ChartEvent.layoutStart, { chart: this });
+    this.onLayoutStart(params);
+    const elements = this.getLayoutElements();
+    this._layoutFunc(this, elements, this._layoutRect, this._viewBox);
+    this._event.emit(ChartEvent.afterLayout, { elements, chart: this });
+    this.setLayoutTag(false);
+    this.onLayoutEnd(params);
+    this._event.emit(ChartEvent.layoutEnd, { chart: this });
+  }
+}    
+</code></pre>
+
+<h3 id="compile-rendering">Compile Rendering</h3>
+<pre class="codehilite"><code class="language-Typescript">compile() {
+  this.compileBackground();
+  this.compileLayout();
+  this.compileRegions();
+  this.compileSeries();
+  this.compileComponents();
+}
+
+compileSeries() {
+  this._option.performanceHook?.beforeSeriesCompile?.();
+  this.getAllSeries().forEach(s =&gt; {
+    s.compile();
+  });
+  this._option.performanceHook?.afterSeriesCompile?.();
+}    
+</code></pre>
+
+<h2 id="332-common-chart">3.3.2 Common chart</h2>
+<p>Common Chart is a general chart type in VChart, which allows users to combine multiple different types of series in one chart. Let me analyze its implementation in detail.</p>
+<h3 id="create-adaptive-series-type">Create adaptive series type</h3>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/chart/common/common.ts
+export class CommonChart&lt;T extends ICommonChartSpec = ICommonChartSpec&gt; extends BaseChart&lt;AdaptiveSpec&lt;T, 'series'&gt;&gt; {
+  static readonly type: string = ChartTypeEnum.common;
+  static readonly transformerConstructor = CommonChartSpecTransformer;
+  readonly transformerConstructor = CommonChartSpecTransformer;
+  readonly type: string = ChartTypeEnum.common;
+}    
+</code></pre>
+
+<p><code>AdaptiveSpec&lt;T, 'series'&gt;</code>, allows Common Chart to accept any type of series configuration.    </p>
+<h3 id="series-registration-mechanism">Series Registration Mechanism</h3>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/core/factory.ts
+export class Factory {
+  private static _seriesMap: Map&lt;string, ISeriesConstructor&gt; = new Map();
+
+  static registerSeries(type: string, constructor: ISeriesConstructor) {
+    this._seriesMap.set(type, constructor);
+  }
+
+  static getSeries(type: string): ISeriesConstructor {
+    return this._seriesMap.get(type);
+  }
+}    
+</code></pre>
+
+<p>Common Chart achieves dynamic series registration through the Factory pattern, allowing Common Chart to register multiple series.    </p>
+<h3 id="special-handling-of-series">Special Handling of Series</h3>
+<p>We need to take a closer look at the following three functions    </p>
+<pre class="codehilite"><code class="language-xml">// packages/vchart/src/chart/common/common-transformer.ts
+protected _getDefaultSeriesSpec(spec: AdaptiveSpec&lt;T, 'series'&gt;) {
+  const defaultSpec = super._getDefaultSeriesSpec(spec);
+  // 删除默认的 data 配置
+  delete defaultSpec.data;
+  return defaultSpec;
+}    
+</code></pre>
+
+<p>The function's purpose is to:</p>
+<ul>
+<li>
+<p>Obtain the default configuration of the series</p>
+</li>
+<li>
+<p>Inherit the default configuration of the parent class</p>
+</li>
+<li>
+<p>Remove the default data configuration</p>
+</li>
+<li>
+<p>Reason: In a composite chart, each series needs to decide its own data configuration and cannot use a unified default configuration</p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">protected _transformAxisSpec(spec: AdaptiveSpec&lt;T, 'series'&gt;) {
+  if (!spec.axes) return;
+
+  if (!!spec.autoBandSize) {
+    spec.series.forEach((series: any, seriesIndex: number) =&gt; {
+      // 只处理柱状图系列
+      if (series.type === 'bar') {
+        // 找到对应的坐标轴
+        const relatedAxis = this._findBandAxisBySeries(series, seriesIndex, spec.axes);
+        if (relatedAxis &amp;&amp; !relatedAxis.bandSize &amp;&amp; !relatedAxis.maxBandSize &amp;&amp; !relatedAxis.minBandSize) {
+          // 处理柱状图的宽度配置
+          const extend = isObject(series.autoBandSize) ? series.autoBandSize.extend ?? 0 : 0;
+          const { barMaxWidth, barMinWidth, barWidth, barGapInGroup } = series;
+          this._applyAxisBandSize(relatedAxis, extend, { barMaxWidth, barMinWidth, barWidth, barGapInGroup });
+        }
+      }
+    });
+  }
+}    
+</code></pre>
+
+<p>The function's purpose is to:</p>
+<ul>
+<li>
+<p>Handle the configuration of the axes</p>
+</li>
+<li>
+<p>Specifically handle the width configuration of bar charts</p>
+</li>
+<li>
+<p>When autoBandSize is enabled:</p>
+</li>
+<li>
+<p>Iterate over all series</p>
+</li>
+<li>
+<p>Find the bar chart series</p>
+</li>
+<li>
+<p>Find the corresponding axis</p>
+</li>
+<li>
+<p>Calculate and set the width of the bars</p>
+</li>
+<li>
+<p>Handle the spacing of the bars</p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">transformSpec(spec: AdaptiveSpec&lt;T, 'series'&gt;): void {
+  // 1. 调用父类的转换方法
+  super.transformSpec(spec);
+
+  // 2. 处理系列配置
+  if (spec.series &amp;&amp; spec.series.length) {
+    const defaultSeriesSpec = this._getDefaultSeriesSpec(spec);
+    spec.series.forEach((s: ISeriesSpec) =&gt; {
+      // 验证系列类型
+      if (!this._isValidSeries(s.type)) {
+        return;
+      }
+      // 应用默认配置
+      Object.keys(defaultSeriesSpec).forEach(k =&gt; {
+        if (!(k in s)) {
+          s[k] = defaultSeriesSpec[k];
+        }
+      });
+    });
+  }
+
+  // 3. 处理坐标轴配置
+  if (spec.axes &amp;&amp; spec.axes.length) {
+    spec.axes.forEach((axis: any) =&gt; {
+      // 处理坐标轴内边距
+      if (get(axis, 'trimPadding')) {
+        mergeSpec(axis, getTrimPaddingConfig(this.type, spec));
+      }
+    });
+  }
+
+  // 4. 处理坐标轴的 bandSize 配置
+  this._transformAxisSpec(spec);
+}    
+</code></pre>
+
+<p>This function is the main entry point for conversion, and its functions include:</p>
+<ul>
+<li>
+<p>Calling the conversion method of the parent class</p>
+</li>
+<li>
+<p>Handling series configuration:</p>
+</li>
+<li>
+<p>Obtaining default configuration</p>
+</li>
+<li>
+<p>Validating series type</p>
+</li>
+<li>
+<p>Applying default configuration</p>
+</li>
+<li>
+<p>Handling axis configuration:</p>
+</li>
+<li>
+<p>Handling padding</p>
+</li>
+<li>
+<p>Handling bandSize</p>
+</li>
+</ul>
+<p>These three functions together form the configuration conversion system of Common Chart, mainly solving:</p>
+<ol>
+<li>
+<p>Handling of multi-series configuration</p>
+</li>
+<li>
+<p>Handling of special configuration for bar charts</p>
+</li>
+<li>
+<p>Handling of axis configuration</p>
+</li>
+</ol>
+<p>This is the key implementation that distinguishes Common Chart from other chart types.</p>
+<h1 id="this-document-was-revised-and-organized-by">This document was revised and organized by</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

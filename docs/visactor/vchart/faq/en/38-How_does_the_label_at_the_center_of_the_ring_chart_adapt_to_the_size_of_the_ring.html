@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>38-How_does_the_label_at_the_center_of_the_ring_chart_adapt_to_the_size_of_the_ring</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-does-the-label-at-the-center-of-the-ring-chart-adapt-to-the-size-of-the-ring">How does the label at the center of the ring chart adapt to the size of the ring?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>How does VChart configure the adaptive size of the center label in a ring chart? As shown in the following figure, I want to keep the text inside the ring:</p>
+<p><img alt="description" src="/vchart/faq/69-0.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>You can refer to the following demo to configure <code>autoFit: true</code> in the indicator component.</p>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const data = [
+  { type: 'oxygen', value: '46.60', formula: 'O', texture: 'circle' },
+  { type: 'silicon', value: '27.72', formula: 'Si', texture: 'horizontal-line' },
+  { type: 'aluminum', value: '8.13', formula: 'Al', texture: 'vertical-line' },
+  { type: 'iron', value: '5', formula: 'Fe', texture: 'rect' },
+  { type: 'calcium', value: '3.63', formula: 'Ca', texture: 'grid' },
+  { type: 'sodium', value: '2.83', formula: 'Na', texture: 'bias-rl' },
+  { type: 'potassium', value: '2.59', formula: 'K', texture: 'diamond' },
+  { type: 'others', value: '3.5', formula: 'Others', texture: 'bias-lr' }
+];
+const spec = {
+  type: 'pie',
+  data: [
+    {
+      id: 'id0',
+      values: data
+    }
+  ],
+  outerRadius: 0.8,
+  innerRadius: 0.5,
+  padAngle: 0.6,
+  valueField: 'value',
+  categoryField: 'type',
+  pie: {
+    style: {
+      cornerRadius: 10,
+      texture: datum =&gt; datum['texture']
+    },
+    state: {
+      hover: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      },
+      selected: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      }
+    }
+  },
+  title: {
+    visible: true,
+    text: 'Statistics of Surface Element Content'
+  },
+  indicator: {
+    visible: true,
+    trigger: 'hover',
+    limitRatio: 0.4,
+    title: {
+      visible: true,
+      autoFit: true,
+      style: {
+        fontWeight: 'bolder',
+        fontFamily: 'Times New Roman',
+        fill: '#888',
+        text: datum =&gt; {
+          const d = datum ?? data[0];
+          return d['formula'];
+        }
+      }
+    },
+    content: [
+      {
+        visible: true,
+        style: {
+          fontSize: 20,
+          fill: 'orange',
+          fontWeight: 'bolder',
+          fontFamily: 'Times New Roman',
+          text: datum =&gt; {
+            const d = datum ?? data[0];
+            return d['type'];
+          }
+        }
+      },
+      {
+        visible: true,
+        style: {
+          fontSize: 18,
+          fill: 'orange',
+          fontFamily: 'Times New Roman',
+          text: datum =&gt; {
+            const d = datum ?? data[0];
+            return d['value'] + '%';
+          }
+        }
+      }
+    ]
+  },
+  legends: {
+    visible: true,
+    orient: 'left',
+    item: {
+      shape: {
+        style: {
+          symbolType: 'circle',
+          texture: datum =&gt; datum['texture']
+        }
+      }
+    }
+  },
+  tooltip: {
+    mark: {
+      content: [
+        {
+          key: datum =&gt; datum['type'],
+          value: datum =&gt; datum['value'] + '%'
+        }
+      ]
+    }
+  }
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="result">Result</h2>
+<p><img alt="demo" src="/vchart/faq/69-1.png" /></p>
+<h2 id="quote">Quote</h2>
+<p>github：<a href="https://github.com/VisActor/VChart">https://github.com/VisActor/VChart</a></p>
+<p>Demo page: <a href="https://www.visactor.io/vchart/demo/pie-chart/pie-indicator">https://www.visactor.io/vchart/demo/pie-chart/pie-indicator</a></p>
+</body>
+</html>

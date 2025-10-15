@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14.7.2 Harmony-VChart Source Code Explanation</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="compatibility-with-host-environment">Compatibility with Host Environment</h2>
+<p>The HarmonyOS provides the capability to create custom components, where the <code>@Component</code> decorator can only decorate data structures declared with the struct keyword. Once a struct is decorated with <code>@Component</code>, it gains the ability to be a component. Starting from API version 9, this decorator supports usage in ArkTS cards. (https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V14/arkts-create-custom-components-V14#component).</p>
+<h3 id="component-declaration">Component Declaration</h3>
+<ol>
+<li>
+<p>To ensure the VChart capability in the Harmony environment, the native Canvas in the Harmony environment has been encapsulated to provide the interface of the browser's Canvas2D.</p>
+</li>
+<li>
+<p>The component encapsulation logic in the harmony environment is located in the <code>packages/harmony_vchart/library/src/main/ets/ChartComponent.ets</code> directory, which includes components encapsulated based on the harmony environment.</p>
+</li>
+<li>
+<p>The events of Harmony have been re-encapsulated to be compatible with the browser's event interface.</p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-xml">export class HTMLTouchEvent {
+  type: string = '';
+  touches: TouchItem[] = [];
+  changedTouches: TouchItem[] = [];
+  target: Object | null = null;
+
+  constructor(harmonyTouchEvent: TouchEvent) {
+    if (harmonyTouchEvent.type === TouchType.Down) {
+      this.type = 'touchstart';
+    } else if (harmonyTouchEvent.type === TouchType.Up || harmonyTouchEvent.type === TouchType.Cancel) {
+      this.type = 'touchend';
+    } else if (harmonyTouchEvent.type === TouchType.Move) {
+      this.type = 'touchmove';
+    }
+    this.touches = harmonyTouchEvent.touches.map(t =&gt; new TouchItem(t));
+    this.changedTouches = harmonyTouchEvent.touches.map(t =&gt; new TouchItem(t));
+  }
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>The event compatibility logic is located in the <code>packages/harmony_vchart/library/src/main/ets/event.ets</code> directory.    </p>
+</li>
+<li>
+<p>Since there is no RequestAnimationFrame interface in the Harmony environment, a custom Ticker, HarmonyTickHandler, is implemented based on Harmony's own animation API.    </p>
+</li>
+<li>
+<p>The animation Ticker logic is located in the <code>packages/harmony_vchart/library/src/main/ets/ticker.ets</code> directory.    </p>
+</li>
+</ul>
+<h3 id="component-registration">Component Registration</h3>
+<p>The registration of components includes properties and necessary lifecycle declarations.    </p>
+<p><strong>Component Properties:</strong>    </p>
+<ul>
+<li>
+<p>spec: Same as the spec configuration of VChart    </p>
+</li>
+<li>
+<p>initOption: Same as the initOption configuration of VChart;    </p>
+</li>
+</ul>
+<p><strong>Component Methods:</strong>    </p>
+<ul>
+<li>
+<p>onChartInitCb: Provides a callback for when initialization is complete    </p>
+</li>
+<li>
+<p>onChartReadyCb: Provides a callback for when the chart is ready to be drawn    </p>
+</li>
+</ul>
+<p># This document was revised and organized by the following personnel 
+ <a href="https://github.com/xuanhun">Xuanhun</a></p>
+</body>
+</html>

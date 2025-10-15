@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3.2 透视表表头结构</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">概述</h2>
+<p>透视表表头布局复杂，同时存在了列表头和行表头。本节将介绍透视表表头的各个模块，以及各个模块之前是如何关联的，同时介绍各个模块的生成方式。    </p>
+<h2 id="_2">场景树相关</h2>
+<p>VTable 是以场景树的形式来管理表格的，对于下面这样一张透视表，关于表头部分，存在了三大块：    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DRDubXl58okr3GxTYJgcGSKRn7b.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>
+<p>ColHeaderGroup：列表头 Group，负责管理透视表列表头部分；    </p>
+</li>
+<li>
+<p>RowHeaderGroup: 行表头 Group，负责管理透视表行表头部分；    </p>
+</li>
+<li>
+<p>CornerHeaderGroup：角表头 Group；    </p>
+</li>
+</ul>
+<h2 id="_3">布局结构</h2>
+<h3 id="_4">结构划分</h3>
+<p>对透视表表头来说，有着四个核心的结构，内部根据这四个结构为基础来组成表头的骨架。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/BRxJbn7dUocTINxNypqczzuEnLc.gif' alt='' width='1000' height='auto'></p>
+<p>分别是 RowTree 行维度树、ColumnTree 列维度树、CornerHeader 角表头、indicators 指标    </p>
+<ul>
+<li>行维度树    </li>
+</ul>
+<p>行维度树为用户传入的维度树配置，后期会根据行维度树创建对应的行维度树实例 <code>rowDimensionTree</code>，用来管理列头的展开收起状态，分页配置。以及行表头单元标识矩阵的生成都依靠于 行维度树。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SNQzbrJeJo5kRcxjWBMcZAvYnMh.gif' alt='' width='332' height='auto'></p>
+<ul>
+<li>列维度树    </li>
+</ul>
+<p>列维度树为用户传入的维度树配置，用于表示列表头的层级关系，后期需要根据该结构生成对应的标识矩阵以及负责表头的布局生成、创建 <code>columnDimensionTree</code> 实例；    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/R7b9bFbAooBwn9xVyPzcmctEn4c.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>角表头    </li>
+</ul>
+<p>角表头的展示形式比较特殊，存在三种形式    </p>
+<ul>
+<li>'row' 行维度名称作为角头单元格内容    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QF7zbxp3aocsGyxURxnc4BlVn1A.gif' alt='' width='328' height='auto'></p>
+<ul>
+<li>'column' 列维度名称作为角头单元格内容    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ArxQbJsFpo3NTmxEutSc6rhWnSc.gif' alt='' width='341' height='auto'></p>
+<ul>
+<li>'all' 角头单元格内容为行维度名称和列维度名称的拼接    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YUVrbSYIzot4h8xjMu7cwC5HnYg.gif' alt='' width='339' height='auto'></p>
+<ul>
+<li>指标    </li>
+</ul>
+<p>行维度树和列维度树的生成都会收到指标的影响，假设指标存在 [ 销售额，利润 ] ，那么在维度树生成的过程中，会根据指标的位置进行调整。    </p>
+<p>假设指标定义在列的最后一行，在生成列维度树的时候，对于每个叶子节点，都会在下方再插入指标列    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WncEb2um2oUQ0WxL69fcKEzCnqb.gif' alt='' width='444' height='auto'></p>
+<h3 id="_5">标识矩阵</h3>
+<p>为了能够快速精准的定位到单元格对应的列或行信息，透视表内部引入了标识矩阵的概念。    </p>
+<p>标识矩阵为二维矩阵，负责表头的布局结构生成，以及定位单元格列定义，单元格的样式以及展示值生成等逻辑。    </p>
+<h4 id="_6">列头单元标识矩阵</h4>
+<p><code>_columnHeaderCellIds</code>    </p>
+<ul>
+<li>
+<p>二维数组结构，存储列头每个单元格的全局唯一ID    </p>
+</li>
+<li>
+<p>每个元素对应列头区域的一个单元格    </p>
+</li>
+<li>
+<p>层级结构通过嵌套数组实现（如<code>[[1,1,1], [2,3,4]]</code>表示两行三列的列头）    </p>
+</li>
+<li>
+<p>通过该矩阵能够快速定位到某一个单元格的行列路径信息    </p>
+</li>
+<li>
+<p>列表头拖拽的过程实际上就是改变的该字段    </p>
+</li>
+<li>
+<p>包括表格需要生成的 colCount 计算也是依赖于该字段    </p>
+</li>
+</ul>
+<p>先通过列维度树，递归生成对应的 <code>_columnHeaderCellIds</code> 。生成行表头的时候，按照先遍历列，再遍历行的规则，通过行列号获取对应单元格的信息，生成当前的单元格，遍历完成后就生成了对应的列表头。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CPg9bnGxIopNJpx1jg8c8ZcHnFc.gif' alt='' width='1000' height='auto'></p>
+<h4 id="_7">行头单元标识矩阵</h4>
+<p><code>_rowHeaderCellIds_FULL</code>和 <code>_rowHeaderCellIds</code>     </p>
+<ul>
+<li>
+<p>二维数组结构，存储行头每个单元格的全局唯一ID；    </p>
+</li>
+<li>
+<p><code>_rowHeaderCellIds_FULL</code> 负责存储全量的标识矩阵，而 <code>_rowHeaderCellIds</code> 只负责当前页所展示的行表头；    </p>
+</li>
+<li>
+<p>在动态分页的过程中，就是通过改变 <code>_rowHeaderCellIds</code> 来实现分页的操作；    </p>
+</li>
+<li>
+<p>能够通过标识矩阵，快速获取某个行头单元格的路径信息；    </p>
+</li>
+<li>
+<p>影响到表格需要生成行数 colCount 的计算；    </p>
+</li>
+</ul>
+<p><code>_columnHeaderCellIds</code> 生成完成后，紧接着的就是 <code>_rowHeaderCellIds_FULL</code>的生成，与 <code>_columnHeaderCellIds</code> 的生成逻辑不同的点在于，行头单元矩阵的生成，是对行列进行转置过后的。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KzJUbJonEo62wSxhUngcdmognkg.gif' alt='' width='1000' height='auto'></p>
+<h4 id="_8">角头单元标识矩阵</h4>
+<p><code>_cornerHeaderCellIds</code>    </p>
+<p>在行头矩阵和列头矩阵生成过后，就是角头单元标识矩阵的生成。<code>_cornerHeaderCellIds</code> 负责    </p>
+<ul>
+<li>
+<p>存储行列维度交叉区域的单元格ID    </p>
+</li>
+<li>
+<p>动态响应行列维度变化（当行列维度为0时自动清空）    </p>
+</li>
+</ul>
+<p>由于角表头的特殊性，存在着三种形式的 <code>_cornerHeaderCellIds</code>:    </p>
+<ul>
+<li>'row' 行维度名称作为角头单元格内容    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/LXEubBvh1odKnFxyfHyc2dIMnAb.gif' alt='' width='603' height='auto'></p>
+<ul>
+<li>'column' 列维度名称作为角头单元格内容    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KOlBbkLEjoHpm6xqRhqcC6ctnke.gif' alt='' width='794' height='auto'></p>
+<ul>
+<li>'all' 角头单元格内容为行维度名称和列维度名称的拼接    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CzrpbKjGQon7XOxgQA3cblFznkf.gif' alt='' width='779' height='auto'></p>
+<h3 id="_9">表头对象映射</h3>
+<p>光有标识矩阵还不能满足生成行列角表头的生成，因为不能获取单元格对应的定义数据。    </p>
+<p>为此，透视表内部维护了一份表头的对象映射，表示单元格的唯一 ID 与当前单元格定义的映射表，通过布局矩阵中的单元格ID（如<code>_columnHeaderCellIds</code>中的数值），可以实现 O(1) 时间复杂度的查询。    </p>
+<p><code>_headerObjectMap</code> 负责管理所有的行列表头的映射；    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NfN4b7JRDoS06dxlJkEc9kaunmh.gif' alt='' width='1000' height='auto'></p>
+<p>比如说想要获取单元格展示值时，仅需提供 col，row ；然后从标识矩阵中获取唯一 ID，再根据 ID 去<code>_headerObjectMap</code> 获取，即可以实现获取单元格展示值的功能。    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\pivot-header-layout.ts
+getHeader(col: number, row: number): HeaderData | SeriesNumberColumnData {
+    // ...
+    const id = this.getCellId(col, row);
+    return this._headerObjectMap[id as number] ?? { id: undefined, field: '', headerType: 'text', define: undefined };
+    //...
+}    
+</code></pre>
+
+<h2 id="_10">模块实现机制</h2>
+<h3 id="_11">行/列表头标识矩阵</h3>
+<p>这里是简化后的生成逻辑，是一个深度优先遍历的过程    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\pivot-header-layout.ts
+const _headerObjects = []; // 表头对象的映射
+const _headerCellIds = [];
+let colIndex = 0; // 表示叶子节点的个数
+const columnHeaderObjs = {}; // 
+
+function _addHeaders(_headerCellIds, row, header, roots, results) {
+  const _this = this;
+  function _newRow(row) {
+    const newRow = (_headerCellIds[row] = []);
+    if (colIndex === 0) {
+      return newRow;
+    }
+    const prev = _headerCellIds[row - 1];
+    for (let col = 0; col &lt; prev?.length; col++) {
+      newRow[col] = prev[col];
+    }
+    return newRow;
+  }
+  if (!_headerCellIds[row]) {
+    _newRow(row);
+  }
+
+  for (let i = 0; i &lt; header.length; i++) {
+    const hd = header[i];
+    dealHeader(hd, _headerCellIds, results, roots, row);
+  }
+}
+
+function dealHeader(hd, _headerCellIds, results, roots, row) {
+  const id = hd.id;
+  const cell = {
+    id,
+    title: hd.value,
+    field: hd.dimensionKey
+  };
+  results[id] = cell;
+  _headerObjects[id] = cell;
+
+  for (let r = row - 1; r &gt;= 0; r--) {
+    _headerCellIds[r][colIndex] = roots[r];
+  }
+  _headerCellIds[row][colIndex] = id;
+
+  if (hd.children?.length &gt;= 1) {
+    _addHeaders(_headerCellIds, row + 1, hd.children ?? [], [...roots, id], results);
+  } else {
+    for (let r = row + 1; r &lt; _headerCellIds.length; r++) {
+      _headerCellIds[r][colIndex] = id;
+    }
+    colIndex++;
+  }
+}
+
+_addHeaders(_headerCellIds, 0, columnsTree, [], columnHeaderObjs);    
+</code></pre>
+
+<ul>
+<li>前置准备    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TUWbbX0Fpo3oXxxji3Wc4Ce8nTd.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>具体流程    </li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/AzjcwDJQOhp9z0bAU7icGRVsnBf.gif" /></p>
+<ul>
+<li>示例    </li>
+</ul>
+<p>我们以上面提供的行维度树形结构为例，看下具体发生了什么：    </p>
+<ol>
+<li>初始状态    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = []
+colIndex = 0    
+</code></pre>
+
+<ol>
+<li>处理东北地区（id=1）    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">// 调用 _addHeaders(row=0)
+_headerCellIds = [
+  [1]  // row0
+]
+colIndex=0
+// 发现子节点，递归调用 _addHeaders(row=1)    
+</code></pre>
+
+<ol>
+<li>处理邮寄方式一级（id=2）    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1],  // row0
+  [2]   // row1
+]
+colIndex=0
+// 发现子节点，递归调用 _addHeaders(row=2)    
+</code></pre>
+
+<ol>
+<li>处理销售额（id=3）    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">// 处理叶子节点
+_headerCellIds = [
+  [1],  // row0
+  [2],  // row1
+  [3]   // row2
+]
+colIndex=1
+// 填充下方行（如果有更多行）    
+</code></pre>
+
+<ol>
+<li>处理利润（id=4），向上回填父级路径    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1, 1],  // row0
+  [2, 2],  // row1
+  [3, 4]   // row2
+]
+colIndex=2
+// 返回上级继续处理    
+</code></pre>
+
+<ol>
+<li>同样的方式，递归，处理邮寄方式二级（id=5），向上回填父级路径    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1, 1, 1],  // row0
+  [2, 2, 5],  // row1
+  [3, 4, 5]   // row2
+]
+colIndex=2
+// 处理子节点（id=6,7）...    
+</code></pre>
+
+<ol>
+<li>处理邮寄方式三级（id=8）    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1, 1, 1, 1, 1, 1],  // row0
+  [2, 2, 5, 5, 8, 8],  // row1
+  [3, 4, 6, 7, 9, 10]  // row2
+]
+colIndex=6
+// 完成东北地区处理    
+</code></pre>
+
+<ol>
+<li>处理华北地区（id=11）    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [...原东北列..., 11,11,11,11,11,11],  // row0
+  [...原东北列...,12,12,15,15,18,18],   // row1  
+  [...原东北列...,13,14,16,17,19,20]    // row2
+]
+colIndex=12    
+</code></pre>
+
+<ol>
+<li>最终状态（中南地区处理完成后）    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1,1,1,1,1,1, 11,11,11,11,11,11, 21,21,21,21,21,21], // row0
+  [2,2,5,5,8,8, 12,12,15,15,18,18, 22,22,25,25,28,28],  // row1
+  [3,4,6,7,9,10,13,14,16,17,19,20,23,24,26,27,29,30]   // row2
+]    
+</code></pre>
+
+<ul>
+<li>行表头矩阵    </li>
+</ul>
+<p>行表头矩阵的生成与列表头的流程大体相同，只不过在最后多了一步转置的操作。    </p>
+<h3 id="_12">角表头标识矩阵</h3>
+<p>角表头的标识矩阵比基本表格表头的生成逻辑简单， 不需要考虑递归，只需要遍历行列维度即可。    </p>
+<ul>
+<li>源码     </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\layout\pivot-header-layout.ts
+  private _addCornerHeaders(
+    colDimensionKeys: string[] | null,
+    rowDimensionKeys: string[] | null,
+    dimensions: (string | IDimension)[]
+  ) {
+    const results: HeaderData[] = [];
+    if (this.cornerSetting.titleOnDimension === 'all') {
+      if (this.indicatorsAsCol) {
+        let indicatorAtIndex = -1;
+        if (colDimensionKeys) {
+          colDimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+              const cell: HeaderData = {
+             // ...
+            };
+            results[id] = cell;
+            this._headerObjects[id] = cell;
+
+            if (!this._cornerHeaderCellFullPathIds[key]) {
+              this._cornerHeaderCellFullPathIds[key] = [];
+
+            for (let r = 0; r &lt; this.rowHeaderLevelCount; r++) {
+              this._cornerHeaderCellFullPathIds[key][r] = id;
+            }
+          });
+        }
+        if (rowDimensionKeys) {
+          rowDimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+            const id = ++this.sharedVar.seqId;
+            const cell: HeaderData = {
+             // ...
+            };
+            results[id] = cell;
+            this._headerObjects[id] = cell;
+            if (!this._cornerHeaderCellFullPathIds[indicatorAtIndex]) {
+              this._cornerHeaderCellFullPathIds[indicatorAtIndex] = [];
+            }
+            this._cornerHeaderCellFullPathIds[indicatorAtIndex][key] = id;
+          });
+        }
+      } else {
+        let indicatorAtIndex = -1;
+        if (rowDimensionKeys) {
+          rowDimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+            if (dimensionKey === this.indicatorDimensionKey) {
+              indicatorAtIndex = key;
+            }
+            const id = ++this.sharedVar.seqId;
+            const dimensionInfo: IDimension = dimensions.find(dimension =&gt;
+              typeof dimension === 'string' ? false : dimension.dimensionKey === dimensionKey
+            ) as IDimension;
+            const cell: HeaderData = {
+              id,
+              // ...
+            };
+            results[id] = cell;
+            this._headerObjects[id] = cell;
+
+            for (let r = 0; r &lt; this.columnHeaderLevelCount; r++) {
+              if (!this._cornerHeaderCellFullPathIds[r]) {
+                this._cornerHeaderCellFullPathIds[r] = [];
+              }
+              this._cornerHeaderCellFullPathIds[r][key] = id;
+            }
+          });
+        }
+        if (colDimensionKeys) {
+          colDimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+            const id = ++this.sharedVar.seqId;
+            const dimensionInfo: IDimension = dimensions.find(dimension =&gt;
+              typeof dimension === 'string' ? false : dimension.dimensionKey === dimensionKey
+            ) as IDimension;
+            const cell: HeaderData = {
+              id,
+                      // ...
+            };
+            results[id] = cell;
+            this._headerObjects[id] = cell;
+            this._cornerHeaderCellFullPathIds[key][indicatorAtIndex] = id;
+          });
+        }
+      }
+    } else if (this.cornerSetting.titleOnDimension === 'row' || this.cornerSetting.titleOnDimension === 'column') {
+      const dimensionKeys = this.cornerSetting?.titleOnDimension === 'row' ? rowDimensionKeys : colDimensionKeys;
+      if (dimensionKeys) {
+        dimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+          const id = ++this.sharedVar.seqId;
+
+          const cell: HeaderData = {
+            id,
+         // ...
+          };
+          results[id] = cell;
+          this._headerObjects[id] = cell;
+          if (this.cornerSetting.titleOnDimension === 'column') {
+            if (!this._cornerHeaderCellFullPathIds[key]) {
+              this._cornerHeaderCellFullPathIds[key] = [];
+            }
+            for (let r = 0; r &lt; this.rowHeaderLevelCount; r++) {
+              this._cornerHeaderCellFullPathIds[key][r] = id;
+            }
+          } else if (this.cornerSetting.titleOnDimension === 'row') {
+            for (let r = 0; r &lt; this.columnHeaderLevelCount; r++) {
+              if (!this._cornerHeaderCellFullPathIds[r]) {
+                this._cornerHeaderCellFullPathIds[r] = [];
+              }
+              this._cornerHeaderCellFullPathIds[r][key] = id;
+            }
+          }
+        });
+      }
+    } else {
+      const id = ++this.sharedVar.seqId;
+      const cell: HeaderData = {
+        id,
+         // ...
+        }
+      };
+      results[id] = cell;
+      this._headerObjects[id] = cell;
+      for (let r = 0; r &lt; this.columnHeaderLevelCount; r++) {
+        for (let j = 0; j &lt; this.rowHeaderLevelCount; j++) {
+          if (!this._cornerHeaderCellFullPathIds[r]) {
+            this._cornerHeaderCellFullPathIds[r] = [];
+          }
+          this._cornerHeaderCellFullPathIds[r][j] = id;
+        }
+      }
+    }
+
+    return results;
+  }    
+</code></pre>
+
+<ul>
+<li>前置流程    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WHTFwcpEXh7C6TbuBrPc09Tqnuh.gif' alt='' width='820' height='auto'></p>
+<ul>
+<li>大致流程    </li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RrfVwZ0rchGPEMb5td9crzC9nwd.gif" /></p>
+<h3 id="_13">表头对象映射</h3>
+<p>在前面的流程中，会不断地往 _headerObjects 中塞入对应的单元格定义节点，那么只需要调用 reduce , 将能将数组的形式转变成 Map 的形式，完成基础表头对象的映射。    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\pivot-header-layout.ts
+ this._headerObjectMap = this._headerObjects.reduce((o, e) =&gt; {
+      o[e.id as number] = e;
+      return o;
+}, {} as { [key: LayoutObjectId]: HeaderData });
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GH9ob52QdoxdBIxXBsOcT7IDnjg.gif' alt='' width='615' height='auto'></p>
+<h2 id="_14">整体表头生成逻辑</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RO3ab0gcGo3DnaxueT0cW34jnod.gif' alt='' width='1000' height='auto'></p>
+<h1 id="_15">本文档由以下人员提供</h1>
+<p>taiiiyang( https://github.com/taiiiyang)     </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

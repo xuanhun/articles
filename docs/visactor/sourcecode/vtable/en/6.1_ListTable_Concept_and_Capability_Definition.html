@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6.1 ListTable Concept and Capability Definition</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h3 id="611-overview">6.1.1 <strong>Overview</strong></h3>
+<p><strong>What is ListTable?</strong>    </p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">ListTable is the basic table type in `@visactor/vtable`, used to display structured data in rows and columns. It consists of rows and columns, presenting a large amount of data in a clear structure. With some basic configurations, different functions can be quickly implemented.</div>
+<p></div>
+*  Design goals: Focus on high-performance rendering, flexible configuration, and interactive extensions.    \r</p>
+<ul>
+<li>Comparison with <code>PivotTable</code> (Pivot Table)    </li>
+</ul>
+<p><strong>Core Features</strong>    </p>
+<ul>
+<li>Powerful data processing capabilities    </li>
+</ul>
+<p>Provides various data aggregation operations, including sorting, summation, maximum and minimum values, as well as custom aggregation functions, enabling users to quickly perform aggregation operations.    </p>
+<ul>
+<li>Rich extensibility    </li>
+</ul>
+<p>Supports custom cells, custom layouts, custom themes, and supports both React and Vue as components.    \r</p>
+<ul>
+<li>Visual enhancement    </li>
+</ul>
+<p>ListTable supports features such as sparklines, data bars, icons, and custom cell styles. It also supports inserting charts within cells to form composite charts.    \r</p>
+<ul>
+<li>High-performance interaction and operation    </li>
+</ul>
+<p>ListTable supports custom sorting, cell hover and select style customization, custom dropdown menus, and cell editing capabilities. It achieves DOM-like operations through canvas, offering better performance.    \r</p>
+<h3 id="612-scenario-analysis">6.1.2 <strong>Scenario Analysis</strong></h3>
+<ul>
+<li>
+<p><strong>Typical Use Case</strong>    </p>
+</li>
+<li>
+<p>Real-time display of database query results (supports dynamic field display)    </p>
+</li>
+<li>
+<p>Tables that require dynamic add, delete, update, and query (such as admin panels).    \r</p>
+</li>
+<li>
+<p>Combine interactive operations with data analysis interfaces (such as selection, sorting, filtering).    \r</p>
+</li>
+<li>
+<p><strong>Inappropriate Scenarios</strong>    </p>
+</li>
+<li>
+<p>Complex row and column hierarchy nesting is required (consider <code>PivotTable</code> as a priority).    </p>
+</li>
+</ul>
+<h3 id="613-core-concept-definition">6.1.3 <strong>Core Concept Definition</strong></h3>
+<p>The following are the core concepts of <code>ListTable</code> and their descriptions:    </p>
+<ul>
+<li>
+<p>Records: <code>ListTable</code> data source, represented as an array, <code>ListTable</code> also supports asynchronous data rendering through <code>dataSource</code>;    </p>
+</li>
+<li>
+<p>Columns: Column definitions, including the definition of list headers and cell formatting. Columns support tree form to define multi-level headers and header merging;    \r</p>
+</li>
+<li>
+<p>Pagination: pagination configuration, including current page number, total number of items, etc.;    \r</p>
+</li>
+<li>
+<p>Scenegraph: The scene tree rendered inside <code>ListTable</code>, used for progressive rendering of tables;    </p>
+</li>
+<li>
+<p>Theme: Theme definition, <code>ListTable</code> supports custom themes, including table borders, cell background colors, etc.    </p>
+</li>
+<li>
+<p>SortState: Custom sorting logic;     \r</p>
+</li>
+<li>
+<p>Transpose: Row and column transposition, swapping rows and columns, a unique capability of <code>ListTable</code> compared to <code>PivotTable</code>;    \r</p>
+</li>
+<li>
+<p>CustomMergeCell: Custom merge cells, supporting configuration of cell merge logic.    \r</p>
+</li>
+</ul>
+<h3 id="614-capability-definition">6.1.4 <strong>Capability Definition</strong></h3>
+<p>The following introduces the capability definition of ListTable. For details, refer to this article https://visactor.com/vtable/guide/introduction    \r</p>
+<p><strong>Data Processing Capability</strong>    </p>
+<ul>
+<li>
+<p>Data scale: Supports rendering of millions of data, enabling smooth scrolling;    \r</p>
+</li>
+<li>
+<p>Data source: ListTable supports both synchronous and asynchronous data input;    \r</p>
+</li>
+<li>
+<p>Data structure: Supports two-dimensional objects, two-dimensional arrays, and object structures, with object structures mainly used for asynchronous data source loading;    \r</p>
+</li>
+<li>
+<p>Data Formatting: ListTable supports custom data formatting, as well as sorting, filtering, and data aggregation calculations. Refer to the documentation https://visactor.com/vtable/guide/data_analysis/list_table_dataAnalysis    \r</p>
+</li>
+<li>
+<p>Dynamic update: Data can be updated through APIs such as updateOption and updateRecords;    \r</p>
+</li>
+</ul>
+<p><strong>Rendering Capability</strong>    </p>
+<ul>
+<li>
+<p>Rendering mode: Hybrid rendering (Canvas main body \u002B DOM overlay layer);    \r</p>
+</li>
+<li>
+<p>Cell rendering: Utilize VRender to complete the rendering of table components, supporting easy customization of cell styles through the style function; \r</p>
+</li>
+<li>
+<p>Cross-platform adaptation: ListTable supports both Node and Browser;    \r</p>
+</li>
+</ul>
+<p><strong>Interactivity</strong>    </p>
+<ul>
+<li>
+<p>Table interaction    </p>
+</li>
+<li>
+<p>ListTable allows customization of hover and select highlight configurations, including highlighting the entire row or the entire column;    \r</p>
+</li>
+<li>
+<p>Drag and Drop: ListTable supports operations such as dragging the header to adjust position, prohibiting certain columns from being swapped, dragging to adjust column width, and customizing the style of the swap marker line;    \r</p>
+</li>
+<li>
+<p>Freeze: Row and column freezing is only supported for ListTable use, allowing configuration of left, right column freezing, and top, bottom row freezing.    \r</p>
+</li>
+</ul>
+<p>Configuration document reference: https://visactor.com/vtable/guide/basic_function/frozen_column_row    </p>
+<ul>
+<li>
+<p>Sorting: Supports clicking to sort charts, with customizable internal sorting rules.    \r</p>
+</li>
+<li>
+<p>Component-level interaction    </p>
+</li>
+</ul>
+<p>Component-level interactions include scrollbar interactions, dropdown menus, tooltip definitions, etc.    \r</p>
+<ul>
+<li>Custom Event    </li>
+</ul>
+<p>ListTable provides the ability to listen to internal custom events, allowing for interaction with custom callbacks.</p>
+<p><strong>Visual Enhancement</strong>    </p>
+<ul>
+<li>Conditional Formatting    </li>
+</ul>
+<p>Users can configure cell styles through style. All styles in style, including borders, background color, text thickness, etc., support function forms. Users can achieve cell-level style definitions through style.\r</p>
+<p>Detailed reference documentation: https://visactor.com/vtable/guide/theme_and_style/style    </p>
+<ul>
+<li>Diverse cell types:    </li>
+</ul>
+<p>Cells in ListTable not only support text, but also support links, images, and most importantly, sparklines. For an introduction to sparklines, you can refer to this article https://visactor.com/vtable/guide/cell_type/sparkline    \r</p>
+<p><strong>Transpose Table</strong>    </p>
+<p>The unique capability of ListTable allows for the transposition of rows and columns in a table, suitable for scenarios with special requirements, enabled through transpose.    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/D2XrbExtuos0Ulx0oxHcuoYFn6g.gif' alt='' width='1000' height='auto'></p>
+<p><strong>Tree Structure</strong>    </p>
+<p>In certain scenarios, it is necessary to support tree-like table displays, including project management, department personnel management. ListTable supports basic tree structure display by defining group and children in records.</p>
+<p>Detailed reference documentation: https://visactor.com/vtable/guide/table_type/List_table/tree_list    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/EPy3bbGsDoV3oXxirYvcpGYhnfh.gif' alt='' width='1000' height='auto'></p>
+<p><strong>Grouped Display</strong>    </p>
+<p>ListTable supports grouping of basic table rows by configuring the groupBy field to specify which field to use for the group operation.    </p>
+<p>Detailed reference documentation: https://visactor.com/vtable/guide/table_type/List_table/group_list    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SPKzbQlHQopgBbxK3HRcLa0vnwf.gif' alt='' width='773' height='auto'></p>
+<p><strong>Subject</strong>    </p>
+<p>Built-in diverse themes: including ARCO Theme, LIGHT Theme, helping users quickly define their desired styles.    \r</p>
+<p>Detailed reference documentation: https://visactor.com/vtable/guide/theme_and_style/theme    </p>
+<p><strong>Table Export</strong>    </p>
+<p>ListTable can support custom export to csv and excel formats, and can support export according to options. Apart from basic cells, all other data rows are exported as images. Currently, exporting mini charts is not supported. Introduction to export: https://visactor.com/vtable/guide/export/excel    \r</p>
+<h1 id="this-document-is-provided-by-the-following-personnel">This document is provided by the following personnel</h1>
+<p>taiiiyang（https://github.com/taiiiyang）    </p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

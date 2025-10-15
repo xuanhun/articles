@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>37. VChart 如何设置柱状图的柱子宽度</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何设置柱状图的柱宽度，期望图表容器变大时，柱子宽度不变</br></p>
+<h2 id="_2">问题描述</h2>
+<p>请问怎么设置柱状图的柱宽度，期望图表容器变大时，柱子宽度不变，始终是16px</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/W7BMb8TzNoAkE7xr6RjcyTwEntg.gif' alt='' width='844' height='534'></p>
+<h2 id="_3">解决方案</h2>
+<p>VChart 的柱图支持一组柱宽度配置项：</br>
+*  barWidth：宽度</br>
+*  barMinWidth：最小宽度</br>
+*  barMaxWidth: 最大宽度</br></p>
+<p>VChart 默认的柱宽度是与图表容器宽度相关的，这样的逻辑能保证图表容器较小时，柱子之间依然不会重叠。</br>
+实际使用时，如果有柱子宽度固定大小的需求，可以用 <code>barWidth</code> ，如果只是不期望柱子太宽不美观的话，可以使用 <code>barMaxWidth</code> 限制它的最大宽度，这样容器比较小时，也能正确展示。</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'bar',
+  data: [
+    {
+      id: 'barData',
+      values: [
+        { month: 'Monday', sales: 22 },
+        { month: 'Tuesday', sales: 13 },
+        { month: 'Wednesday', sales: 25 },
+        { month: 'Thursday', sales: 29 },
+        { month: 'Friday', sales: 38 }
+      ]
+    }
+  ],
+  barWidth: 16,
+  // barMaxWidth: 16,
+  xField: 'month',
+  yField: 'sales'
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/H6yCbfiTToX4Vtx5vNKc81pVn9b.gif' alt='' width='1108' height='531'></p>
+<p>Demo: https://codesandbox.io/p/sandbox/vchart-disabletriggerevent-forked-n5z7cl?file=%2Fsrc%2Findex.js%3A30%2C1</br></p>
+<h2 id="_6">相关文档</h2>
+<p>Demo：https://codesandbox.io/p/sandbox/vchart-disabletriggerevent-forked-n5z7cl?file=%2Fsrc%2Findex.js%3A30%2C1</br>
+教程：</br>
+*  初始化VChart： https://visactor.io/vchart/api/API/vchart</br>
+*  柱宽度：https://www.visactor.io/vchart/option/barChart#barWidth</br>
+Github：https://github.com/VisActor/VChart/</br></p>
+</body>
+</html>

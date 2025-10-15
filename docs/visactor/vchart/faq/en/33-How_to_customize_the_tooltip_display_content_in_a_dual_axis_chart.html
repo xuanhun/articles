@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>33-How_to_customize_the_tooltip_display_content_in_a_dual_axis_chart</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-customize-the-tooltip-display-content-in-a-dual-axis-chart">How to customize the tooltip display content in a dual axis chart?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>I am using VChart, as shown in the following figure. How should I hide the information of the bar series in the dimension tooltip and only display the information of the line series?</p>
+<p><img alt="tooltip" src="/vchart/faq/72-0.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>VChart's tooltips can be configured not only at the chart level, but also at the series level. You can turn off the dimension tooltip in the spec of the bar series. As shown in the following demo:</p>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const spec = {
+  type: 'common',
+  seriesField: 'color',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { x: '周一', type: '早餐', y: 15 },
+        { x: '周一', type: '午餐', y: 25 },
+        { x: '周二', type: '早餐', y: 12 },
+        { x: '周二', type: '午餐', y: 30 },
+        { x: '周三', type: '早餐', y: 15 },
+        { x: '周三', type: '午餐', y: 24 },
+        { x: '周四', type: '早餐', y: 10 },
+        { x: '周四', type: '午餐', y: 25 },
+        { x: '周五', type: '早餐', y: 13 },
+        { x: '周五', type: '午餐', y: 20 },
+        { x: '周六', type: '早餐', y: 10 },
+        { x: '周六', type: '午餐', y: 22 },
+        { x: '周日', type: '早餐', y: 12 },
+        { x: '周日', type: '午餐', y: 19 }
+      ]
+    },
+    {
+      id: 'id1',
+      values: [
+        { x: '周一', type: '饮料', y: 22 },
+        { x: '周二', type: '饮料', y: 43 },
+        { x: '周三', type: '饮料', y: 33 },
+        { x: '周四', type: '饮料', y: 22 },
+        { x: '周五', type: '饮料', y: 10 },
+        { x: '周六', type: '饮料', y: 30 },
+        { x: '周日', type: '饮料', y: 50 }
+      ]
+    }
+  ],
+  series: [
+    {
+      type: 'bar',
+      dataIndex: 0,
+      label: { visible: true },
+      seriesField: 'type',
+      xField: ['x', 'type'],
+      yField: 'y',
+      tooltip: {
+        dimension: {
+          visible: false
+        }
+      }
+    },
+    {
+      type: 'line',
+      dataIndex: 1,
+      label: { visible: true },
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      stack: false
+    }
+  ],
+  axes: [
+    { orient: 'left', seriesIndex: 0 },
+    { orient: 'right', seriesIndex: 1 },
+    { orient: 'bottom', label: { visible: true }, type: 'band' }
+  ],
+  legends: {
+    visible: true,
+    orient: 'bottom'
+  }
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="result">Result</h2>
+<p><img alt="demo" src="/vchart/faq/72-1.png" /></p>
+<h2 id="quote">Quote</h2>
+<p>github：<a href="https://github.com/VisActor/VChart">https://github.com/VisActor/VChart</a></p>
+<p>option docs: <a href="https://www.visactor.io/vchart/option/barChart#tooltip.dimension.visible">https://www.visactor.io/vchart/option/barChart#tooltip.dimension.visible</a></p>
+</body>
+</html>

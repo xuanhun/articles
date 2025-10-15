@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12.1 VChart Plugin Mechanism</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <blockquote>
+<h2 id="121-vchart-plugin-mechanism">12.1 VChart Plugin Mechanism</h2>
+<p>Score: 5    </p>
+<h2 id="122-detailed-explanation-of-vchart-plugin-function-source-code">12.2 Detailed Explanation of VChart Plugin Function Source Code</h2>
+<p>Score: 5  <br />
+1. Code Entry: <code>packages/vchart/src/plugin</code>  <br />
+1. Key Points of Interpretation:    </p>
+</blockquote>
+<ol>
+<li>
+<p>Different Types of Plugins    </p>
+</li>
+<li>
+<p>Plugin Mechanism and Implementation Principles    </p>
+</li>
+</ol>
+<h1 id="plugin-system-concept">Plugin System Concept</h1>
+<p>VChart provides a series of plugin extension supports. This article only describes the concept of the plugin system and simple usage examples. In-depth source code exploration is analyzed and introduced in section 12.2;    </p>
+<h2 id="different-types-of-vchart-plugins">Different Types of VChart Plugins</h2>
+<h3 id="formatting-plugins">Formatting Plugins</h3>
+<p>Formatting plugins in VChart support using formatters to update data display styles, enriching data display styles through simple configuration:    </p>
+<pre class="codehilite"><code class="language-xml">  const spec = {
+    data: [
+      {
+        id: &quot;barData&quot;,
+        values: [
+          { month: &quot;Monday&quot;, sales: 22.324 },
+          { month: &quot;Tuesday&quot;, sales: 13.663 },
+          { month: &quot;Wednesday&quot;, sales: 25.342 },
+          { month: &quot;Thursday&quot;, sales: 29.3257 },
+          { month: &quot;Friday&quot;, sales: 12.999 },
+        ],
+      },
+    ],
+    type: &quot;bar&quot;,
+    xField: &quot;month&quot;,
+    yField: &quot;sales&quot;,
+    label: {
+      visible: true,
+      position: &quot;top&quot;,
+      formatter: &quot;￥{sales:.2t}&quot;,
+      **//格式化：销售额指定保留两位小数但不四舍五入**
+    },
+    legends: {
+      visible: true,
+    },
+  };    
+</code></pre>
+
+<blockquote>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/EaEcbTeTAouV58xtmwlcxT76nxf.gif' alt='' width='588' height='auto' />
+The formatting effect is shown in the image</p>
+</blockquote>
+<h3 id="media-query">media-query</h3>
+<p>The media-query plugin module implements media query functionality. To facilitate understanding, a demo from the official website can be used to explain:</p>
+<pre class="codehilite"><code class="language-Typescript">const getSpec = () =&gt; ({
+  type: 'pie',
+  data: [
+    //...
+  ],
+  //query-media配置流程
+  media: [
+    {
+      query: {
+        maxHeight: 200
+      },
+      action: [
+        {
+          filterType: 'legends',
+          filter: [{ orient: 'top' }, { orient: 'bottom' }],
+          spec: { orient: 'left', padding: 0 }
+        },
+        {
+          filterType: 'title',
+          spec: { visible: false }
+        },
+        {
+          filterType: 'chart',
+          spec: { padding: 10 }
+        }
+      ]
+    }
+  ]
+});    
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OZHybruYEoCsAVxO57ycAhDlnpd.gif' alt='' width='633' height='auto' /></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/V853b9hTSod6hWxGcgxcrK8mnfc.gif' alt='' width='271' height='auto' /></p>
+<p>Observing this example, it is not difficult to find that under the effect of media queries, by declaring media query logic, the style changes of the chart's dynamic layout at different heights are achieved:</p>
+<ul>
+<li>
+<p>When the chart height ≤ 200px:</p>
+</li>
+<li>
+<p>The legend direction changes to the left side, with padding of 0.</p>
+</li>
+<li>
+<p>The title is hidden.</p>
+</li>
+<li>
+<p>The chart padding is 10.</p>
+</li>
+<li>
+<p>When the chart height &gt; 200px:</p>
+</li>
+<li>
+<p>Restore default styles.</p>
+</li>
+</ul>
+<p>Simply put, the media-query plugin of VChart supports us in triggering actions to rearrange the chart layout, achieving responsive design of the chart, enhancing user experience and development efficiency.</p>
+<p>In the next chapter, I will provide a deeper interpretation of the specific implementation mechanism of the plugin:</p>
+<p># This document was revised and organized by the following personnel 
+ <a href="https://github.com/xuanhun">Xuanhun</a></p>
+</body>
+</html>

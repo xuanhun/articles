@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>27. 时间轴如何设置时间间隔？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>时间轴如何设置时间间隔？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>x轴 type=time时，tick间隔是怎么配置的呢，我希望自定义时间间隔，比如：以“天”为单位间隔</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/FkpjbYGbpoxYWqxVjK2ct48Qn2e.gif' alt='' width='3050' height='732'></p>
+<h2 id="_3">解决方案</h2>
+<p>可以通过配置axes.tickStep来控制时间轴的不同tick间的间隔，注意：tickStep需配置秒时间戳。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/TSxibZbcqoEHGMxDGjhcA9q9nlg.gif' alt='' width='3254' height='1472'></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  color: [
+    '#3855df',
+    '#ffc52b',
+    '#5ecf78',
+    '#fb7a00',
+    '#0acffd',
+    '#217dfd',
+    '#98dd61',
+    '#3150e0',
+    '#714efd',
+    '#0bcfff',
+    '#3d0dde',
+    '#ffc527',
+    '#f5c13f',
+    '#fb7a08',
+    '#95d8fd'
+  ],
+  type: 'rangeColumn',
+  direction: 'horizontal',
+  yField: 'type',
+  minField: 'start_time',
+  maxField: 'end_time',
+  seriesField: 'color',
+  dataZoom: [
+    {
+      orient: 'bottom',
+      height: 20,
+      start: 0.1,
+      endValue: 1681956000,
+      filterMode: 'axis',
+      brushSelect: false,
+      startText: {
+        formatMethod: text =&gt; Math.floor(text)
+      },
+      endText: {
+        formatMethod: text =&gt; Math.floor(text)
+      }
+    }
+  ],
+  axes: [
+    { orient: 'left', type: 'band', bandPadding: 0.5, visible: false },
+    {
+      type: 'time',
+      orient: 'bottom',
+      layers: [
+        {
+          tickStep: 28800,
+          timeFormat: '%Y%m%d %H:%M'
+        }
+      ]
+    }
+  ],
+  title: {
+    textStyle: {
+      character: [
+        {
+          text: 'Time-Consuming Distribution',
+          fontWeight: 400,
+          fill: '#222'
+        },
+        {
+          text: 'Show the SQL distribution of TOP 100',
+          fontWeight: 200,
+          fontSize: 10,
+          fill: '#555'
+        }
+      ]
+    }
+  },
+  tooltip: {
+    visible: true,
+    dimension: {
+      visible: false
+    },
+    mark: {
+      title: {
+        key: 'Query ID',
+        value: datum =&gt; 'Query ID: ' + datum['id']
+      },
+      content: [
+        {
+          key: 'Time Consuming',
+          value: datum =&gt; datum['useTime']
+        },
+        {
+          key: 'start time',
+          value: datum =&gt; datum['start_time']
+        },
+        {
+          key: 'end time',
+          value: datum =&gt; datum['end_time']
+        }
+      ]
+    }
+  },
+  data: [
+    {
+      id: 'data0',
+      values: [
+        {
+          start_time: 1681926000,
+          end_time: 1681927200,
+          type: 'TOP 1',
+          color: 'A',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681926000,
+          end_time: 1681959600,
+          type: 'TOP 2',
+          color: 'B',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681925400,
+          end_time: 1681974000,
+          type: 'TOP 3',
+          color: 'C',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681924800,
+          end_time: 1681933200,
+          type: 'TOP 4',
+          color: 'D',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681959600,
+          end_time: 1681963200,
+          type: 'TOP 5',
+          color: 'E',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681970400,
+          end_time: 1681971000,
+          type: 'TOP 5',
+          color: 'F',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681992000,
+          end_time: 1681992600,
+          type: 'TOP 5',
+          color: 'G',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681956000,
+          end_time: 1681963200,
+          type: 'TOP 6',
+          color: 'H',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681990200,
+          end_time: 1681993800,
+          type: 'TOP 7',
+          color: 'I',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681948800,
+          end_time: 1681959600,
+          type: 'TOP 8',
+          color: 'J',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681945200,
+          end_time: 1681956000,
+          type: 'TOP 9',
+          color: 'K',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        }
+      ].reverse()
+    }
+  ]
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID, animation: false });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>在线效果参考：https://www.visactor.io/vchart/demo/data-zoom/state-with-data</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/B5KFbg8UZohJVfxehv1cgWm7nKh.gif' alt='' width='1576' height='944'></p>
+<h2 id="_6">相关文档</h2>
+<p>时间轴demo：https://www.visactor.io/vchart/demo/data-zoom/state-with-data</br>
+坐标轴教程：https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Axes</br>
+相关api：https://www.visactor.io/vchart/option/barChart-axes-time#layers.tickStep</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

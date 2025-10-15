@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4.2 Event Listening</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="introduction">Introduction</h2>
+<p>The event module serves as the entry module for interactive functions in the VTable, primarily listening to two parts of events:    </p>
+<ol>
+<li>
+<p>Listening to external events, events related to the scene tree.    </p>
+</li>
+<li>
+<p>Listening to native DOM events.    </p>
+</li>
+</ol>
+<p>This article will analyze from the above two perspectives, explaining which events the VTable specifically listens to.    \r</p>
+<h2 id="listening-closure">Listening Closure</h2>
+<p>Most of the event listening is done in the <code>EventManager</code> module, with the main entry point located at <code>bindOuterEvent</code>. Next, we will analyze the event listening part in the VTable through this function.    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\event.ts
+export class EventManager {
+// ...
+  bindOuterEvent() {
+    bindTableGroupListener(this);
+    bindContainerDomListener(this);
+    bindScrollBarListener(this);
+    bindTouchListener(this);
+    bindGesture(this);
+  }
+}    
+</code></pre>
+
+<p><code>bindOuterEvent</code> is divided into five parts:    </p>
+<ul>
+<li>
+<p>bindTableGroupListener: Mainly listens to external events, scene tree related events;    \r</p>
+</li>
+<li>
+<p>bindContainerDomListener: Listen to native DOM events;    \r</p>
+</li>
+<li>
+<p>bindScrollBarListener: Listen to external scrollbar events;    \r</p>
+</li>
+<li>
+<p>bindTouchListener: Listen to touch events on mobile devices, internally listening to both native DOM and external events;    \r</p>
+</li>
+<li>
+<p>bindGesture: Listen for double-click events and trigger custom events related to double-clicking;    \r</p>
+</li>
+</ul>
+<p>The following will provide a detailed analysis of these modules.    </p>
+<h2 id="dom-related-events">DOM Related Events</h2>
+<h3 id="table-container">Table Container</h3>
+<p><code>bindContainerDomListener</code> is responsible for listening to native DOM events internally, mainly listening to the following two objects.    </p>
+<h4 id="document-related">document related</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TQlVbfkwJoaVcjxj8rRcDLD5n7f.gif' alt='' width='1000' height='auto'></p>
+<h4 id="table-container_1">Table Container</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SJXPbVJ6OosUU3xYmFHcC6Z7nJe.gif' alt='' width='1000' height='auto'></p>
+<h4 id="source-code">Source Code</h4>
+<ul>
+<li>bindContainerDomListener    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// vtable\src\event\listener\container-dom.ts
+// 容器级事件
+handler.on(table.getElement(), 'blur', ...);       // 失去焦点
+handler.on(table.getElement(), 'keydown', ...);     // 键盘事件（快捷键）
+handler.on(table.getElement(), 'copy', ...);        // 复制操作
+handler.on(table.getElement(), 'paste', ...);       // 粘贴操作
+handler.on(table.getElement(), 'contextmenu', ...); // 右键菜单
+// 全局指针事件
+document.body.addEventListener('pointerdown', ...);   // 全局按下
+document.addEventListener('pointerup', ...);          // 全局释放 
+document.body.addEventListener('pointermove', ...);   // 全局移动
+// 容器尺寸变化
+handler.on(table.getContainer(), 'resize', ...);     // 容器resize    
+</code></pre>
+
+<h3 id="mobile-events">Mobile Events</h3>
+<ul>
+<li>bindTouchListener    </li>
+</ul>
+<p><code>bindTouchListener</code> listens to mobile events, mainly to support the table movement feature on mobile devices.    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MwKPbYOhlo9TlnxazQUcW4s5nzs.gif' alt='' width='668' height='auto'></p>
+<ul>
+<li>Source code    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\touch.ts
+window.addEventListener('touchmove', (e) =&gt; {    // 触摸移动
+    // 1. 阻止默认滚动行为
+    // 2. 计算滑动距离（deltaX/deltaY）
+    // 3. 调用handleWhell实现表格内容滚动
+});
+
+window.addEventListener('touchend', (e) =&gt; {      // 触摸结束
+    // 触发惯性滚动
+});
+
+window.addEventListener('touchcancel', (e) =&gt; {
+    // 清空移动端 touch 事件相关参数
+});    
+</code></pre>
+
+<h2 id="scene-tree-related">Scene Tree Related</h2>
+<h3 id="basic-events-of-scene-tree">Basic Events of Scene Tree</h3>
+<p>The scene tree is divided into three parts for listening, which will be explained below:    \r</p>
+<h4 id="tablegroup">tableGroup</h4>
+<p>The table overall Group container is related, mainly to listen to events provided by VRender;    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NRAVbWUdlo3lAPxpQjecFGAHnbf.gif' alt='' width='1000' height='auto'></p>
+<h4 id="stage-event">stage event</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/R93yb6CmaoLmAhxr5mycBGQQn0e.gif' alt='' width='974' height='auto'></p>
+<h4 id="global-events">Global Events</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ahc0bAi4DokixyxJz2JcTaubnYe.gif' alt='' width='717' height='auto'></p>
+<h4 id="source-code_1">Source Code</h4>
+<ul>
+<li>bindTableGroupListener    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\listener\table-group.ts
+// 表格组基础事件
+table.scenegraph.tableGroup.addEventListener('pointermove', ...); // 指针移动
+table.scenegraph.tableGroup.addEventListener('pointerdown', ...); // 指针按下
+table.scenegraph.tableGroup.addEventListener('pointerup', ...);   // 指针释放
+table.scenegraph.tableGroup.addEventListener('pointerover', ...);   // 指针进入区域内部
+table.scenegraph.tableGroup.addEventListener('pointerenter', ...);   // 指针穿过区域边界
+table.scenegraph.tableGroup.addEventListener('pointerleave', ...);   // 指针离开区域
+table.scenegraph.tableGroup.addEventListener('pointertap', ...);   // 指针点击
+table.scenegraph.tableGroup.addEventListener('rightdown', ...);   // 右键点击
+table.scenegraph.tableGroup.addEventListener('wheel', ...);       // 滚轮事件
+table.scenegraph.tableGroup.addEventListener('checkbox_state_change', ...); // 多选框状态改变
+table.scenegraph.tableGroup.addEventListener('radio_checked', ...); // 单选框状态改变
+
+// stage 相关
+table.scenegraph.stage.addEventListener('pointerdown', ...);
+table.scenegraph.stage.addEventListener('pointerup', ...);
+table.scenegraph.stage.addEventListener('pointertap', ...);
+table.scenegraph.stage.addEventListener('pointermove', ...);
+
+// vglobal
+vglobal.addEventListener('pointerup', globalPointerupCallback);
+vglobal.addEventListener('pointerdown', globalPointerdownCallback);    
+</code></pre>
+
+<h3 id="scrollbar-related-events">Scrollbar Related Events</h3>
+<p><code>bindScrollBarListener</code> listens to the events provided by the <code>ScrollBar</code> component of VRender.    </p>
+<p>VTable has two types of scroll bars, namely the horizontal scroll bar <code>hScrollBar</code> and the vertical scroll bar <code>vScrollBar</code>. The event types listened to by these two scroll bars are the same. Taking the vertical scroll bar as an example, it mainly listens to the following events:</p>
+<ul>
+<li>
+<p>pointerover    </p>
+</li>
+<li>
+<p>pointerout    </p>
+</li>
+<li>
+<p>pointerup    </p>
+</li>
+<li>
+<p>pointermove    </p>
+</li>
+<li>
+<p>pointerupoutside    </p>
+</li>
+<li>
+<p>scrollDown    </p>
+</li>
+<li>
+<p>scrollDrag    </p>
+</li>
+<li>
+<p>scrollUp    </p>
+</li>
+</ul>
+<hr />
+<ul>
+<li><code>bindScrollBarListener</code>    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\scroll-bar.ts
+// 垂直滚动条事件
+scenegraph.component.vScrollBar.addEventListener('pointerover', (e) =&gt; {  // 指针悬停
+    stateManager.showVerticalScrollBar(); // 显示滚动条
+});
+scenegraph.component.vScrollBar.addEventListener('pointerout', (e) =&gt; {   // 鼠标移出
+    stateManager.hideVerticalScrollBar(); // 隐藏滚动条
+});
+scenegraph.component.vScrollBar.addEventListener('pointerdown', (e) =&gt; { // 鼠标按下
+    // 1. 阻止事件冒泡
+    // 2. 触发MOUSEDOWN_TABLE事件
+});
+// 滚动条拖动事件
+scenegraph.component.vScrollBar.addEventListener('scrollDrag', ((e) =&gt; {
+    // 1. 同步表格滚动位置
+    // 2. 更新画布渲染
+}));
+scenegraph.component.vScrollBar.addEventListener('scrollDown', (e) =&gt; {
+    // 点击滚动条，更新滚动状态
+});
+// 鼠标从滚动条上抬起事件，清除滚动状态
+scenegraph.component.vScrollBar.addEventListener('scrollUp', (e:) =&gt; {})    
+</code></pre>
+
+<h3 id="mobile-events_1">Mobile Events</h3>
+<p><code>bindTouchListener</code> separately registers a <code>touchstart</code> callback for <code>tableGroup</code> to initialize touch information on mobile devices.</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\touch.ts
+// 基础触摸事件
+table.scenegraph.tableGroup.addEventListener('touchstart', (e: FederatedPointerEvent) =&gt; {
+    // 记录触摸点坐标和时间戳
+    eventManager.touchMovePoints.push({...});
+});
+</code></pre>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>VTable has a very complex interaction system, and the most important module that these interactions rely on is the event module. In the event module, dozens of events are listened to, including custom events and external events.    </p>
+<p>It is precisely because VTable has such a robust event listening feature that it can achieve so many smooth interactions.    \r</p>
+<h1 id="this-document-is-provided-by-the-following-personnel">This document is provided by the following personnel</h1>
+<p>taiiiyang（https://github.com/taiiiyang）    </p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

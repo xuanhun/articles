@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>0 VTable 工程化</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="vtable">VTable 工程化指引文档</h1>
+<p>本文档提供了 VTable 项目的工程化指南，包括如何获取源代码、安装依赖、运行示例以及项目结构的概述。</p>
+<h2 id="1">1. 获取源代码</h2>
+<h3 id="github">从 GitHub 克隆代码库</h3>
+<pre class="codehilite"><code># 克隆 VTable 仓库
+git clone https://github.com/VisActor/VTable.git
+
+# 进入项目目录
+cd VTable
+</code></pre>
+
+<h2 id="2">2. 环境准备</h2>
+<h3 id="_1">前置要求</h3>
+<ul>
+<li>
+<p><strong>Node.js</strong>: 需要安装 Node.js，版本要求：<code>&gt;=14.15.0 &lt;15.0.0 || &gt;=16.13.0 &lt;17.0.0 || &gt;=18.15.0 &lt;19.0.0</code></p>
+</li>
+<li>
+<p><strong>Rush</strong>: VTable 使用 Microsoft Rush 进行项目管理</p>
+</li>
+</ul>
+<h3 id="rush">安装 Rush</h3>
+<pre class="codehilite"><code># 全局安装 Rush
+npm install -g @microsoft/rush
+</code></pre>
+
+<h3 id="_2">安装项目依赖</h3>
+<pre class="codehilite"><code># 在 VTable 根目录下执行以下命令，安装所有依赖
+rush update
+</code></pre>
+
+<h2 id="3-demo">3. 启动 Demo</h2>
+<p>VTable 提供了丰富的示例供开发者了解和使用。</p>
+<p>在根目录执行以下命令，启动 vtable包目录示例。</p>
+<pre class="codehilite"><code># 启动 vtable包目录示例
+rushx demo
+</code></pre>
+
+<p>这将启动一个本地开发服务器，通常在 <code>http://localhost:300*</code> 上运行，你可以在浏览器中访问查看所有示例。</p>
+<h3 id="_3">启动不同功能包下面示例的方法：</h3>
+<ol>
+<li>启动 VTable 核心库示例</li>
+</ol>
+<pre class="codehilite"><code># 进入 vtable 包目录
+cd packages/vtable
+# 启动示例
+rushx demo
+</code></pre>
+
+<ol>
+<li>启动 React VTable 示例</li>
+</ol>
+<pre class="codehilite"><code># 进入 react-vtable 包目录
+cd packages/react-vtable
+
+# 启动示例
+rushx demo
+</code></pre>
+
+<ol>
+<li>启动 Vue VTable 示例</li>
+</ol>
+<pre class="codehilite"><code># 进入 vue-vtable 包目录
+cd packages/vue-vtable
+
+# 启动示例
+rushx demo
+</code></pre>
+
+<ol>
+<li>启动 Vue VTable 示例</li>
+</ol>
+<pre class="codehilite"><code># 进入 vue-vtable 包目录
+cd packages/openinula-vtable
+
+# 启动示例
+rushx demo
+</code></pre>
+
+<ol>
+<li>启动甘特图示例</li>
+</ol>
+<pre class="codehilite"><code># 进入 vtable-gantt 包目录
+cd packages/vtable-gantt
+
+# 启动示例
+rushx demo
+</code></pre>
+
+<ol>
+<li>启动日历组件示例</li>
+</ol>
+<pre class="codehilite"><code># 进入 vtable-calendar 包目录
+cd packages/vtable-calendar
+
+# 启动示例
+rushx demo
+</code></pre>
+
+<ol>
+<li>启动插件示例</li>
+</ol>
+<pre class="codehilite"><code># 进入 vtable-plugins 包目录
+cd packages/vtable-plugins
+
+# 启动示例
+rushx demo
+</code></pre>
+
+<h3 id="_4">启动文档站点</h3>
+<pre class="codehilite"><code># 在项目根目录执行
+rush docs
+</code></pre>
+
+<p>这将启动 VTable 的文档站点，包含详细的教程、API 文档和示例。</p>
+<h2 id="4">4. 命令说明</h2>
+<p>在各个包目录下，你可以执行以下命令：</p>
+<table><colgroup><col style="width: 365px"><col style="width: 365px"></colgroup><tbody><tr><td rowspan="1" colspan="1">
+
+命令
+</td><td rowspan="1" colspan="1">
+
+说明
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rushx demo`
+</td><td rowspan="1" colspan="1">
+
+启动本地示例服务
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rushx build`
+</td><td rowspan="1" colspan="1">
+
+构建库文件
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rushx dev`
+</td><td rowspan="1" colspan="1">
+
+开发模式构建（监听文件变化）
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rushx test`
+</td><td rowspan="1" colspan="1">
+
+运行单元测试
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rushx test-cov`
+</td><td rowspan="1" colspan="1">
+
+运行测试覆盖率分析
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rushx eslint`
+</td><td rowspan="1" colspan="1">
+
+执行代码风格检查
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rushx compile`
+</td><td rowspan="1" colspan="1">
+
+仅执行 TypeScript 类型检查
+</td></tr></tbody></table>
+<p>在项目根目录，你可以使用以下 Rush 命令：</p>
+<table><colgroup><col style="width: 365px"><col style="width: 365px"></colgroup><tbody><tr><td rowspan="1" colspan="1">
+
+命令
+</td><td rowspan="1" colspan="1">
+
+说明
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rush start`
+</td><td rowspan="1" colspan="1">
+
+启动核心包VTable目录下的demo
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rush update`
+</td><td rowspan="1" colspan="1">
+
+安装或更新所有依赖
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rush build`
+</td><td rowspan="1" colspan="1">
+
+构建所有项目
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rush rebuild`
+</td><td rowspan="1" colspan="1">
+
+清理并重新构建所有项目
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rush test`
+</td><td rowspan="1" colspan="1">
+
+运行所有项目的测试
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rush change-all`
+</td><td rowspan="1" colspan="1">
+
+在提交代码后更新所有变更日志
+</td></tr><tr><td rowspan="1" colspan="1">
+
+`rush docs`
+</td><td rowspan="1" colspan="1">
+
+启动文档站点
+</td></tr></tbody></table>
+<h2 id="5">5. 项目结构说明</h2>
+<p>VTable 项目采用 Rush 管理的 Monorepo 结构，主要由以下部分组成：</p>
+<h3 id="_5">顶层目录结构</h3>
+<pre class="codehilite"><code>VTable/
+  ├── .github/            # GitHub 相关配置
+  ├── .vscode/            # VS Code 配置
+  ├── common/             # Rush 配置文件和公共依赖
+  ├── docs/               # 文档站点源码
+  ├── packages/           # 所有包的源代码
+  ├── share/              # 共享配置（ESLint、TypeScript等）
+  ├── tools/              # 开发工具和脚本
+  ├── types/              # 公共类型定义
+  ├── CONTRIBUTING.md     # 贡献指南
+  ├── README.md           # 项目说明
+  └── rush.json           # Rush 配置文件
+</code></pre>
+
+<h3 id="packages">packages 目录</h3>
+<p>packages 目录包含所有 VTable 相关的包：</p>
+<pre class="codehilite"><code>packages/
+  ├── vtable/             # VTable 核心库
+  ├── react-vtable/       # React 集成
+  ├── vue-vtable/         # Vue 集成
+  ├── openinula-vtable/   # OpenInula 集成
+  ├── vtable-gantt/       # 甘特图组件
+  ├── vtable-editors/     # 编辑器组件
+  ├── vtable-export/      # 导出工具
+  ├── vtable-search/      # 搜索工具
+  ├── vtable-calendar/    # 日历组件
+  └── vtable-plugins/     # 插件集合
+</code></pre>
+
+<h3 id="vtable_1">vtable 包结构</h3>
+<p>核心的 vtable 包结构如下：</p>
+<pre class="codehilite"><code>packages/vtable/
+  ├── examples/           # 示例代码
+  ├── site-demo/          # 站点示例
+  ├── src/                # 源代码
+  ├── test/               # 测试代码
+  ├── nodejs/             # Node.js 环境相关代码
+  ├── package.json        # 包配置
+  └── README.md           # 说明文档
+</code></pre>
+
+<h2 id="6">6. 开发流程</h2>
+<h3 id="bug">开发新功能或修复 Bug</h3>
+<ol>
+<li>
+<p><strong>创建分支</strong>：从主分支develop创建新的功能或修复分支</p>
+</li>
+<li>
+<p><strong>开发</strong>：进行代码修改和开发</p>
+</li>
+<li>
+<p><strong>测试</strong>：运行单元测试确保代码质量</p>
+</li>
+<li>
+<p><strong>创建demo</strong>：在packages/vtable/examples目录下创建新的demo</p>
+</li>
+<li>
+<p><strong>编译compile</strong>：执行 <code>rushx compile</code> 确保代码可以正常编译</p>
+</li>
+<li>
+<p><strong>构建build</strong>：执行 <code>rushx build</code> 确保代码可以正常构建</p>
+</li>
+<li>
+<p><strong>提交</strong>：提交代码，注意遵循提交规范</p>
+</li>
+<li>
+<p><strong>更新日志</strong>：运行 <code>rush change-all</code> 更新变更日志</p>
+</li>
+<li>
+<p><strong>提交 PR</strong>：向主仓库提交拉取请求</p>
+</li>
+</ol>
+<p>具体过程可以参考官网教程：<a href="https://www.visactor.io/vtable/contributing/">贡献者指南</a></p>
+<h3 id="_6">版本管理</h3>
+<p>VTable 使用 Rush 来管理版本，主要依赖于 <code>rush.json</code> 文件中定义的版本策略（versionPolicyName）。</p>
+<h2 id="7">7. 常见问题与解决方案</h2>
+<h3 id="_7">依赖安装问题</h3>
+<p>如果在 <code>rush update</code> 过程中遇到问题，可以尝试以下方法：</p>
+<pre class="codehilite"><code># 清除 Rush 缓存
+rush purge
+
+# 重新安装所有依赖
+rush update --full
+</code></pre>
+
+<h3 id="demo">启动 Demo 失败</h3>
+<p>如果启动示例时出现问题，可以检查以下几点：</p>
+<ol>
+<li>
+<p>Node.js 版本是否符合要求</p>
+</li>
+<li>
+<p>是否已成功安装所有依赖</p>
+</li>
+<li>
+<p>检查控制台报错信息</p>
+</li>
+</ol>
+<pre class="codehilite"><code># 重新构建并启动示例
+rush build
+cd packages/vtable
+rushx demo
+</code></pre>
+
+<h3 id="_8">构建失败</h3>
+<p>如果构建过程失败，可以尝试以下方法：</p>
+<pre class="codehilite"><code># 清理构建缓存
+rush clean
+
+# 重新构建
+rush build
+</code></pre>
+
+<h2 id="8">8. 参与贡献</h2>
+<p>我们欢迎所有形式的贡献，包括但不限于提交问题、改进文档、修复 Bug 或添加新功能。</p>
+<p>参与贡献前，请务必阅读<a href="https://www.visactor.io/vtable/contributing/">贡献者指南</a>，了解贡献流程和规范。</p>
+<h2 id="9">9. 资源链接</h2>
+<ul>
+<li>
+<p><a href="https://visactor.io/vtable">VTable 官方网站</a></p>
+</li>
+<li>
+<p><a href="https://github.com/VisActor/VTable">GitHub 仓库</a></p>
+</li>
+<li>
+<p><a href="https://visactor.io/vtable/option">API 文档</a></p>
+</li>
+<li>
+<p><a href="https://visactor.io/vtable/example">示例集合</a></p>
+</li>
+<li>
+<p><a href="https://visactor.io/vtable/guide/Getting_Started/Getting_Started">教程</a></p>
+</li>
+</ul>
+<p>本文档由以下人员参与编辑：</p>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

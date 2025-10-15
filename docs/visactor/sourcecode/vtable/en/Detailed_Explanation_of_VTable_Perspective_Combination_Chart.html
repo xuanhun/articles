@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Explanation of VTable Perspective Combination Chart</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>This article will interpret the source code of the VTable perspective, helping developers better understand its internal implementation mechanism.</p>
+<h2 id="definition-of-perspective-combination-chart">Definition of Perspective Combination Chart</h2>
+<p>A PivotChart is an advanced table type in VTable that allows users to analyze and visualize data in a multidimensional way. It arranges and combines the same type of charts according to certain rules to form a large chart, with each small chart presenting a portion of the data. This type of chart is usually used to group large amounts of data for better observation and comparison of relationships between different data.    \r</p>
+<h3 id="features">Features</h3>
+<ul>
+<li>
+<p><strong>Multidimensional Display</strong>: The pivot combination chart can simultaneously present multiple data dimensions, allowing users to gain a more comprehensive understanding of the relationships between the data.    </p>
+</li>
+<li>
+<p><strong>Flexible Layout</strong>: Different dimensions can be placed in different positions to observe different data results.    \r</p>
+</li>
+<li>
+<p><strong>Data Grouping</strong>: It is often used to group data according to certain rules, with each subplot displaying the data of a group, making it easier for users to understand and analyze.    </p>
+</li>
+</ul>
+<div style="display: flex;"><div style="flex: 47; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SDnZbUwpIo967sxRiRRcHGgenmc.gif' alt='' width='1000' height='auto'>
+</div><div style="flex: 52; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/IRayb0VSyoZrUixATv5chmNCnjb.gif' alt='' width='1000' height='auto'>
+</div></div>
+<h3 id="application-scenarios">Application Scenarios</h3>
+<ul>
+<li>
+<p><strong>Visualization of Big Data Sets</strong>: Pivot combination charts can be used to visualize big data sets by displaying grouped data, helping users better understand the relationships between data.    \r</p>
+</li>
+<li>
+<p><strong>Visualization of Multidimensional Data</strong>: It can be used to display multidimensional data by grouping the data according to different attributes and presenting it in the form of charts, allowing users to observe multiple dimensions of data simultaneously.    \r</p>
+</li>
+<li>
+<p><strong>Data Comparison and Analysis</strong>: Pivot combination charts can be used to compare and analyze data. By displaying grouped data, users can more easily compare differences and relationships between different data.    \r</p>
+</li>
+<li>
+<p><strong>Data Reporting and Presentation</strong>: Using pivot combination charts in data reports can make the reports easier to understand and present.    </p>
+</li>
+</ul>
+<h3 id="comparison-pivot-table">Comparison Pivot Table</h3>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YCKcwu5clhcH0gbaXz4cZxP6nfe.gif" /></p>
+<p><strong>Compared to pivot tables, where each cell displays an aggregated value of a certain metric under a dimension set group, pivot charts present the original data corresponding to this aggregated group in a separate chart.</strong>    \r</p>
+<p><strong>Reuse Pivot Table Logic:</strong>    </p>
+<ol>
+<li>
+<p>Data Organization: The main logic is consistent with PivotTable, with additional logic for analysis axis range. File path: packages/vtable/src/dataset/dataset.ts;    \r</p>
+</li>
+<li>
+<p>Layout Logic: The dimension values of the table header are mapped to the cell logic, file path: packages/vtable/src/layout/pivot-header-layout.ts;    \r</p>
+</li>
+</ol>
+<p>These contents are specifically introduced in the source code interpretation document of the pivot table, and will not be repeated here.    </p>
+<h2 id="core-logic">Core Logic</h2>
+<h3 id="register-chart-module">Register chart module</h3>
+<ol>
+<li>First, register the chart module through VTable.register.chartModule():    \r</li>
+</ol>
+<pre class="codehilite"><code class="language-plaintext">VTable.register.chartModule('vchart', VChart);    
+</code></pre>
+
+<ol>
+<li>The module will be stored in the chartTypePlugins object during registration:</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">export function **chartModule**(*name*: string, *chartModule*?: any): any {
+  if (*chartModule* !== null &amp;&amp; *chartModule* !== undefined) {
+    return register(chartTypePlugins, *name*, *chartModule*);
+  }
+  return chartTypePlugins[*name*];
+}    
+</code></pre>
+
+<ol>
+<li>In the table configuration, reference the registered module through the chartModule attribute:    </li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">{
+  cellType: 'chart',          // 指定单元格类型为chart
+  chartModule: 'vchart',      // 使用注册的vchart模块
+  chartSpec: {                // chart的具体配置
+    type: 'bar',             // 图表类型
+    stack: true,             // 是否堆叠
+    data: {
+      id: 'data'
+    },
+    xField: [...],           // x轴字段
+    yField: '...',          // y轴字段
+    // 其他图表配置...
+  }
+}    
+</code></pre>
+
+<ol>
+<li>VTable will use the corresponding chart module to render the chart according to the configuration    </li>
+</ol>
+<p>This registration mechanism mainly has the following characteristics:    \r</p>
+<ul>
+<li>
+<p>Support dynamic registration and retrieval of chart module    </p>
+</li>
+<li>
+<p>Multiple different chart modules can be registered (but currently there is no compatibility handling for other chart libraries.)    </p>
+</li>
+<li>
+<p>Achieve chart functionality extensibility through modular design    </p>
+</li>
+<li>
+<p>Supports complex chart configuration options    </p>
+</li>
+</ul>
+<h3 id="declare-primitive-node-chart">Declare Primitive Node Chart</h3>
+<p>Chart primitives inherit from Group, and are composite primitives mainly used for rendering charts in table cells.    \r</p>
+<pre class="codehilite"><code class="language-Typescript">export class Chart extends Group {
+  type: GraphicType = 'chart' as any;
+  declare attribute: IChartGraphicAttribute;
+  chartInstance: any;         // 主图表实例
+  activeChartInstance: any;   // 激活状态的图表实例
+  active: boolean;            // 是否处于激活状态
+  cacheCanvas: HTMLCanvasElement | { x: number; y: number; width: number; height: number; canvas: HTMLCanvasElement }[]; 
+  isShareChartSpec: boolean;  // 是否共享图表配置
+}    
+</code></pre>
+
+<p>Important Attributes:    </p>
+<ol>
+<li>
+<p>type and attribute: Indicates the type of element and element configuration, all elements have this attribute;    \r</p>
+</li>
+<li>
+<p>chartInstance: The chart object instantiated using the registered chart module vchart;    \r</p>
+</li>
+<li>
+<p>activeChartInstance: If the cell is activated, an activeChartInstance will be created on the chart element to respond to the interactions of the chart itself;    \r</p>
+</li>
+<li>
+<p>cacheCanvas: Cache the rendered image of the chart for use in the next render to improve rendering performance;    \r</p>
+</li>
+</ol>
+<h3 id="create-chart-process">Create chart process</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/R7i4blZbuoztoPx1psHcuEi3nfe.gif' alt='' width='588' height='auto'></p>
+<p>When creating a chart element, the entry point is <code>createCell</code>, where it determines the type of cell to be created. If it is a chart type, it further decides to use the chart element and calls the function <code>**createChartCellGroup**</code><strong>.</strong>    </p>
+<p><strong>One parameter that needs special attention when calling this function is</strong> <code>***chartInstance***</code>, because the vtable uses a mechanism where the same chart instance is shared for performance reasons. Therefore, you can obtain the chart instance already created on the metric object based on the cell by calling the interface <strong><em><code>***getChartInstance***</code></em></strong>.***</p>
+<pre class="codehilite"><code class="language-Typescript">if (*type* === 'chart') {
+    const chartInstance = *table*.internalProps.layoutMap.getChartInstance(*col*, *row*);
+    const **createChartCellGroup** = Factory.getFunction('createChartCellGroup') as CreateChartCellGroup;
+    cellGroup = createChartCellGroup(
+      null,
+      *columnGroup*,
+      0,
+      *y*,
+      *col*,
+      *row*,
+      *cellWidth*,
+      *cellHeight*,
+      *padding*,
+      *value*,
+      (*define* as ChartColumnDefine).chartModule,
+      *table*.internalProps.layoutMap.getChartSpec(*col*, *row*),
+      chartInstance,
+      *table*.internalProps.layoutMap.getChartDataId(*col*, *row*) ?? 'data',
+      *table*,
+      *cellTheme*,
+      *table*.internalProps.layoutMap.isShareChartSpec(*col*, *row*),
+      isAsync,
+      *table*.internalProps.layoutMap.isNoChartDataRenderNothing(*col*, *row*)
+    );    
+</code></pre>
+
+<p>If an instance has not been created initially, create it in the chart element and later store it in the indicator information through the setChartInstance interface.    </p>
+<p><code>*table*``.internalProps.layoutMap.setChartInstance(``*col*``, ``*row*``, chartGroup.chartInstance);</code>    </p>
+<h3 id="draw-chart">Draw chart</h3>
+<p>The process of creating a chart mentioned above, when a new chart is created, you can see that apart from configuring the spec, no data is passed. Data is passed during the actual rendering. Specific file path: packages/vtable/src/scenegraph/graphic/contributions/chart-render.ts    \r</p>
+<pre class="codehilite"><code class="language-Typescript">function drawShape(chart, context, x, y) {
+  // 获取图表基础属性
+  const { active, cacheCanvas, activeChartInstance } = chart;
+  const { dataId, data, spec } = chart.attribute;
+
+  // 1. 非激活且有缓存时,直接绘制缓存
+  if (!active &amp;&amp; cacheCanvas) {
+    drawCacheCanvas(context, cacheCanvas, x, y);
+    return;
+  }
+
+  // 2. 有激活实例时,更新并渲染激活态图表
+  if (activeChartInstance) {
+    // 更新视口
+    updateChartViewBox(activeChartInstance, chart);
+
+    // 更新变换矩阵
+    updateChartTransform(activeChartInstance, chart);
+
+    // 更新数据
+    if (typeof dataId === 'string') {
+      activeChartInstance.updateDataSync(dataId, data);
+    } else {
+      updateSeriesData(activeChartInstance, dataId, data, spec);
+    }
+    return;
+  }
+
+  // 3. 无实例时,创建新图表
+  if (table.internalProps.renderChartAsync) {
+    // 异步渲染队列
+    addToRenderQueue(chart);
+    startRenderQueueIfNeeded(table);
+  } else {
+    // 同步渲染
+    renderChart(chart);
+  }
+}    
+</code></pre>
+
+<h4 id="drawing-process">Drawing Process</h4>
+<p>The core drawing logic is in renderChart, the main logic of renderChart:    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ISQ9b06dYoumW2xYmi6cWXKLnTd.gif' alt='' width='578' height='auto'></p>
+<p>The cell chart will cache the chart image after the first drawing for subsequent use.    </p>
+<h4 id="asynchronous-rendering">Asynchronous Rendering</h4>
+<p>In order to further improve the rendering performance of the first screen, there is an asynchronous rendering configuration <code>renderChartAsync</code>. If it is enabled, the chart drawing process of the cells to be rendered will be inserted into the rendering queue. This is particularly suitable for situations where there are a large number of charts displayed on the first screen.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/S3eobYCiIoXWJhxRZQlcbVLln9b.gif' alt='' width='1000' height='auto'></p>
+<h3 id="primitive-chart-activation">Primitive Chart Activation</h3>
+<p>As mentioned in the drawing process, the chart drawn in the cell is a cached image, which loses the ability to interact with the chart. To solve this problem, vtable uses the hover state to recreate the chart of the hovered cell and give it interactive capabilities.</p>
+<pre class="codehilite"><code class="language-Typescript"> this.activeChartInstance = new this.attribute.ClassType(
+      this.attribute.spec,
+      merge({}, this.attribute.tableChartOption, {
+        *// disableDirtyBounds: true,*
+        renderCanvas: this.attribute.canvas,
+        mode: 'desktop-browser',
+        canvasControled: false,
+        viewBox: {
+          x1: 0,
+          x2: x2 - x1,
+          y1: 0,
+          y2: y2 - y1
+        },
+        dpr: *table*.internalProps.pixelRatio,
+        animation: false,
+        interactive: true,
+        autoFit: false, *//控制当容器变化大小时vchart实例不应响应事件进行内部处理*
+        **beforeRender**: (*chartStage*: Stage) =&gt; {
+          const stage = this.stage;
+          const ctx = *chartStage*.window.getContext();
+          const stageMatrix = stage.window.getViewBoxTransform();
+          const viewBox = stage.window.getViewBox();
+          ctx.inuse = true;
+          *// ctx.save();*
+          *// console.log(ctx.getImageData(0, 0, 100, 100));*
+          ctx.clearMatrix();
+          ctx.setTransform(
+            stageMatrix.a,
+            stageMatrix.b,
+            stageMatrix.c,
+            stageMatrix.d,
+            stageMatrix.e,
+            stageMatrix.f,
+            true
+          );
+          ctx.translate(viewBox.x1, viewBox.y1);
+          ctx.setTransformForCurrent(true); *// 替代原有的chart viewBox*
+          ctx.beginPath();
+          ctx.rect(clipBound.x1, clipBound.y1, clipBound.x2 - clipBound.x1, clipBound.y2 - clipBound.y1);
+          ctx.clip();
+          ctx.clearMatrix();
+
+          if (*table*.options.canvas &amp;&amp; !(*chartStage* as any).needRender) {
+            *// 在使用viewbox局部渲染时，activate单独渲染chart stage，可能导致外部stage场景层级错乱*
+            *// 此时触发整个表格的重绘，外部stage场景可以通过table的beforeRender配置触发更上一级的重绘*
+            *chartStage*.pauseRender();
+            *table*.scenegraph.stage.dirtyBounds.union(this.globalAABBBounds);
+            *table*.scenegraph.updateNextFrame();
+          }
+        },
+        **afterRender**(*stage*: any) {
+          const ctx = *stage*.window.getContext();
+          ctx.inuse = false;
+
+          *stage*.needRender = false;
+          chartStage.resumeRender();
+        }
+      })
+    );    
+</code></pre>
+
+<p>The configuration of <code>activeChartInstance</code> does seem a bit more complex compared to the configuration of <code>chartInstance</code>. First, interactive is set to true, and beforeRender and afterRender hook functions are added to control the specific rendering area on the canvas.</p>
+<h3 id="axis-creation">Axis Creation</h3>
+<p>In a perspective view, besides the chart part in the cell, another important component is the axis. Unlike the axis of a simple single chart that belongs to one chart, the axis in a perspective view is responsible for the axis range capability of the entire row or column of charts.    \r</p>
+<p>In the logic of creatCell, when there is a configuration related to the perspective chart axis, the Axis component will be created and appended to the cellGroup.</p>
+<pre class="codehilite"><code class="language-Typescript">    const axisConfig = *table*.internalProps.layoutMap.getAxisConfigInPivotChart(*col*, *row*);
+    if (axisConfig) {
+      const CartesianAxis: ICartesianAxis = Factory.getComponent('axis');
+      const axis = new CartesianAxis(
+        axisConfig,
+        cellGroup.attribute.width,
+        cellGroup.attribute.height,
+        axisConfig.__vtablePadding ?? *padding*,
+        *table*
+      );
+      cellGroup.clear();
+      cellGroup.appendChild(axis.component);
+      axis.overlap();
+    }     
+</code></pre>
+
+<p>The specific axis logic is in the file packages/vtable/src/components/axis/axis.ts    \r</p>
+<p>The CartesianAxis class mainly includes:    </p>
+<ul>
+<li>
+<p>Creation and initialization of the axis    </p>
+</li>
+<li>
+<p>Scale calculation and layout    </p>
+</li>
+<li>
+<p>Axis scaling and positioning    </p>
+</li>
+<li>
+<p>Tag overlap handling    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">class CartesianAxis {
+  *// 属性*
+  width: number;                 *// 轴宽度*
+  height: number;               *// 轴高度*
+  orient: IOrientType;         *// 轴方向(left/right/top/bottom)*
+  type: 'linear' | 'band' | 'point' | 'time' | 'log' | 'symlog'; *// 轴类型*
+  scale: BandAxisScale | LinearAxisScale;  *// 比例尺*
+  component: LineAxis;         *// 轴组件*
+
+  *// 核心方法*
+  initScale()                  *// 初始化比例尺*
+  initData()                   *// 初始化数据*
+  computeData()               *// 计算轴数据*
+  createComponent()           *// 创建轴组件*
+  resize()                    *// 调整大小*
+}    
+</code></pre>
+
+<p>Initialization process: This implementation provides full axis support for charts in the table, which is an important foundational component for chart rendering.    </p>
+<div style="display: flex;"><div style="flex: 32; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/VatNbnwyAoCuWxxQn8Pcvb1Snsf.gif' alt='' width='444' height='auto'>
+</div><div style="flex: 67; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OEM6bg6B8oz6tSxPIpdcJ508n3g.gif' alt='' width='846' height='auto'>
+</div></div>
+
+<h3 id="legend-interaction-linking">Legend Interaction Linking</h3>
+<p>VTable also provides a legend component, which can be used to control the display data of the chart by manipulating the legend:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/P8wcbL1KmowzFqxnMCIcCjMvngf.gif' alt='' width='1000' height='auto'></p>
+<p>Here is a summary of the creation process. It is important to note that adding a legend will occupy the position of the table, so it is necessary to reset the position of the tableGroup in the scene tree:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/JxlabSk0eoRQ6ExCj7acUCAZnPe.gif' alt='' width='712' height='auto'></p>
+<p>Legend click to control the data display logic of the chart:    </p>
+<p>This logic is not directly integrated into the Vtable code, and users need to call the relevant interfaces themselves, as follows:    \r</p>
+<pre class="codehilite"><code class="language-Typescript">`  tableInstance.on(LEGEND_ITEM_CLICK, *args* =&gt; {
+    console.log('LEGEND_ITEM_CLICK', *args*);
+    tableInstance.updateFilterRules([
+      {
+        filterKey: '20001',
+        filteredValues: *args*.value
+      }
+    ]);
+  });    
+</code></pre>
+
+<p>The logic of updateFilterRules is:    </p>
+<pre class="codehilite"><code class="language-Typescript">  */** 更新数据过滤规则，适用场景：点击图例项后 更新过滤规则 来更新图表 */*
+  **updateFilterRules**(*filterRules*: FilterRules) {
+    this.internalProps.dataConfig.filterRules = *filterRules*;
+    this.dataset.updateFilterRules(*filterRules*);
+    clearChartCacheImage(this.scenegraph);
+    updateChartData(this.scenegraph);
+    this.render();
+  }    
+</code></pre>
+
+<p>In addition to updating data through the dataset, all chart caches were cleared and re-rendered.    \r</p>
+<h2 id="conclusion"><strong>Conclusion:</strong></h2>
+<p>The VTable pivot table implements rich data analysis functions, providing users with powerful data visualization tools through flexible configuration and efficient data processing mechanisms. Its core lies in the close integration of data processing, layout system, and interactive functions, making complex data analysis simple and intuitive.</p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

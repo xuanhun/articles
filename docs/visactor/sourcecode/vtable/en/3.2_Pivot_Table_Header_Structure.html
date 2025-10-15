@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3.2 Pivot Table Header Structure</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="overview">Overview</h2>
+<p>The layout of the pivot table headers is complex, with both column headers and row headers. This section will introduce the various modules of the pivot table headers, how these modules are interconnected, and the methods of generating each module.</p>
+<h2 id="scene-tree-related">Scene Tree Related</h2>
+<p>VTable manages tables in the form of a scene tree. For a pivot table like the one below, there are three main sections regarding the header:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DRDubXl58okr3GxTYJgcGSKRn7b.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>
+<p>ColHeaderGroup: List header Group, responsible for managing the list header part of the pivot table;</p>
+</li>
+<li>
+<p>RowHeaderGroup: Row header Group, responsible for managing the row header part of the pivot table;</p>
+</li>
+<li>
+<p>CornerHeaderGroup: Corner header Group;    </p>
+</li>
+</ul>
+<h2 id="layout-structure">Layout Structure</h2>
+<h3 id="structure-division">Structure Division</h3>
+<p>For pivot table headers, there are four core structures that form the framework of the header based on these structures.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/BRxJbn7dUocTINxNypqczzuEnLc.gif' alt='' width='1000' height='auto'></p>
+<p>They are RowTree row dimension tree, ColumnTree column dimension tree, CornerHeader corner header, indicators.</p>
+<ul>
+<li>Row Dimension Tree</li>
+</ul>
+<p>The row dimension tree is the dimension tree configuration provided by the user. Later, a corresponding row dimension tree instance <code>rowDimensionTree</code> will be created to manage the expand and collapse state of column headers, pagination configuration. The generation of the row header cell identification matrix also relies on the row dimension tree.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SNQzbrJeJo5kRcxjWBMcZAvYnMh.gif' alt='' width='332' height='auto'></p>
+<ul>
+<li>Column Dimension Tree    </li>
+</ul>
+<p>The column dimension tree is the dimension tree configuration provided by the user, used to represent the hierarchical relationship of the list header. Later, it is necessary to generate the corresponding identification matrix and be responsible for the layout generation of the header, creating the <code>columnDimensionTree</code> instance.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/R7b9bFbAooBwn9xVyPzcmctEn4c.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>Corner Header    </li>
+</ul>
+<p>The display format of corner headers is quite special, and there are three forms</p>
+<ul>
+<li>'row' as the row dimension name for the header cell content</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QF7zbxp3aocsGyxURxnc4BlVn1A.gif' alt='' width='328' height='auto'></p>
+<ul>
+<li>'column' column dimension name as corner cell content</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ArxQbJsFpo3NTmxEutSc6rhWnSc.gif' alt='' width='341' height='auto'></p>
+<ul>
+<li>'all' corner cell content is a concatenation of row dimension name and column dimension name</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YUVrbSYIzot4h8xjMu7cwC5HnYg.gif' alt='' width='339' height='auto'></p>
+<ul>
+<li>Metrics    </li>
+</ul>
+<p>The generation of row dimension trees and column dimension trees will be affected by the metrics. Assuming the metrics are [ Sales, Profit ], the dimension trees will be adjusted based on the position of the metrics during the generation process.</p>
+<p>Assuming the metric is defined in the last row of the column, when generating the column dimension tree, a metric column will be inserted below each leaf node.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WncEb2um2oUQ0WxL69fcKEzCnqb.gif' alt='' width='444' height='auto'></p>
+<h3 id="identity-matrix">Identity Matrix</h3>
+<p>In order to quickly and accurately locate the column or row information corresponding to a cell, the concept of an identification matrix is introduced within the pivot table.</p>
+<p>The identity matrix is a two-dimensional matrix responsible for generating the layout structure of the header, as well as defining the positioning of cell columns, generating cell styles, and displaying values.</p>
+<h4 id="column-header-identity-matrix">Column Header Identity Matrix</h4>
+<p><code>_columnHeaderCellIds</code>    </p>
+<ul>
+<li>
+<p>Two-dimensional array structure, storing the globally unique ID of each cell in the column header</p>
+</li>
+<li>
+<p>Each element corresponds to a cell in the column header area</p>
+</li>
+<li>
+<p>Hierarchical structure is implemented through nested arrays (e.g., <code>[[1,1,1], [2,3,4]]</code> represents two rows and three columns of column headers)</p>
+</li>
+<li>
+<p>Through this matrix, you can quickly locate the row and column path information of a specific cell</p>
+</li>
+<li>
+<p>The process of dragging the list header is actually changing this field</p>
+</li>
+<li>
+<p>The calculation of colCount required for generating tables also depends on this field</p>
+</li>
+</ul>
+<p>First, recursively generate the corresponding <code>_columnHeaderCellIds</code> through the column dimension tree. When generating row headers, follow the rule of traversing columns first and then rows to obtain the information of the corresponding cell through the row and column numbers, generate the current cell, and after completing the traversal, the corresponding list header is generated.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CPg9bnGxIopNJpx1jg8c8ZcHnFc.gif' alt='' width='1000' height='auto'></p>
+<h4 id="row-header-unit-identity-matrix">Row Header Unit Identity Matrix</h4>
+<p><code>_rowHeaderCellIds_FULL</code> and <code>_rowHeaderCellIds</code></p>
+<ul>
+<li>
+<p>Two-dimensional array structure, storing the globally unique ID of each cell in the row header;    </p>
+</li>
+<li>
+<p><code>_rowHeaderCellIds_FULL</code> is responsible for storing the full identifier matrix, while <code>_rowHeaderCellIds</code> is only responsible for the row headers displayed on the current page;    </p>
+</li>
+<li>
+<p>In the process of dynamic pagination, pagination is achieved by changing <code>_rowHeaderCellIds</code>;    </p>
+</li>
+<li>
+<p>Able to quickly obtain the path information of a row header cell through the identification matrix;    </p>
+</li>
+<li>
+<p>Affects the calculation of the number of rows colCount that need to be generated for the table;    </p>
+</li>
+</ul>
+<p><code>_columnHeaderCellIds</code> generation is completed, followed by the generation of <code>_rowHeaderCellIds_FULL</code>. The difference from the generation logic of <code>_columnHeaderCellIds</code> is that the generation of the row header cell matrix is transposed from the rows and columns.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KzJUbJonEo62wSxhUngcdmognkg.gif' alt='' width='1000' height='auto'></p>
+<h4 id="corner-unit-identity-matrix">Corner Unit Identity Matrix</h4>
+<p><code>_cornerHeaderCellIds</code>    </p>
+<p>After the row header matrix and column header matrix are generated, the corner header cell identification matrix is generated. <code>_cornerHeaderCellIds</code> is responsible for</p>
+<ul>
+<li>
+<p>Store the cell ID of the cross area of row and column dimensions</p>
+</li>
+<li>
+<p>Dynamically respond to changes in row and column dimensions (automatically clear when row and column dimensions are 0) </p>
+</li>
+</ul>
+<p>Due to the particularity of corner headers, there are three forms of <code>cornerHeaderCellIds</code>:    </p>
+<ul>
+<li>'row' as the row dimension name in the header cell content</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/LXEubBvh1odKnFxyfHyc2dIMnAb.gif' alt='' width='603' height='auto'></p>
+<ul>
+<li>'column' column dimension name as corner cell content</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KOlBbkLEjoHpm6xqRhqcC6ctnke.gif' alt='' width='794' height='auto'></p>
+<ul>
+<li>'all' corner cell content is a concatenation of row dimension name and column dimension name</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CzrpbKjGQon7XOxgQA3cblFznkf.gif' alt='' width='779' height='auto'></p>
+<h3 id="header-object-mapping">Header Object Mapping</h3>
+<p>Having only the identity matrix is not enough to generate the row and column headers because the definition data corresponding to the cells cannot be obtained.</p>
+<p>To achieve this, the pivot table internally maintains an object mapping of the header, representing a mapping table of the unique ID of the cell and the current cell definition. Through the cell ID in the layout matrix (such as the values in <code>_columnHeaderCellIds</code>), an O(1) time complexity query can be achieved.</p>
+<p><code>_headerObjectMap</code> is responsible for managing the mapping of all row list headers;</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NfN4b7JRDoS06dxlJkEc9kaunmh.gif' alt='' width='1000' height='auto'></p>
+<p>For example, if you want to get the display value of a cell, you only need to provide col, row; then get the unique ID from the identification matrix, and then use the ID to get it from <code>headerObjectMap</code>, which can achieve the function of obtaining the display value of the cell.</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\pivot-header-layout.ts
+getHeader(col: number, row: number): HeaderData | SeriesNumberColumnData {
+    // ...
+    const id = this.getCellId(col, row);
+    return this._headerObjectMap[id as number] ?? { id: undefined, field: '', headerType: 'text', define: undefined };
+    //...
+}    
+</code></pre>
+
+<h2 id="module-implementation-mechanism">Module Implementation Mechanism</h2>
+<h3 id="rowlist-header-identification-matrix">Row/List Header Identification Matrix</h3>
+<p>Here is the simplified generation logic, which is a depth-first traversal process</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\pivot-header-layout.ts
+const _headerObjects = []; // 表头对象的映射
+const _headerCellIds = [];
+let colIndex = 0; // 表示叶子节点的个数
+const columnHeaderObjs = {}; // 
+
+function _addHeaders(_headerCellIds, row, header, roots, results) {
+  const _this = this;
+  function _newRow(row) {
+    const newRow = (_headerCellIds[row] = []);
+    if (colIndex === 0) {
+      return newRow;
+    }
+    const prev = _headerCellIds[row - 1];
+    for (let col = 0; col &lt; prev?.length; col++) {
+      newRow[col] = prev[col];
+    }
+    return newRow;
+  }
+  if (!_headerCellIds[row]) {
+    _newRow(row);
+  }
+
+  for (let i = 0; i &lt; header.length; i++) {
+    const hd = header[i];
+    dealHeader(hd, _headerCellIds, results, roots, row);
+  }
+}
+
+function dealHeader(hd, _headerCellIds, results, roots, row) {
+  const id = hd.id;
+  const cell = {
+    id,
+    title: hd.value,
+    field: hd.dimensionKey
+  };
+  results[id] = cell;
+  _headerObjects[id] = cell;
+
+  for (let r = row - 1; r &gt;= 0; r--) {
+    _headerCellIds[r][colIndex] = roots[r];
+  }
+  _headerCellIds[row][colIndex] = id;
+
+  if (hd.children?.length &gt;= 1) {
+    _addHeaders(_headerCellIds, row + 1, hd.children ?? [], [...roots, id], results);
+  } else {
+    for (let r = row + 1; r &lt; _headerCellIds.length; r++) {
+      _headerCellIds[r][colIndex] = id;
+    }
+    colIndex++;
+  }
+}
+
+_addHeaders(_headerCellIds, 0, columnsTree, [], columnHeaderObjs);    
+</code></pre>
+
+<ul>
+<li>Prerequisites</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TUWbbX0Fpo3oXxxji3Wc4Ce8nTd.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>Specific process</li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/AzjcwDJQOhp9z0bAU7icGRVsnBf.gif" /></p>
+<ul>
+<li>Example</li>
+</ul>
+<p>Let's take the row dimension tree structure provided above as an example to see what exactly happened:</p>
+<ol>
+<li>Initial state    </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = []
+colIndex = 0    
+</code></pre>
+
+<ol>
+<li>Handle the Northeast region (id=1)</li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">// 调用 _addHeaders(row=0)
+_headerCellIds = [
+  [1]  // row0
+]
+colIndex=0
+// 发现子节点，递归调用 _addHeaders(row=1)    
+</code></pre>
+
+<ol>
+<li>Handle mailing method level one (id=2)</li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1],  // row0
+  [2]   // row1
+]
+colIndex=0
+// 发现子节点，递归调用 _addHeaders(row=2)    
+</code></pre>
+
+<ol>
+<li>Process sales (id=3)</li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">// 处理叶子节点
+_headerCellIds = [
+  [1],  // row0
+  [2],  // row1
+  [3]   // row2
+]
+colIndex=1
+// 填充下方行（如果有更多行）    
+</code></pre>
+
+<ol>
+<li>Process profit (id=4), backfill the parent path upwards</li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1, 1],  // row0
+  [2, 2],  // row1
+  [3, 4]   // row2
+]
+colIndex=2
+// 返回上级继续处理    
+</code></pre>
+
+<ol>
+<li>In the same way, recursively handle the secondary mailing method (id=5), and backfill the parent path upwards</li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1, 1, 1],  // row0
+  [2, 2, 5],  // row1
+  [3, 4, 5]   // row2
+]
+colIndex=2
+// 处理子节点（id=6,7）...    
+</code></pre>
+
+<ol>
+<li>Handle mailing method level three (id=8)</li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1, 1, 1, 1, 1, 1],  // row0
+  [2, 2, 5, 5, 8, 8],  // row1
+  [3, 4, 6, 7, 9, 10]  // row2
+]
+colIndex=6
+// 完成东北地区处理    
+</code></pre>
+
+<ol>
+<li>Process North China region (id=11)</li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [...原东北列..., 11,11,11,11,11,11],  // row0
+  [...原东北列...,12,12,15,15,18,18],   // row1  
+  [...原东北列...,13,14,16,17,19,20]    // row2
+]
+colIndex=12    
+</code></pre>
+
+<ol>
+<li>Final state (after processing in the Central South region)</li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">_headerCellIds = [
+  [1,1,1,1,1,1, 11,11,11,11,11,11, 21,21,21,21,21,21], // row0
+  [2,2,5,5,8,8, 12,12,15,15,18,18, 22,22,25,25,28,28],  // row1
+  [3,4,6,7,9,10,13,14,16,17,19,20,23,24,26,27,29,30]   // row2
+]    
+</code></pre>
+
+<ul>
+<li>Row header matrix</li>
+</ul>
+<p>The process of generating a row header matrix is generally similar to that of a list header, except for an additional step of transposition at the end.</p>
+<h3 id="corner-header-identification-matrix">Corner Header Identification Matrix</h3>
+<p>The identification matrix of the corner header is simpler than the generation logic of the basic table header, as it does not require recursion and only needs to traverse the row and column dimensions.</p>
+<ul>
+<li>Source code     </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\layout\pivot-header-layout.ts
+  private _addCornerHeaders(
+    colDimensionKeys: string[] | null,
+    rowDimensionKeys: string[] | null,
+    dimensions: (string | IDimension)[]
+  ) {
+    const results: HeaderData[] = [];
+    if (this.cornerSetting.titleOnDimension === 'all') {
+      if (this.indicatorsAsCol) {
+        let indicatorAtIndex = -1;
+        if (colDimensionKeys) {
+          colDimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+              const cell: HeaderData = {
+             // ...
+            };
+            results[id] = cell;
+            this._headerObjects[id] = cell;
+
+            if (!this._cornerHeaderCellFullPathIds[key]) {
+              this._cornerHeaderCellFullPathIds[key] = [];
+
+            for (let r = 0; r &lt; this.rowHeaderLevelCount; r++) {
+              this._cornerHeaderCellFullPathIds[key][r] = id;
+            }
+          });
+        }
+        if (rowDimensionKeys) {
+          rowDimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+            const id = ++this.sharedVar.seqId;
+            const cell: HeaderData = {
+             // ...
+            };
+            results[id] = cell;
+            this._headerObjects[id] = cell;
+            if (!this._cornerHeaderCellFullPathIds[indicatorAtIndex]) {
+              this._cornerHeaderCellFullPathIds[indicatorAtIndex] = [];
+            }
+            this._cornerHeaderCellFullPathIds[indicatorAtIndex][key] = id;
+          });
+        }
+      } else {
+        let indicatorAtIndex = -1;
+        if (rowDimensionKeys) {
+          rowDimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+            if (dimensionKey === this.indicatorDimensionKey) {
+              indicatorAtIndex = key;
+            }
+            const id = ++this.sharedVar.seqId;
+            const dimensionInfo: IDimension = dimensions.find(dimension =&gt;
+              typeof dimension === 'string' ? false : dimension.dimensionKey === dimensionKey
+            ) as IDimension;
+            const cell: HeaderData = {
+              id,
+              // ...
+            };
+            results[id] = cell;
+            this._headerObjects[id] = cell;
+
+            for (let r = 0; r &lt; this.columnHeaderLevelCount; r++) {
+              if (!this._cornerHeaderCellFullPathIds[r]) {
+                this._cornerHeaderCellFullPathIds[r] = [];
+              }
+              this._cornerHeaderCellFullPathIds[r][key] = id;
+            }
+          });
+        }
+        if (colDimensionKeys) {
+          colDimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+            const id = ++this.sharedVar.seqId;
+            const dimensionInfo: IDimension = dimensions.find(dimension =&gt;
+              typeof dimension === 'string' ? false : dimension.dimensionKey === dimensionKey
+            ) as IDimension;
+            const cell: HeaderData = {
+              id,
+                      // ...
+            };
+            results[id] = cell;
+            this._headerObjects[id] = cell;
+            this._cornerHeaderCellFullPathIds[key][indicatorAtIndex] = id;
+          });
+        }
+      }
+    } else if (this.cornerSetting.titleOnDimension === 'row' || this.cornerSetting.titleOnDimension === 'column') {
+      const dimensionKeys = this.cornerSetting?.titleOnDimension === 'row' ? rowDimensionKeys : colDimensionKeys;
+      if (dimensionKeys) {
+        dimensionKeys.forEach((dimensionKey: string, key: number) =&gt; {
+          const id = ++this.sharedVar.seqId;
+
+          const cell: HeaderData = {
+            id,
+         // ...
+          };
+          results[id] = cell;
+          this._headerObjects[id] = cell;
+          if (this.cornerSetting.titleOnDimension === 'column') {
+            if (!this._cornerHeaderCellFullPathIds[key]) {
+              this._cornerHeaderCellFullPathIds[key] = [];
+            }
+            for (let r = 0; r &lt; this.rowHeaderLevelCount; r++) {
+              this._cornerHeaderCellFullPathIds[key][r] = id;
+            }
+          } else if (this.cornerSetting.titleOnDimension === 'row') {
+            for (let r = 0; r &lt; this.columnHeaderLevelCount; r++) {
+              if (!this._cornerHeaderCellFullPathIds[r]) {
+                this._cornerHeaderCellFullPathIds[r] = [];
+              }
+              this._cornerHeaderCellFullPathIds[r][key] = id;
+            }
+          }
+        });
+      }
+    } else {
+      const id = ++this.sharedVar.seqId;
+      const cell: HeaderData = {
+        id,
+         // ...
+        }
+      };
+      results[id] = cell;
+      this._headerObjects[id] = cell;
+      for (let r = 0; r &lt; this.columnHeaderLevelCount; r++) {
+        for (let j = 0; j &lt; this.rowHeaderLevelCount; j++) {
+          if (!this._cornerHeaderCellFullPathIds[r]) {
+            this._cornerHeaderCellFullPathIds[r] = [];
+          }
+          this._cornerHeaderCellFullPathIds[r][j] = id;
+        }
+      }
+    }
+
+    return results;
+  }    
+</code></pre>
+
+<ul>
+<li>Pre-process</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WHTFwcpEXh7C6TbuBrPc09Tqnuh.gif' alt='' width='820' height='auto'></p>
+<ul>
+<li>General Process</li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RrfVwZ0rchGPEMb5td9crzC9nwd.gif" /></p>
+<h3 id="header-object-mapping_1">Header Object Mapping</h3>
+<p>In the previous process, corresponding cell definition nodes are continuously inserted into _headerObjects. Therefore, you only need to call reduce to transform the array into a Map, completing the mapping of the basic header object.</p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\pivot-header-layout.ts
+ this._headerObjectMap = this._headerObjects.reduce((o, e) =&gt; {
+      o[e.id as number] = e;
+      return o;
+}, {} as { [key: LayoutObjectId]: HeaderData });
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GH9ob52QdoxdBIxXBsOcT7IDnjg.gif' alt='' width='615' height='auto'></p>
+<h2 id="overall-header-generation-logic">Overall Header Generation Logic</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RO3ab0gcGo3DnaxueT0cW34jnod.gif' alt='' width='1000' height='auto'></p>
+<h1 id="this-document-is-provided-by-the-following-personnel">This document is provided by the following personnel</h1>
+<p>taiiiyang( https://github.com/taiiiyang)     </p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

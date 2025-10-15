@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>19. VTable表格组件如何让相邻迷你折线图的直接的间隔变大？</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VTable表格组件如何让相邻迷你折线图的直接的间隔变大？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>产品中使用到了VTable的迷你图，但是数据生成迷你图的效果用户觉得相邻折线间的距离太近了，请问怎么调整这个间距？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/V7LbbKFJMoMRajxJezfcxpDjnMD.gif' alt='' width='1475' height='628'></p>
+<h2 id="_3">解决方案</h2>
+<p>首先需要明确一个单元格的宽高是包括了两部分，<code>padding</code>内边距和内容。其中<code>padding</code>在VTable中默认是<code>[10, 16, 10, 16]</code>，VTable的行高默认是40px，上下内边距占了20px，内容高度剩20px。</br>
+上下内边距占了20px，相邻两个迷你折线图的最短间距也就是20px。也就是说相邻两个迷你折线图的最短间距是由padding决定的。那在官网示例中将padding调整为20，调整后发现线条曲线成直线了，这是因为40的行高都被边距占掉了，折线图没有了伸展空间。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/YM7xboo6Go1bjgx6f7WcACWcnQd.gif' alt='' width='945' height='266'></p>
+<p>那么此时需要相应的加大行高才行，设置defaultRowHeight为60的效果如下：</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NV2nbfsOhot8G8xcrtQcpCSfnhh.gif' alt='' width='916' height='311'></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const records = [
+  {
+   'lineData':[50,20,20,40,60,50,70],
+   'lineData2':[{x:1,y:1500},{x:2,y:1480},{x:3,y:1520},{x:4,y:1550},{x:5,y:1600}],
+  },
+  {
+   'lineData':[50,20,60,40,60,50,70],
+   'lineData2':[{x:1,y:1500},{x:2,y:1480},{x:3,y:1520},{x:4,y:1550},{x:5,y:1600}],
+  },
+  {
+   'lineData':[50,50,20,40,10,50,70],
+   'lineData2':[{x:1,y:1500},{x:2,y:1480},{x:3,y:1520},{x:4,y:1550},{x:5,y:1600}],
+  },
+  {
+   'lineData':[70,20,20,40,60,50,70],
+   'lineData2':[{x:1,y:1500},{x:2,y:1480},{x:3,y:1520},{x:4,y:1550},{x:5,y:1600}],
+  }
+];
+
+const columns = [
+  {
+    field: 'lineData',
+    title: 'sparkline',
+    cellType: 'sparkline',
+    width:300,
+    style:{
+      padding:20
+    },
+    sparklineSpec: {
+        type: 'line',
+        pointShowRule: 'none',
+        smooth: true,
+        line: {
+          style: {
+            stroke: '#2E62F1',
+            strokeWidth: 2,
+          },
+        },
+        point: {
+          hover: {
+              stroke: 'blue',
+              strokeWidth: 1,
+              fill: 'red',
+              shape: 'circle',
+              size: 4,
+          },
+          style: {
+            stroke: 'red',
+            strokeWidth: 1,
+            fill: 'yellow',
+            shape: 'circle',
+            size: 2,
+          },
+        },
+        crosshair: {
+          style: {
+            stroke: 'gray',
+            strokeWidth: 1,
+          },
+        },
+      },
+  },
+  {
+    field: 'lineData2',
+    title: 'sparkline 2',
+    cellType: 'sparkline',
+    width:300,
+    style:{
+      padding:20
+    },
+    sparklineSpec: {
+        type: 'line', 
+        xField: 'x',
+        yField: 'y',
+        pointShowRule: 'all',
+        smooth: true,
+        line: {
+          style: {
+            stroke: '#2E62F1',
+            strokeWidth: 2,
+          },
+        },
+      },
+  },
+];
+const option = {
+  records,
+  columns,
+  defaultRowHeight:60
+};
+const tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID), option);
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>直接将示例代码中代码粘贴到官网编辑器中即可呈现。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OfCjb0amRoiXqMxhMCbcUYnOn1d.gif' alt='' width='916' height='311'></p>
+<h2 id="_6">相关文档</h2>
+<p>迷你图用法教程：https://visactor.io/vtable/guide/cell_type/sparkline</br>
+style用法教程：https://visactor.io/vtable/guide/theme_and_style/style</br>
+相关api：https://visactor.io/vtable/option/ListTable-columns-sparkline#style.padding</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

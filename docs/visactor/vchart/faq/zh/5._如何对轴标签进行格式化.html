@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5. 如何对轴标签进行格式化？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何对轴标签进行格式化？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>如图，当轴标签数值精度有问题，非常长的时候，可以进行格式化吗？</br></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/B6B9bdM7TordLuxQ9W7c2i7pn9f.gif' alt='' width='1516' height='1076'></p>
+<h2 id="_3">解决方案</h2>
+<p>这里产生浮点数精度问题是因为在实现坐标轴刻度对齐的时候，进行浮点数的加法运算带来的。为了提高轴标签的可读性，可以通过<code>label.formatMethod</code>对轴标签进行格式化处理。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/P6YGbGl8eoVeBSxZjP0cQEo1nwf.gif' alt='' width='3502' height='1240'></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'common',
+  seriesField: 'color',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { x: '周一', type: '早餐', y: 0.1633 },
+      ]
+    },
+    {
+      id: 'id1',
+      values: [
+        { x: '周一', type: '饮料', y: -0.3455 },
+
+      ]
+    }
+  ],
+  series: [
+    {
+      type: 'line',
+      id: 'line',
+      dataIndex: 0,
+      label: { visible: true },
+      seriesField: 'type',
+      dataIndex: 0,
+      xField: ['x', 'type'],
+      yField: 'y'
+    },
+    {
+      type: 'line',
+      id: 'line',
+      dataIndex: 1,
+      label: { visible: true },
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      stack: false
+    }
+  ],
+  axes: [
+    { orient: 'left', seriesIndex: [0], id: 'left' },
+    { 
+      orient: 'right', 
+      seriesId: ['line'], 
+      grid: { visible: false }, 
+      label: {
+        formatMethod: (label) =&gt; {
+          return Math.round(label * 100) / 100;
+        }
+      },
+      sync: {
+        axisId: 'left',
+        tickAlign: true
+      } 
+    },
+    { orient: 'bottom', label: { visible: true }, type: 'band' }
+  ],
+  legends: {
+    visible: true,
+    orient: 'bottom'
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NBaibyqbzoWrQYx9XDkce4xUnrh.gif' alt='' width='1552' height='1034'></p>
+<h2 id="_6">相关文档</h2>
+<p>相关配置：https://www.visactor.io/vchart/option/barChart-axes-linear#label.formatMethod</br>
+Axes坐标轴教程: https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Axes</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

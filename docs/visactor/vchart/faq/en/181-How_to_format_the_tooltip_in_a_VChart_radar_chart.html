@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>95. How to format Tooltip in Radar charts, using VChart?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="title">Title</h2>
+<p>How to format Tooltip in Radar charts?</br></p>
+<h2 id="description">Description</h2>
+<p>The data in the chart contains very long strings, and in this case, the default <code>tooltip</code> display effect is not good, so its display effect needs to be optimized.</br></p>
+<h2 id="solution">Solution</h2>
+<p>Solutions to different chart libraries vary. The <code>tooltip</code> component in VChart allows users to custom configure both <code>key</code> and <code>value</code>, providing the flexibility to customize the tooltip information of chart elements and dimensions.</br>
+In long-text scenarios, typically only the formatting capabilities are needed to format the indicators and abbreviate the dimensions.</br>
+1. Configure <code>tooltip.mark.content</code> to format the <code>value</code> and <code>key</code> in the chart element's <code>tooltip</code> respectively.</br>
+2. Configure <code>tooltip.dimension.content</code> to format the <code>value</code> and <code>key</code> in the dimension's <code>tooltip</code> respectively.</br></p>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code>import { StrictMode, useEffect } from &quot;react&quot;;
+import { createRoot } from &quot;react-dom/client&quot;;
+
+const rootElement = document.getElementById(&quot;root&quot;);
+const root = createRoot(rootElement);
+
+import VChart from &quot;@visactor/vchart&quot;;
+
+const App = () =&gt; {
+  useEffect(() =&gt; {
+    const spec = {
+      type: &quot;radar&quot;,
+      data: [
+        {
+          values: [
+            {
+              month: &quot;Jan.&quot;,
+              value: 45,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Feb.&quot;,
+              value: 61,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Mar.&quot;,
+              value: 92,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Apr.&quot;,
+              value: 57,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;May.&quot;,
+              value: 46,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Jun.&quot;,
+              value: 36,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Jul.&quot;,
+              value: 33,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Aug.&quot;,
+              value: 63,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Sep.&quot;,
+              value: 57,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Oct.&quot;,
+              value: 53,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Nov.&quot;,
+              value: 69,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Dec.&quot;,
+              value: 40,
+              type: &quot;A&quot;,
+            },
+            {
+              month: &quot;Jan.&quot;,
+              value: 31,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Feb.&quot;,
+              value: 39,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Mar.&quot;,
+              value: 81,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Apr.&quot;,
+              value: 39,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;May.&quot;,
+              value: 64,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Jun.&quot;,
+              value: 21,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Jul.&quot;,
+              value: 58,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Aug.&quot;,
+              value: 72,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Sep.&quot;,
+              value: 47,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Oct.&quot;,
+              value: 37,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Nov.&quot;,
+              value: 80,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Dec.&quot;,
+              value: 74,
+              type: &quot;B&quot;,
+            },
+            {
+              month: &quot;Jan.&quot;,
+              value: 90,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Feb.&quot;,
+              value: 95,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Mar.&quot;,
+              value: 62,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Apr.&quot;,
+              value: 52,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;May.&quot;,
+              value: 74,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Jun.&quot;,
+              value: 87,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Jul.&quot;,
+              value: 80,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Aug.&quot;,
+              value: 69,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Sep.&quot;,
+              value: 74,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Oct.&quot;,
+              value: 84,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Nov.&quot;,
+              value: 94,
+              type: &quot;C&quot;,
+            },
+            {
+              month: &quot;Dec.&quot;,
+              value: 23,
+              type: &quot;C&quot;,
+            },
+          ],
+        },
+      ],
+      categoryField: &quot;month&quot;,
+      valueField: &quot;value&quot;,
+      seriesField: &quot;type&quot;,
+      stack: true,
+      percent: true,
+      area: {
+        visible: true, // show area
+      },
+      axes: [
+        {
+          orient: &quot;radius&quot;,
+          min: 0,
+          domainLine: {
+            visible: true,
+          },
+          label: {
+            visible: true,
+            formatMethod: (val) =&gt; {
+              return val * 100 + &quot;%&quot;;
+            },
+          },
+          grid: {
+            smooth: false,
+            style: {
+              lineDash: [0],
+            },
+          },
+        },
+        {
+          orient: &quot;angle&quot;,
+          tick: {
+            visible: false,
+          },
+          domainLine: {
+            visible: false,
+          },
+          grid: {
+            style: {
+              lineDash: [0],
+            },
+          },
+        },
+      ],
+      legends: {
+        visible: true,
+        orient: &quot;top&quot;,
+      },
+      tooltip: {
+        mark: {
+          title: {
+            value: &quot;Mark Title&quot;,
+          },
+          content: [
+            {
+              key: &quot;key&quot;,
+              value: &quot;value&quot;,
+            },
+            {
+              key: (datum) =&gt; `${datum.type}-${datum.month}`,
+              value: (datum) =&gt; `${datum.value.toFixed(2)} k`,
+            },
+          ],
+        },
+        dimension: {
+          title: {
+            value: &quot;Dimension Radar Title&quot;,
+          },
+          content: [
+            {
+              key: &quot;key&quot;,
+              value: &quot;value&quot;,
+            },
+            {
+              key: (datum) =&gt; `${datum.type}-${datum.month}`,
+              value: (datum) =&gt; `${datum.value.toFixed(2)} k`,
+            },
+          ],
+        },
+      },
+    };
+
+    const vchart = new VChart(spec, { dom: &quot;chart&quot; });
+    vchart.renderSync();
+
+    return () =&gt; {
+      vchart.release();
+    };
+  }, []);
+
+  return &lt;div id=&quot;chart&quot; style={{ width: 400 }}&gt;&lt;/div&gt;;
+};
+
+root.render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;
+);
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="result">Result</h2>
+<p>Online Demo: https://codesandbox.io/p/sandbox/vchart-pie-ordinal-color-forked-xpvnrq</br></p>
+<h2 id="related-documentation">Related Documentation</h2>
+<p>Tooltip API: https://visactor.io/vchart/option/barChart#tooltip.mark.content(Object%7CObject%5B%5D)</br>
+Github: https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

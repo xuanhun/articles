@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>112. How to use the tooltip and abscissa in the vchart library?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="question-title">Question title</h1>
+<p>How to use the tooltip and abscissa in the vchart library?</br></p>
+<h1 id="problem-description">Problem description</h1>
+<p>I am using the vchart library to create charts, but I am having trouble setting the tooltip and abscissa. I tried to configure the tooltip, but it did not display, even if I set it to visible.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/V2tZbHwSkoVAhnxomLfcSkoenmf.gif' alt='' width='674' height='692'></p>
+<p>In addition, I also hope to be able to customize the content of the x-axis. I'm not sure if my usage is incorrect or there are other issues.</br></p>
+<h1 id="solution">Solution</h1>
+<p>Firstly, regarding the configuration issue of tooltip, your setting method is correct.</br></p>
+<p>Then, regarding the issue of tooltip not taking effect, you need to check if your <code>content</code>is written in the wrong place. If you want to customize the content of the tooltip, you can refer to <a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Ftooltip%2Fcustom-tooltip">this example of vchart </a>.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WXw6biTKvoapmWxY9VVcel0oneg.gif' alt='' width='3482' height='1592'></p>
+<p>Finally, regarding the customization of the x-axis, you can achieve it by setting the style in <code>axes.label</code>. You can also use <code>formatMethod</code>to customize the content. The specific implementation method can refer to <a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Faxis%2Fgrid-style">this example of vchart </a>.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NNrEbOSDfokcQ0xaBwNcPTA4nUe.gif' alt='' width='3526' height='1306'></p>
+<h1 id="related-documents">Related Documents</h1>
+<ul>
+<li><a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fguide%2Ftutorial_docs%2FChart_Concepts%2FTooltip">VChart Tooltip User Guide</a></br></li>
+<li><a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Faxis%2Fstyle">Example of vchart Axis style settings</a></br></li>
+<li><a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Ftooltip%2Fcustom-tooltip">Vchart Custom Tooltip Example</a></br></li>
+<li><a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fdemo%2Faxis%2Fgrid-style">VChart Axis Grid Style Example</a></br></li>
+</ul>
+</body>
+</html>

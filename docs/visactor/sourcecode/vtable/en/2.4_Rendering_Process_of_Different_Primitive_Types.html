@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2.4 Rendering Process of Different Primitive Types</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="cell-overview">Cell Overview</h2>
+<p>Cell, or cell, is the basic display unit in a table and the smallest visualization unit for data display. In SceneGraph, it exists as an independent rendering unit. In the VTable scene tree module, each Cell displays data, or displays text, links, or interactive elements such as Radio, button, depending on different CellTypes. The existence of cellType describes the display form and interaction logic of the Cell. It is not just a simple way of presenting data, but a flexible data expression strategy. VTable provides users with a multi-dimensional, highly customizable data display solution by defining a rich variety of cell types.</p>
+<p>VTable supports seven core cell types: text, link, image, video, progress bar, sparkline, chart;    \r</p>
+<p>For information on how to configure CellType, you can refer to:    </p>
+<blockquote>
+<h2 id="relevant-source-code-location">Relevant Source Code Location</h2>
+<ul>
+<li>Content under the package/vtable/src/scenegraph/group-creater/cell-type folder: This article includes radio-cell and CheckBox-cell</li>
+<li>package/vtable/src/scenegraph/group-creater/cell-helper.ts: The core file for cell processing in the VTable rendering engine, providing functions for creating cells based on different column types (<code>createCell</code>), responsible for dynamic cell updates (<code>updateCell</code> and <code>updateCellContent</code>), etc.</li>
+<li>package/vtable/src/scenegraph/group-creater/column-helper.ts: Implements the merging and rendering processing of ComplexColumn based on createCell cell creation;</li>
+</ul>
+</blockquote>
+<h2 id="detailed-explanation-of-special-primitives-rendering">Detailed Explanation of Special Primitives Rendering</h2>
+<h3 id="checkbox">Checkbox</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CXNkbnMNfoiT8GxPwpwcsme7nJh.gif' alt='' width='116' height='auto'></p>
+<p>Checkbox type cells are suitable for providing multiple choice options in a table, allowing users to select or deselect one or more items.    \r</p>
+<hr />
+<ul>
+<li>
+<p>The system first extracts the original values from the data source (supports boolean values, strings, or objects containing <code>checked</code>/<code>disable</code>/<code>text</code> attributes), synchronizes the checked state through the <code>getCellValue</code> and <code>stateManager.syncCheckedState</code> methods, supporting the <code>indeterminate</code> semi-selected state. It also merges the checkbox parameters defined in the column (such as <code>size</code>, <code>spaceBetweenTextAndIcon</code>) with the global theme configuration <code>cellTheme</code>, and calls <code>getHierarchyOffset</code> to calculate hierarchy indentation, adapting to complex structures like tree headers. \r</p>
+</li>
+<li>
+<p>Create a cell container based on the VRender engine and handle the left/right icon layout through <code>dealWithIconLayout</code>. When instantiating the <code>CheckBox</code> component, determine the checked state based on the data (prioritizing the <code>checked</code> attribute), the disabled state (using the <code>disable</code> attribute or column configuration function), and custom icons (such as using <code>checkIconImage</code> to replace the default check style). Text content is automatically wrapped and line-limited through <code>autoWrapText</code> and <code>lineClamp</code>.    </p>
+</li>
+<li>
+<p>Utilize VRender's boundary calculation capabilities to measure the checkbox icon (default size according to the <code>size/1.4</code> ratio) and text area. Based on the <code>textAlign</code> and <code>textBaseline</code> properties, implement 9 alignment methods within the embedded area after deducting <code>padding</code> and <code>hierarchyOffset</code>. For example, when <code>textAlign: 'right'</code>, the checkbox is right-aligned overall, with the text closely attached to the right side of the icon.    </p>
+</li>
+</ul>
+<h3 id="radio">Radio</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/S7VbbyC0KoSpL2xt7muc6qDHnre.gif' alt='' width='188' height='auto'></p>
+<p>Radio button type cells are suitable for users to select one among multiple items in the table.    \r</p>
+<hr />
+<p>When a table needs to render radio cells, it needs to be interpreted from both the data parsing and style combination aspects:    \r</p>
+<ul>
+<li>
+<p>First, obtain the original values from the data source, style parameters defined in parallel (such as button size, color), and global theme configuration, then determine the horizontal or vertical arrangement direction based on the column setting <code>radioDirectionInCell</code>, and calculate the level indentation to control the layout display. \r</p>
+</li>
+<li>
+<p>Then proceed to the process of rendering the component. The general logic is to first measure the text width of a single option and the icon area based on VRender's boundary calculation capability, then accumulate the spacing according to the arrangement direction (<code>spaceBetweenRadio</code>), and finally determine the total occupied size of the radio component. \r</p>
+</li>
+<li>
+<p>Then, combine the <code>textAlign</code> and <code>textBaseline</code> properties of the cell to align the entire radio group within the embedded area after deducting padding, supporting center, right alignment, and other alignment methods, optimizing the layout selection of the table in the radio element.    </p>
+</li>
+</ul>
+<h2 id="summary">Summary</h2>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

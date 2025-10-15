@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>175-How_to_define_the_number_of_decimal_places_of_a_value_displayed_by_a_label_in_VChart</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-define-the-number-of-decimal-places-of-a-value-displayed-by-a-label-in-vchart">How to define the number of decimal places of a value displayed by a label in VChart?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>When I use VChart charts, I find that if the decimal places of the numbers are longer, the display is very unattractive. Is there any way to control the length of the decimal places displayed by the labels?</p>
+<p><img alt="tooltip" src="/vchart/faq/44-0.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>VChart label formatting function can solve this problem. In addition, the format function can also be supported for custom numerical units.</p>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code class="language-javascript">// two decimal places
+spec.label.formatMethod = (value: number) =&gt; (+value).toFixed(2);
+
+// numerical unit
+spec.label.formatMethod = (value: number) =&gt; (+value / 1e3).toFixed(2) + 'k';
+</code></pre>
+
+<h2 id="result">Result</h2>
+<p><img alt="demo" src="/vchart/faq/44-1.png" /></p>
+<p>Demo: <a href="https://codesandbox.io/s/label-formatter-d34xrm?file=/src/index.ts">https://codesandbox.io/s/label-formatter-d34xrm?file=/src/index.ts</a></p>
+<h2 id="quote">Quote</h2>
+<p>formatMethod option: <a href="https://visactor.io/vchart/option/barChart#label.formatMethod">https://visactor.io/vchart/option/barChart#label.formatMethod</a></p>
+<p>label tutorials: <a href="https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Series/Label">https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Series/Label</a></p>
+<p>github: <a href="https://github.com/VisActor/VChart">https://github.com/VisActor/VChart</a></p>
+</body>
+</html>

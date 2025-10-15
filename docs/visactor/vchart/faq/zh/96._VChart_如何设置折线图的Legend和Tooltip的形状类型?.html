@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>96. VChart 如何设置折线图的Legend和Tooltip的形状类型?</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何设置折线图的Legend和Tooltip的形状类型?</br></p>
+<h2 id="_2">问题描述</h2>
+<p>折线图默认的图例形状和Tooltip内的默认形状都是圆形, 如何修改其样式?</br></p>
+<h2 id="_3">解决方案</h2>
+<p>不同图表库的解决方案不一样，VChart 的<code>tooltip</code>组件和<code>legend</code>组件提供了控制图标形状的功能.</br>
+<code>legend</code>的图标是标准图元可以通过<code>shape.style</code>配置形状和样式. </br>
+<code>tooltip</code>提供了类似提供常用的图标样式, 由于<code>tooltip</code>存在html、canvas实现, 支持的功能略少.</br></p>
+<p>支持的<code>shape</code>包括:</br>
+<code>'circle'</code>, <code>'cross'</code>, <code>'diamond'</code>, <code>'square'</code>, <code>'arrow'</code>, <code>'arrow2Left'</code>, <code>'arrow2Right'</code>, <code>'wedge'</code>, <code>'thinTriangle'</code>, <code>'triangle'</code>, <code>'triangleUp'</code>, <code>'triangleDown'</code>, <code>'triangleRight'</code>, <code>'triangleLeft'</code>, <code>'stroke'</code>, <code>'star'</code>, <code>'wye'</code>, <code>'rect'</code>, <code>'arrowLeft'</code>,<code>'arrowRight'</code>, <code>'rectRound'</code>, <code>'roundLine'</code></br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>import { StrictMode, useEffect } from &quot;react&quot;;
+import { createRoot } from &quot;react-dom/client&quot;;
+
+const rootElement = document.getElementById(&quot;root&quot;);
+const root = createRoot(rootElement);
+
+import VChart from &quot;@visactor/vchart&quot;;
+
+const App = () =&gt; {
+  useEffect(() =&gt; {
+    const spec = {
+      type: &quot;line&quot;,
+      data: {
+        values: [
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 40,
+            year: &quot;1952&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 32,
+            year: &quot;1956&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 34,
+            year: &quot;1960&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 36,
+            year: &quot;1964&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 45,
+            year: &quot;1968&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 33,
+            year: &quot;1972&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 34,
+            year: &quot;1976&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: null,
+            year: &quot;1980&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 83,
+            year: &quot;1984&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 36,
+            year: &quot;1988&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 37,
+            year: &quot;1992&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 44,
+            year: &quot;1996&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 37,
+            year: &quot;2000&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 35,
+            year: &quot;2004&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 36,
+            year: &quot;2008&quot;,
+          },
+          {
+            medalType: &quot;Gold Medals&quot;,
+            count: 46,
+            year: &quot;2012&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 19,
+            year: &quot;1952&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 25,
+            year: &quot;1956&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 21,
+            year: &quot;1960&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 26,
+            year: &quot;1964&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 28,
+            year: &quot;1968&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 31,
+            year: &quot;1972&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 35,
+            year: &quot;1976&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: null,
+            year: &quot;1980&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 60,
+            year: &quot;1984&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 31,
+            year: &quot;1988&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 34,
+            year: &quot;1992&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 32,
+            year: &quot;1996&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 24,
+            year: &quot;2000&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 40,
+            year: &quot;2004&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 38,
+            year: &quot;2008&quot;,
+          },
+          {
+            medalType: &quot;Silver Medals&quot;,
+            count: 29,
+            year: &quot;2012&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 17,
+            year: &quot;1952&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 17,
+            year: &quot;1956&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 16,
+            year: &quot;1960&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 28,
+            year: &quot;1964&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 34,
+            year: &quot;1968&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 30,
+            year: &quot;1972&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 25,
+            year: &quot;1976&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: null,
+            year: &quot;1980&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 30,
+            year: &quot;1984&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 27,
+            year: &quot;1988&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 37,
+            year: &quot;1992&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 25,
+            year: &quot;1996&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 33,
+            year: &quot;2000&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 26,
+            year: &quot;2004&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 36,
+            year: &quot;2008&quot;,
+          },
+          {
+            medalType: &quot;Bronze Medals&quot;,
+            count: 29,
+            year: &quot;2012&quot;,
+          },
+        ],
+      },
+      xField: &quot;year&quot;,
+      yField: &quot;count&quot;,
+      seriesField: &quot;medalType&quot;,
+      invalidType: &quot;link&quot;,
+      tooltip: {
+        dimension: {
+          shapeType: &quot;roundLine&quot;,
+        },
+      },
+      legends: {
+        visible: true,
+        type: &quot;discrete&quot;,
+        item: {
+          shape: {
+            style: {
+              symbolType: &quot;roundLine&quot;,
+            },
+          },
+        },
+      },
+    };
+    const vchart = new VChart(spec, { dom: &quot;chart&quot; });
+    vchart.renderSync();
+
+    return () =&gt; {
+      vchart.release();
+    };
+  }, []);
+
+  return &lt;div id=&quot;chart&quot; style={{ width: 400 }}&gt;&lt;/div&gt;;
+};
+
+root.render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;
+);
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>Online Demo: https://codesandbox.io/p/sandbox/vchart-pie-ordinal-color-forked-4qxnzf</br></p>
+<h2 id="_6">相关文档</h2>
+<p>Legend Shape API: https://visactor.io/vchart/option/lineChart-legends-discrete#item.shape.style.symbolType</br>
+Tooltip Shape API: https://visactor.io/vchart/option/lineChart#tooltip.dimension.shapeType</br>
+Github: https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

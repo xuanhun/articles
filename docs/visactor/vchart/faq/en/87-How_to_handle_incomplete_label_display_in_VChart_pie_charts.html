@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>93. How to solve the problem of pie chart labels not being fully displayed using VChart?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="title">Title</h2>
+<p>How to solve the pie chart labels not being fully displayed using VChart?</br></p>
+<h2 id="description">Description</h2>
+<p>When using a VChart pie chart label is hidden when the chart is narrow, I want it to be displayed without being hidden.</br></p>
+<h2 id="solution">Solution</h2>
+<p>The solutions for different chart libraries are different. In the case of VChart, the width of the chart is not enough to layout the labels. You can try the following solutions:</br>
+1. Adjust the sector radius <code>outerRadius</code> to reserve more space.</br>
+2. Adjust the spacing between the text and the connection line <code>spaceWidth</code>.</br>
+3. Adjust the label connection line configuration <code>line.line1MinLength</code>, <code>line.line2MinLength</code>, hide the connection line or set a shorter connection line length.</br>
+4. Other solutions: set a smaller <code>fontSize</code>, or use internal labels, etc.</br></p>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code>import { StrictMode, useEffect } from &quot;react&quot;;
+import { createRoot } from &quot;react-dom/client&quot;;
+
+const rootElement = document.getElementById(&quot;root&quot;);
+const root = createRoot(rootElement);
+
+import VChart from &quot;@visactor/vchart&quot;;
+
+const App = () =&gt; {
+  useEffect(() =&gt; {
+    const spec = {
+      type: &quot;pie&quot;,
+      data: [
+        {
+          id: &quot;id0&quot;,
+          values: [
+            { type: &quot;oxygen&quot;, value: &quot;46.60&quot; },
+            { type: &quot;silicon&quot;, value: &quot;27.72&quot; },
+            { type: &quot;aluminum&quot;, value: &quot;8.13&quot; },
+            { type: &quot;iron&quot;, value: &quot;5&quot; },
+            { type: &quot;calcium&quot;, value: &quot;3.63&quot; },
+            { type: &quot;sodium&quot;, value: &quot;2.83&quot; },
+            { type: &quot;potassium&quot;, value: &quot;2.59&quot; },
+            { type: &quot;others&quot;, value: &quot;3.5&quot; },
+          ],
+        },
+      ],
+      outerRadius: 0.8,
+      // Option 1: Set a smaller radius
+      // outerRadius: 0.4,
+      valueField: &quot;value&quot;,
+      categoryField: &quot;type&quot;,
+      title: {
+        visible: true,
+        text: &quot;Statistics of Surface Element Content&quot;,
+      },
+      legends: {
+        visible: true,
+        orient: &quot;bottom&quot;,
+      },
+      label: {
+        visible: true,
+        // Option2: Set a smaller space between text and line
+        // spaceWidth: 0,
+
+        // Option3: Set a smaller line1MinLength and line2MinLength for label line.
+        // line: {
+        //   visible: false, // `true` may be better
+        //   line1MinLength: 0,
+        //   line2MinLength: 0,
+        // },
+      },
+      tooltip: {
+        mark: {
+          content: [
+            {
+              key: (datum) =&gt; datum[&quot;type&quot;],
+              value: (datum) =&gt; datum[&quot;value&quot;] + &quot;%&quot;,
+            },
+          ],
+        },
+      },
+    };
+    const vchart = new VChart(spec, { dom: &quot;chart&quot; });
+    vchart.renderSync();
+
+    return () =&gt; {
+      vchart.release();
+    };
+  }, []);
+
+  return &lt;div id=&quot;chart&quot; style={{ width: 400 }}&gt;&lt;/div&gt;;
+};
+
+root.render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;
+);
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="result">Result</h2>
+<p>Online Demo: https://codesandbox.io/p/sandbox/vchart-large-tooltip-optimize-forked-k9vg2w?file=%2Fsrc%2Findex.js%3A1%2C1-80%2C1</br></p>
+<h2 id="related-documentation">Related Documentation</h2>
+<p>PIE API: https://visactor.io/vchart/option/pieChart#label.line.line1MinLength</br>
+Github: https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

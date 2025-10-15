@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4. How to Contribute to a Demo</title>
+    <meta name="keywords" content="VisActor, VChart, VTable, VStory, VMind, VGrammar, VRender, Visualization, Chart, Data, Table, Graph, GIS, LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="creating-a-branch">Creating a Branch</h1>
+<p>The default branch for VChart is the develop branch. Whether it's for feature development, bug fixes, or documentation writing, please create a new branch before merging it into the develop branch. Use the following code to create a branch:</p>
+<pre class="codehilite"><code>// Create a documentation/demo branch
+git checkout -b docs/add-funnel-demo
+</code></pre>
+
+<h1 id="finding-or-creating-an-issue">Finding or Creating an Issue</h1>
+<p>In principle, we require that each PR must have a corresponding issue. Before starting development, please ensure there is a corresponding issue, and that the issue is not already claimed.</p>
+<h2 id="searching-for-demo-issues">Searching for Demo Issues</h2>
+<p>You can search for demo-related issues using the following method:</p>
+<pre class="codehilite"><code> label:demos 
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/RDQZbKyEYomaIRx7jwJccGoMnId.gif' alt='' width='769' height='auto'></p>
+<p>Some features may have the doc label associated with them. Check further if the issue is purely a demo task.</p>
+<h2 id="creating-a-demo-issue">Creating a Demo Issue</h2>
+<p>Click "NEW ISSUE" to open the issue selection page and choose "<strong>Others</strong>."</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VNGhbVirmoaQTIxhOlFc61w3nqb.gif' alt='' width='1000' height='auto'></p>
+<p>Fill in the information related to the document issue you want to submit, and tag it with "demos."</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Cc8SbSAFFoCvQ2xJFd6cjv17nyc.gif' alt='' width='1000' height='auto'></p>
+<h1 id="claiming-an-issue">Claiming an Issue</h1>
+<p>If you want to submit a demo or fix a demo bug, you can leave a message in the issue to claim it. The administrator will contact you, and after confirmation, assign the issue to you.</p>
+<p>For example:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Q2vGbhmevorebJxa8Toc1hmtnMc.gif' alt='' width='988' height='auto'></p>
+<h1 id="creating-or-modifying-a-demo">Creating or Modifying a Demo</h1>
+<p>The location of VChart documentation and demos within the project is as follows (examples):</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ObSbbLIPio1un5xZGv7cZ7m8nrh.gif' alt='' width='1000' height='auto'></p>
+<p>Taking the example document of a basic area chart as an example (currently, a single example contains both Chinese and English versions, located under the paths zh &amp; en respectively):</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ZivMbU0iwouDoIx6T3pcleJnn1b.gif' alt='' width='1000' height='auto'></p>
+<p>Example Markdown content is divided into several parts:</p>
+<ul>
+<li>
+<p>Metadata: Attribute definitions of the example content, including chart category, cover image, keywords, etc.</p>
+</li>
+<li>
+<p>Title: The main content under the first-level title corresponds to the description information of the example.</p>
+</li>
+<li>
+<p>Key Configuration: Explanation of the key configurations included in the example, which will be displayed in the "Key Configuration" section on the right side of the example page.</p>
+</li>
+<li>
+<p>Code Demonstration: The specific code content executed in the example; currently only native JavaScript code is supported.</p>
+</li>
+</ul>
+<p>The field definitions of Markdown metadata are:</p>
+<ul>
+<li>
+<p>group: The classification information of the example, describing which chart category the current example belongs to.</p>
+</li>
+<li>
+<p>title: The example title</p>
+</li>
+<li>
+<p>keywords: Keywords of the example</p>
+</li>
+<li>
+<p>order: The order criterion of the example within the same group</p>
+</li>
+<li>
+<p>cover: The cover image of the example</p>
+</li>
+<li>
+<p>tutorial: The tutorial link to jump to (the default example tutorial will jump to the tutorial corresponding to the example group)</p>
+</li>
+</ul>
+<p>Currently, chart examples in the group include multiple categories such as area chart, bar chart, combination, storytelling, etc., corresponding to all categories under the vchart example gallery. Refer to existing example documents for specific classification fields.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/BCvZbkvF9oiPWlx6R2zcJxxBn7e.gif' alt='' width='1000' height='auto'></p>
+<h1 id="writing-demos-with-the-help-of-doubao-marscode-ai-programming-assistant">Writing Demos with the Help of Doubao <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI Programming Assistant</a></h1>
+<p>With the help of Doubao <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI Programming Assistant</a>, you can get comprehensive assistance throughout the document creation process.</p>
+<p>If you haven't installed the <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI Programming Assistant</a>, please download it from this link: https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a</p>
+<p>During demo writing, using context instructions reasonably can improve content accuracy.</p>
+<p><code>**⭐️ #Workspace**</code></p>
+<p>Select global code in the Workspace as context; AI will automatically find related code Context according to user Query.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XQaqbAX59oLBKOxR7ngctRbQnXb.gif' alt='' width='1000' height='auto'></p>
+<p><code>**⭐️ #Files**</code></p>
+<p>Search and select files in the code repository as context</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/MhZTbAAD2oj1XJxil8WcHYSWn6d.gif' alt='' width='1000' height='auto'></p>
+<p><code>**⭐️ #Code**</code></p>
+<p>Search and select functions or classes in the code repository as context</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/V4M7bX87hoHOxOxM1Nfc9of0nhL.gif' alt='' width='1000' height='auto'></p>
+<p>Below is an example of how to use the <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI Programming Assistant</a> for demo writing.</p>
+<h2 id="51-providing-a-document-framework">5.1 Providing a Document Framework</h2>
+<p>Here <strong>invoke #Workspace</strong>, then ask a question, select a document content of an example and hope it generates a new example document in the same manner.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/TUHVbTez5o6IjtxmCLhcWnGHnZg.gif' alt='' width='1000' height='auto'></p>
+<p>We can continue to make adjustments on this basis.</p>
+<h2 id="52-generating-descriptive-text">5.2 Generating Descriptive Text</h2>
+<p>The description text for each demo can be initially generated using <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode</a>, and then proofread and adjusted. For example:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/U6n7bEo0DoaCGyxtiVVc1GBGnrg.gif' alt='' width='1000' height='auto'></p>
+<h2 id="53-generating-example-code">5.3 Generating Example Code</h2>
+<p>To better explain principles and usage, it is usually necessary to provide a runnable demo. The code generation capability of <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode</a> can be used to generate example code. However, the current code generation capabilities of various AIs cannot guarantee accuracy and require further verification.</p>
+<h2 id="54-content-retrieval">5.4 Content Retrieval</h2>
+<p>Usually, in each Q&amp;A, <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode</a> will provide reference documents, which can offer more contextual references for further analysis.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DGyBbfi99oucAYxxkyJcfka3nJa.gif' alt='' width='1000' height='auto'></p>
+<p>You can also perform file retrieval directly:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WM9Ubr9JYoYAjOxFQ6tc8cW3nLd.gif' alt='' width='1000' height='auto'></p>
+<h1 id="submitting-code">Submitting Code</h1>
+<p>After the document is completed, push the code to your remote branch, for example:</p>
+<pre class="codehilite"><code>git commit -a -m &quot;docs: add custom funnel demo and related docs&quot; 
+</code></pre>
+
+<p>The commit message for VisActor follows the <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commits</a> convention. <strong>For demo, use docs</strong></p>
+<p><code>&lt;type&gt;[optional scope]: &lt;description&gt;</code></p>
+<p>Common <code>type</code> includes docs (documentation/log modifications), feat (new feature), fix (bug fix), refactor (code restructuring), etc., please choose based on the actual situation.</p>
+<p>Please write the description in brief and precise English.</p>
+<p>Before submitting a commit, we perform a commit lint check, which you can check in the <a href="https://github.com/VisActor/VChart/blob/98711490e90532d896dd9e44dd00a3af5b95f06d/common/autoinstallers/lint/commitlint.config.js">check rules</a>.</p>
+<p>A common issue is that the remote upstream (@visactor/vchart) has new updates, which can lead to conflicts during the submission of a Pull Request. Thus, before submission, you can merge the commits from other developers remotely into your commit. Use the following code to switch to the develop branch:</p>
+<pre class="codehilite"><code>git checkout develop
+</code></pre>
+
+<p>Use the following code to pull the latest remote code:</p>
+<pre class="codehilite"><code>git pull upstream develop
+</code></pre>
+
+<p>Switch back to your development branch:</p>
+<pre class="codehilite"><code>git checkout docs/add-funnel-demo
+</code></pre>
+
+<p>Merge the develop commits into your branch:</p>
+<pre class="codehilite"><code>git rebase develop
+</code></pre>
+
+<p>Push the updated code to your branch:</p>
+<pre class="codehilite"><code>git push origin docs/add-funnel-demo
+</code></pre>
+
+<h1 id="submitting-a-pr">Submitting a PR</h1>
+<p>You can click the <code>Compare &amp; pull request</code> button on your GitHub repository page.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/FWm3bZjbnoaqUOxiygXcFdLznwf.gif' alt='' width='1000' height='auto'></p>
+<p>Or create via the <code>contribute</code> button:</p>
+<p>Fill in the modified content of this submission according to the template:</p>
+<ul>
+<li>Check what type of modification this is</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/V7xpbJhhEoSoCExC31WcyKvHnDe.gif' alt='' width='692' height='auto'></p>
+<ul>
+<li>Fill in the associated issue</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/O6YqbpdxgodBjfxHXEpcwob4n5E.gif' alt='' width='470' height='auto'></p>
+<ul>
+<li>If there are complex changes, explain the background and solution</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/QsnYbfLCio4u3MxK2uIc8epKnXh.gif' alt='' width='1000' height='auto'></p>
+<p>After filling in the relevant information, click Create pull request to submit.</p>
+<p>The administrator will review the PR to decide whether to approve it; if not, modifications need to be made, and a resubmission is required.</p>
+<h1 id="next-step">Next Step</h1>
+<p>Next, you can continue to explore different types of tasks.</p>
+<p>GitHub: <a href="https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2FVisActor">github.com/VisActor</a></p>
+<p>VisActor WeChat subscription account message (you can join the WeChat group through the subscription account menu):</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/I8OdbhGfkort6oxqHW6cR492n7d.gif' alt='' width='258' height='auto'></p>
+<p>VisActor Official Website: <a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.io/</a></p>
+<p>Feishu Group:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DdEAbEU9yoFq9IxjrN4curJnnyf.gif' alt='' width='264' height='auto'></p>
+<p>Discord: https://discord.com/invite/3wPyxVyH6m</p>
+<h1 id="this-document-was-contributed-by">This Document Was Contributed By</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>29.  VTable怎么通过快捷键将选中单元格的内容删除掉？</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VTable怎么通过快捷键将选中单元格的内容删除掉？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>通过VTable提供的编辑能力，实现了可编辑表格的业务场景。不过目前有个需求：VTable是否可以实现当在键盘上按下delete键或者backspace时，将选中单元格内容给删除掉。</br></p>
+<h2 id="_3">解决方案</h2>
+<p>目前VTable本身还不支持这个能力，可以通过监听键盘事件调用VTable的接口来自行实现该能力。</br>
+首先监听事件<code>keydown</code>，在事件中调用更新单元格值的接口<code>changeCellValue</code>。</br>
+实现逻辑参考demo：https://visactor.io/vtable/demo/interaction/context-menu。</br></p>
+<pre class="codehilite"><code>    // 监听键盘事件
+    document.addEventListener('keydown', (e) =&gt; {
+       if (e.key === 'Delete'||e.key === 'Backspace') {
+         let selectCells = tableInstance.getSelectedCellInfos();
+        if (selectCells?.length &gt; 0) {
+          // 如果选中的是范围，则删除范围内的所有单元格
+          deleteSelectRange(selectCells);
+        } else {
+          // 否则只删除单个单元格
+          tableInstance.changeCellValue(args.col, args.row, '');
+        }
+      }
+    });
+    //将选中单元格的值设置为空
+    function deleteSelectRange(selectCells) {
+      for (let i = 0; i &lt; selectCells.length; i++) {
+        for (let j = 0; j &lt; selectCells[i].length; j++) {
+          tableInstance.changeCellValue(selectCells[i][j].col, selectCells[i][j].row, '');
+        }
+      }
+    }&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>let tableInstance;
+fetch('https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/North_American_Superstore_data.json')
+  .then(res =&gt; res.json())
+  .then(data =&gt; {
+    const columns = [
+      {
+        field: 'Order ID',
+        title: 'Order ID',
+        width: 'auto'
+      },
+      {
+        field: 'Customer ID',
+        title: 'Customer ID',
+        width: 'auto'
+      },
+      {
+        field: 'Product Name',
+        title: 'Product Name',
+        width: 'auto'
+      },
+      {
+        field: 'Category',
+        title: 'Category',
+        width: 'auto'
+      },
+      {
+        field: 'Sub-Category',
+        title: 'Sub-Category',
+        width: 'auto'
+      },
+      {
+        field: 'Region',
+        title: 'Region',
+        width: 'auto'
+      },
+      {
+        field: 'City',
+        title: 'City',
+        width: 'auto'
+      },
+      {
+        field: 'Order Date',
+        title: 'Order Date',
+        width: 'auto'
+      },
+      {
+        field: 'Quantity',
+        title: 'Quantity',
+        width: 'auto'
+      },
+      {
+        field: 'Sales',
+        title: 'Sales',
+        width: 'auto'
+      },
+      {
+        field: 'Profit',
+        title: 'Profit',
+        width: 'auto'
+      }
+    ];
+
+    const option = {
+      records: data,
+      columns,
+      widthMode: 'standard',
+      menu: {
+        contextMenuItems: ['copy', 'paste', 'delete', '...']
+      }
+    };
+    tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID), option);
+    window['tableInstance'] = tableInstance;
+
+    // 监听键盘事件
+    document.addEventListener('keydown', (e) =&gt; {
+      debugger
+       if (e.key === 'Delete'||e.key === 'Backspace') {
+         let selectCells = tableInstance.getSelectedCellInfos();
+        if (selectCells?.length &gt; 0 ) {
+          // 如果选中的是范围，则删除范围内的所有单元格
+          deleteSelectRange(selectCells);
+        } else {
+          // 否则只删除单个单元格
+          tableInstance.changeCellValue(args.col, args.row, '');
+        }
+      }
+    });
+  });
+
+      //将选中单元格的值设置为空
+    function deleteSelectRange(selectCells) {
+      for (let i = 0; i &lt; selectCells.length; i++) {
+        for (let j = 0; j &lt; selectCells[i].length; j++) {
+          tableInstance.changeCellValue(selectCells[i][j].col, selectCells[i][j].row, '');
+        }
+      }
+    }
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>可以将代码复制到官网的代码编辑器中直接测试效果。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/MUBWbAPIQog37oxDxbWc8BtLn3c.gif' alt='' width='2304' height='900'></p>
+<h2 id="_6">相关文档</h2>
+<p>删除数据demo：https://visactor.io/vtable/demo/interaction/context-menu</br>
+数据更新教程：https://visactor.io/vtable/guide/data/data_format</br>
+相关api：https://visactor.io/vtable/api/Methods#changeCellValue</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

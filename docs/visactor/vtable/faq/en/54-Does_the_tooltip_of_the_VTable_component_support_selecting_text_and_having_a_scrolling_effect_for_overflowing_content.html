@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>32. Does the tooltip of the VTable component support selecting text and having a scrolling effect for overflowing content?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="problem-title">Problem Title</h2>
+<p>Does the tooltip of the VTable component support selecting text and having a scrolling effect for overflowing content?</br></p>
+<h2 id="problem-description">Problem Description</h2>
+<p>I utilized the tooltip feature of the VTable component, which means when the cell content is too long, a tooltip will appear when the mouse hovers over the cell.</br>
+However, I found that the content of this tooltip cannot be selected because when the mouse leaves the cell and tries to move to the tooltip, the tooltip disappears and it is impossible to move the mouse over it. Also, when the content is too long, the tooltip will be stretched very large, resulting in an ugly effect. I hope that when the content is very long, I can scroll through it. Can VTable achieve the effect I need?</br></p>
+<h2 id="solution">Solution</h2>
+<p>VTable provides a configuration solution to this problem. First, normally, as soon as the mouse leaves the cell with the overflowing text, the <code>tooltip</code> disappears immediately, making it impossible to move the mouse to the tooltip. Therefore, a new configuration called <code>overflowTextTooltipDisappearDelay</code> is added to the tooltip configuration to delay the disappearance of the tooltip. After configuring this, the mouse has enough time to move to the tooltip, thus solving the need to select and copy text. (The usage of tooltips for Icons is similar!)</br></p>
+<pre class="codehilite"><code>  /** tooltip相关配置 */
+  tooltip?: {
+    /** html目前实现较完整 先默认html渲染方式 */
+    renderMode?: 'html'; // 目前暂不支持canvas方案
+    /**  Whether to show the thumbnail tooltip. Instead of the original hover:isShowTooltip configuration, it is temporarily necessary to set the renderMode configuration to html in order to display it. canvas has not been developed yet.*/
+    isShowOverflowTextTooltip?: boolean;
+*** /** Abbreviation text prompt box delayed disappearance time **/***
+**    overflowTextTooltipDisappearDelay?: number;**
+    /** 是否将 tooltip 框限制在画布区域内，默认开启。针对renderMode:&quot;html&quot;有效 */
+    confine?: boolean;
+  };&lt;/br&gt;
+</code></pre>
+
+<p>To limit the size of a tooltip pop-up box, you can configure it in the style of the tooltip. The specific style definition is as follows:</br></p>
+<pre class="codehilite"><code>/**
+ * Bubble box, button explanation information
+ */
+export type TooltipStyle = {
+  fontFamily?: string;
+  fontSize?: number;
+  color?: string;
+  padding?: number[];
+  bgColor?: string;
+**  maxWidth?: number;**
+**  maxHeight?: number;**
+};&lt;/br&gt;
+</code></pre>
+
+<p>Configure it by putting it in the theme.</br></p>
+<pre class="codehilite"><code>const option={
+   tooltip: {
+      renderMode: 'html',
+      isShowOverflowTextTooltip: true,
+      overflowTextTooltipDisappearDelay: 1000
+    },
+    theme:{
+        tooltipStyle:{
+            **maxWidth：200，**
+            **maxHeight：100**
+        }
+    }
+}&lt;/br&gt;
+</code></pre>
+
+<h2 id="code-examples">Code Examples</h2>
+<p>You can paste it into the official editor for testing:</br>
+https://visactor.io/vtable/demo/component/tooltip</br></p>
+<pre class="codehilite"><code>let tableInstance;
+fetch('https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/North_American_Superstore_data.json')
+  .then(res =&gt; res.json())
+  .then(data =&gt; {
+    const columns = [
+      {
+        field: 'Order ID',
+        title: 'Order ID',
+        width: 'auto'
+      },
+      {
+        field: 'Customer ID',
+        title: 'Customer ID',
+        width: 'auto'
+      },
+      {
+        field: 'Product Name',
+        title: 'Product Name',
+        width: '200'
+      },
+      {
+        field: 'Category',
+        title: 'Category',
+        width: 'auto'
+      },
+      {
+        field: 'Sub-Category',
+        title: 'Sub-Category',
+        width: 'auto'
+      },
+      {
+        field: 'Region',
+        title: 'Region',
+        width: 'auto'
+      },
+      {
+        field: 'City',
+        title: 'City',
+        width: 'auto'
+      },
+      {
+        field: 'Order Date',
+        title: 'Order Date',
+        width: 'auto'
+      },
+      {
+        field: 'Quantity',
+        title: 'Quantity',
+        width: 'auto'
+      },
+      {
+        field: 'Sales',
+        title: 'Sales',
+        width: 'auto'
+      },
+      {
+        field: 'Profit',
+        title: 'Profit',
+        width: 'auto'
+      }
+    ];
+
+    const option = {
+      records: data,
+      columns,
+      widthMode: 'standard',
+      tooltip: {
+        renderMode: 'html',
+        isShowOverflowTextTooltip: true,
+        overflowTextTooltipDisappearDelay: 1000
+      },
+      theme:{
+          tooltipStyle:{
+              maxWidth:200,
+              maxHeight:60
+          }
+      }
+    };
+    tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID), option);
+    window['tableInstance'] = tableInstance;
+
+  });&lt;/br&gt;
+</code></pre>
+
+<h2 id="result-presentation">Result Presentation</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Dx0ibyoBrouD0xxZykIco2CCnTe.gif' alt='' width='1512' height='1092'></p>
+<h2 id="related-documentation">Related Documentation</h2>
+<p>Related API: https://www.visactor.io/vtable/api/Methods#showTooltip</br>
+Tutorial: https://www.visactor.io/vtable/guide/components/tooltip</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14-How_to_customize_the_label_text_content,_color,_and_layout_of_a_pie_chart</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-customize-the-label-text-content-color-and-layout-of-a-pie-chart">How to customize the label text content, color, and layout of a pie chart?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>Can I customize the label text, color, and layout of a pie chart similar to <a href="https://www.visactor.io/vchart/demo/pie-chart/basic-pie">the one</a>? What level of customization is supported and how can I configure it?</p>
+<p><img alt="pie chart" src="/vchart/faq/26-0.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>Different chart libraries have different levels of support for pie charts, and the level of support for pie chart labels also varies. In VChart:</p>
+<ul>
+<li>The text content of the label: You can set custom label content through the <code>label.formatMethod</code> callback function. <a href="https://www.visactor.io/vchart/option/pieChart#label.formatMethod">Please refer to the configuration document</a>.</li>
+<li>The text color of the label: You can set the style of the text, including color, font, size, etc., through <code>label.style</code>. Any attribute supported by VChart text graphics can be configured. <a href="https://www.visactor.io/vchart/option/pieChart#label.style.text">Please refer to the configuration document</a>.</li>
+<li>The layout of the label: If you simply want to adjust the position of the label, you can set <code>label.position</code> to determine whether the label is inside or outside. If you want to adjust the layout strategy, you can use label.layout for detailed adjustments. <a href="https://www.visactor.io/vchart/option/pieChart#label.layout.textAlign">Please refer to the configuration document for more information</a>.</li>
+</ul>
+<h2 id="code-example">Code Example</h2>
+<ul>
+<li>
+<ul>
+<li>Custom text content and text color.</li>
+</ul>
+</li>
+</ul>
+<pre class="codehilite"><code>const spec = {
+  type: 'pie',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { type: 'oxygen', value: '46.60' },
+        { type: 'silicon', value: '27.72' },
+        { type: 'aluminum', value: '8.13' },
+        { type: 'iron', value: '5' },
+        { type: 'calcium', value: '3.63' },
+        { type: 'sodium', value: '2.83' },
+        { type: 'potassium', value: '2.59' },
+        { type: 'others', value: '3.5' }
+      ]
+    }
+  ],
+  outerRadius: 0.8,
+  valueField: 'value',
+  categoryField: 'type',
+  title: {
+    visible: true,
+    text: 'Statistics of Surface Element Content'
+  },
+  legends: {
+    visible: true,
+    orient: 'left'
+  },
+  scales: [{
+    id: 'labelScale',
+    type: 'linear',
+    domain: [{
+      dataId: 'id0',
+      fields: ['value']
+    }],
+    range: ['red', 'green'],
+  }],
+  label: {
+    visible: true,
+    formatMethod: (text, datum) =&gt; {
+      return `${datum.type}: ${datum.value}`
+    },
+    style: {
+      fill: {
+        scale: 'labelScale',
+        field: 'value'
+      }
+    }
+  },
+  tooltip: {
+    mark: {
+      content: [
+        {
+          key: datum =&gt; datum['type'],
+          value: datum =&gt; datum['value'] + '%'
+        }
+      ]
+    }
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+</code></pre>
+
+<p><img alt="pie chart" src="/vchart/faq/26-1.png" /></p>
+<ul>
+<li>Custom layout, placing labels inside a pie chart.</li>
+</ul>
+<p><img alt="pie chart" src="/vchart/faq/26-2.png" /></p>
+<p><img alt="pie chart" src="/vchart/faq/26-3.png" /></p>
+<h2 id="results">Results</h2>
+<p><a href="https://codesandbox.io/s/pie-chart-label-53s2p9">Online demo</a></p>
+<p><code>``javascript livedemo
+const spec = {
+  type: 'pie',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { type: 'oxygen', value: '46.60' },
+        { type: 'silicon', value: '27.72' },
+        { type: 'aluminum', value: '8.13' },
+        { type: 'iron', value: '5' },
+        { type: 'calcium', value: '3.63' },
+        { type: 'sodium', value: '2.83' },
+        { type: 'potassium', value: '2.59' },
+        { type: 'others', value: '3.5' }
+      ]
+    }
+  ],
+  outerRadius: 0.8,
+  valueField: 'value',
+  categoryField: 'type',
+  title: {
+    visible: true,
+    text: 'Statistics of Surface Element Content'
+  },
+  legends: {
+    visible: true,
+    orient: 'left'
+  },
+  scales: [
+    {
+      id: 'labelScale',
+      type: 'linear',
+      domain: [
+        {
+          dataId: 'id0',
+          fields: ['value']
+        }
+      ],
+      range: ['red', 'green']
+    }
+  ],
+  label: {
+    visible: true,
+    formatMethod: (text, datum) =&gt; {
+      return</code>${datum.type}: ${datum.value}`;
+    },
+    style: {
+      fill: {
+        scale: 'labelScale',
+        field: 'value'
+      }
+    }
+  },
+  tooltip: {
+    mark: {
+      content: [
+        {
+          key: datum =&gt; datum['type'],
+          value: datum =&gt; datum['value'] + '%'
+        }
+      ]
+    }
+  }
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+```</p>
+<h2 id="related-documentation">Related Documentation</h2>
+<ul>
+<li><a href="https://www.visactor.io/vchart/option/pieChart#label.formatMethod">Label 文字内容配置</a></li>
+<li><a href="https://www.visactor.io/vchart/option/pieChart#label.style.fill">Label 颜色配置</a></li>
+<li><a href="https://www.visactor.io/vchart/option/pieChart#label.position">Label 布局配置</a></li>
+<li><a href="https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Types/Pie">饼图教程</a></li>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+</ul>
+</body>
+</html>

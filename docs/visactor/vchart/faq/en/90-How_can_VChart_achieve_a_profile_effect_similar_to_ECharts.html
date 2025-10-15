@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>90-How_can_VChart_achieve_a_profile_effect_similar_to_ECharts</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-can-vchart-achieve-a-profile-effect-similar-to-echarts">How can VChart achieve a profile effect similar to ECharts?</h1>
+<h1 id="question-description">Question Description</h1>
+<p>Seemly to https://echarts.apache.org/examples/zh/editor.html?c=custom-profile, How does VChart configure support for such charts?
+<img alt="demo" src="/vchart/faq/100-0.png" /></p>
+<h1 id="solution">Solution</h1>
+<p>The solutions for different chart libraries are different. Based on the demo you provided, you only need to configure rangeColumn (interval bar) charts in VChart.</p>
+<h1 id="code-example">Code Example</h1>
+<pre class="codehilite"><code class="language-ts">const values = [
+  { type: 'Category One', min: 0, max: 71, group: 0 },
+  { type: 'Category One', min: 83, max: 161, group: 1 },
+  { type: 'Category One', min: 166, max: 253, group: 2 },
+  { type: 'Category One', min: 280, max: 369, group: 3 },
+  { type: 'Category One', min: 388, max: 411, group: 4 },
+  { type: 'Category One', min: 439, max: 488, group: 5 },
+  { type: 'Category One', min: 493, max: 517, group: 6 },
+  { type: 'Category One', min: 539, max: 609, group: 7 },
+  { type: 'Category One', min: 614, max: 678, group: 8 },
+  { type: 'Category One', min: 696, max: 725, group: 9 },
+  { type: 'Category Two', min: 0, max: 75, group: 0 },
+  { type: 'Category Two', min: 90, max: 143, group: 1 },
+  { type: 'Category Two', min: 162, max: 186, group: 2 },
+  { type: 'Category Two', min: 209, max: 244, group: 3 },
+  { type: 'Category Two', min: 266, max: 334, group: 4 },
+  { type: 'Category Two', min: 351, max: 391, group: 5 },
+  { type: 'Category Two', min: 407, max: 435, group: 6 },
+  { type: 'Category Two', min: 460, max: 523, group: 7 },
+  { type: 'Category Two', min: 539, max: 610, group: 8 },
+  { type: 'Category Two', min: 610, max: 612, group: 9 },
+  { type: 'Category Three', min: 0, max: 0, group: 0 },
+  { type: 'Category Three', min: 10, max: 69, group: 1 },
+  { type: 'Category Three', min: 78, max: 123, group: 2 },
+  { type: 'Category Three', min: 128, max: 211, group: 3 },
+  { type: 'Category Three', min: 219, max: 283, group: 4 },
+  { type: 'Category Three', min: 301, max: 375, group: 5 },
+  { type: 'Category Three', min: 393, max: 461, group: 6 },
+  { type: 'Category Three', min: 477, max: 535, group: 7 },
+  { type: 'Category Three', min: 542, max: 584, group: 8 },
+  { type: 'Category Three', min: 600, max: 652, group: 9 }
+];
+
+const spec = {
+  type: 'rangeColumn',
+  data: [
+    {
+      id: 'data0',
+      values
+    }
+  ],
+  direction: 'horizontal',
+  seriesField: 'group',
+  yField: 'type',
+  xField: ['min', 'max'],
+  label: {
+    visible: false
+  },
+  bar: {
+    style: {
+      height: 60
+    }
+  }
+};
+</code></pre>
+
+<h1 id="results">Results</h1>
+<p>Online demo：https://codesandbox.io/s/vchart-profile-6v2c2l
+<img alt="result" src="/vchart/faq/100-1.png" /></p>
+<h1 id="related-documentation">Related Documentation</h1>
+<p>rangeColumn Tutorial：https://visactor.io/vchart/guide/tutorial_docs/Chart_Types/RangeColumn
+Related api：https://visactor.io/vchart/option/rangeColumnChart#type
+github：https://github.com/VisActor/VChart</p>
+</body>
+</html>

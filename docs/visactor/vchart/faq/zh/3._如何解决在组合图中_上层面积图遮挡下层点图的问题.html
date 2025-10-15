@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3. 如何解决在组合图中，上层面积图遮挡下层点图的问题？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">问题标题</h1>
+<p>如何解决在组合图中，上层面积图遮挡下层点图的问题？</br></p>
+<h1 id="_2">问题描述</h1>
+<p>我在使用VChart创建了一个组合图，其中包含两个子图，子图类型都是面积图。因为第二个子图绘制在第一个子图的上面，所以它的区域会遮挡住第一个子图的数据点，使得第一个子图的数据点无法触发hover和click事件。我想问一问，有没有什么方法可以解决这个问题？</br>
+图表的配置如下：</br></p>
+<pre class="codehilite"><code>const spec = {
+*2*  &quot;data&quot;: [...],
+*3*  &quot;series&quot;: [
+*4*    {
+*5*      &quot;id&quot;: &quot;area&quot;,
+*6*      &quot;type&quot;: &quot;area&quot;,
+*7*      &quot;xField&quot;: &quot;time&quot;,
+*8*      &quot;yField&quot;: &quot;value&quot;,
+*9*      &quot;seriesField&quot;: &quot;groupName&quot;,
+*10*      ...
+*11*    },
+*12*    {
+*13*      &quot;id&quot;: &quot;compare&quot;,
+*14*      &quot;type&quot;: &quot;area&quot;,
+*15*      &quot;name&quot;: &quot;compare&quot;,
+*16*      &quot;xField&quot;: &quot;time&quot;,
+*17*      &quot;yField&quot;: &quot;compareValue&quot;,
+*18*      &quot;seriesField&quot;: &quot;groupName&quot;,
+*19*      ...
+*20*      &quot;interactive&quot;: {
+*21*        &quot;line&quot;: false,
+*22*        &quot;area&quot;: false
+*23*      }
+*24*    }
+*25*  ]
+*26*}
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderAsync();&lt;/br&gt;
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Rju6bObFcoMEHmx1N8WcWTTWnxe.gif' alt='' width='2990' height='1132'></p>
+<h1 id="_3">解决方案</h1>
+<p>这个问题可以通过设置第二个面积图series的<code>line.interactive</code>和<code>area.interactive</code>属性为<code>false</code>来解决。配置如下:</br></p>
+<pre class="codehilite"><code>{
+&quot;data&quot;: [...],
+&quot;series&quot;: [
+{
+&quot;id&quot;: &quot;area&quot;,
+&quot;type&quot;: &quot;area&quot;,
+&quot;xField&quot;: &quot;time&quot;,
+&quot;yField&quot;: &quot;value&quot;,
+&quot;seriesField&quot;: &quot;groupName&quot;,
+...
+},
+{
+&quot;id&quot;: &quot;compare&quot;,
+&quot;type&quot;: &quot;area&quot;,
+&quot;name&quot;: &quot;compare&quot;,
+&quot;xField&quot;: &quot;time&quot;,
+&quot;yField&quot;: &quot;compareValue&quot;,
+&quot;seriesField&quot;: &quot;groupName&quot;,
+...
+&quot;line&quot;:{
+&quot;interactive&quot;:false
+},
+&quot;area&quot;:{
+&quot;interactive&quot;:false
+},
+}
+]
+}&lt;/br&gt;
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/IFQrb9E9HoyhAWx6y3xcZS3Dn7f.gif' alt='' width='3134' height='1454'></p>
+<p>这样，第二个面积子图就不会响应交互事件，用户的hover和click事件可以透过第二个面积子图触发第一个面积子图的数据点。</br></p>
+<h1 id="_4">结果展示</h1>
+<p>使用上述配置，进行图表渲染，你会发现，第二个子图的线和面积图都不会再响应鼠标操作，这样就可以成功触发第一个子图的hover和click了。</br>
+在线效果参考：https://codesandbox.io/s/common-chart-interactive-jtmc92?file=/src/index.ts</br></p>
+<h1 id="_5">相关文档</h1>
+<p>相关api：https://www.visactor.io/vchart/api/API/vchart</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

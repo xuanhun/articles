@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to implement hover effect on points in vchart chart library?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title">Title</h1>
+<p>How to implement hover effect on points in vchart chart library?</br></p>
+<h1 id="description">Description</h1>
+<p>I encountered a problem when using the vchart chart library for visualization development. When using the lightCharts chart library, I can easily implement the hover effect on points, but when I switch to the vchart chart library, I found that I cannot achieve the same effect with the same configuration. I set the size, color and other properties of the points in series.point:</br></p>
+<pre class="codehilite"><code>point: {
+interactive: true,
+zIndex: 10,
+visible: true,
+bar: { style: { fill: 'red', size: 10, }, },
+state: {
+dimension_hover: {
+size: (datum: any) =&gt; { return 10; },
+fill: (datum: any) =&gt; { return 'red'; }
+}
+}
+}&lt;/br&gt;
+</code></pre>
+
+<p>But these settings seem to have no effect in the hover state. I want to know if I am missing any important configuration or if my configuration method is incorrect.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/PK26b5aJqoGHtpxKZ6pcAZxvnzd.gif' alt='' width='1136' height='294'></p>
+<h1 id="solution">Solution</h1>
+<p>In my experience, you may need to add the state property in point and add the dimension_hover property in state to achieve the special effect in the hover state. The specific code example is as follows:</br></p>
+<pre class="codehilite"><code>point: {
+style: {
+size: 0
+},
+state: {
+dimension_hover: {
+size: 10,
+outerBorder: {
+distance: 0,
+lineWidth: 6,
+strokeOpacity: 0.2
+}
+}
+}
+}&lt;/br&gt;
+</code></pre>
+
+<p>Here, dimension_hover defines the effect when the mouse hovers over the point, and you can adjust these settings according to your needs.</br></p>
+<p>You can also refer to the official demo of vchart for learning related configurations: https://visactor.bytedance.net/vchart/demo/area-chart/stacked-dash-area. If you need to demonstrate or edit your code online, vchart official website editor and codesandbox are good choices. You can upload your code to these platforms and send us the link, and we will provide further assistance for you.</br></p>
+<h1 id="result">Result</h1>
+<p>The hover effect on points in vchart was successfully implemented through the above method, and the reason why the original configuration did not take effect was found - the configuration in series.point conflicted.</br>
+Online demo reference: https://codesandbox.io/p/sandbox/line-chart-shows-on-the-left-most-of-canvas-forked-fx4ppt</br></p>
+<h1 id="related-documents">Related Documents</h1>
+<ul>
+<li>Vchart official website: https://visactor.bytedance.net/vchart/</br></li>
+<li>Vchart official demo: https://visactor.bytedance.net/vchart/demo/area-chart/stacked-dash-area</br></li>
+</ul>
+</body>
+</html>

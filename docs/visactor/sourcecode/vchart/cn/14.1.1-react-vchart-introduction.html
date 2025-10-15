@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14.1.1 React-VChart 简介</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">概览</h2>
+<p>react-vchart 是 VChart 的 React 封装版本，对外主要提供两种风格的组件：    </p>
+<ul>
+<li>
+<p><code>&lt;VChart ``/``&gt;</code> 以及 <code>&lt;VChartSimple ``/``&gt;</code>    </p>
+</li>
+<li>
+<p><code>&lt;LineChart ``/``&gt;</code>等语义化标签    </p>
+</li>
+</ul>
+<p>它们的差异如下：    </p>
+<ul>
+<li>
+<p><strong>适用场景</strong>：    </p>
+</li>
+<li>
+<p><code>&lt;VChart /&gt;</code>：一个大而全的统一入口标签，封装了图表的规范、提供规范的更新、卸载逻辑。适用于toB页面，存在页面搭建类的产品页面，以及自行封装VChart的业务方迁移。    </p>
+</li>
+<li>
+<p>语法化标签：适用于简单页面，开发人员手写代码，方便实现拆包按需加载。    </p>
+</li>
+<li>
+<p><strong>使用方式</strong>：    </p>
+</li>
+<li>
+<p><code>&lt;VChart /&gt;</code>：接收一个完整的 spec 作为图表定义，使用时引入 <code>VChart</code> 组件，并传入 spec 等相关属性。例如：    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/react-vchart';
+// 假设已经有了 spec 图表描述信息
+const spec = {
+    // 图表定义相关内容
+};
+const App = () =&gt; {
+    return (
+        &lt;VChart
+            spec={spec}
+            // 其他属性如 options、onReady 等
+        /&gt;
+    );
+};
+export default App;    
+</code></pre>
+
+<ul>
+<li>语法化标签：将图表的图表容器以及各个组件都封装为 React 组件导出。使用时根据图表类型选择对应的图表标签，再搭配相应的组件标签和系列标签。例如创建柱状图：    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">import React, { useRef } from'react';
+import { BarChart, Bar, Legend, Axis } from '@visactor/react-vchart';
+const App = () =&gt; {
+    const chartRef = useRef(null);
+    const handleChartClick = () =&gt; {
+        console.log('图表被点击了');
+    };
+    const barData = [
+        { type: 'Autocracies', year: '1930', value: 129 },
+        // 其他数据项
+    ];
+    return (
+        &lt;div&gt;
+            &lt;BarChart
+                ref={chartRef}
+                data={[{ id: 'id0', values: barData }]}
+                onClick={handleChartClick}
+            &gt;
+                &lt;Bar
+                    seriesField=&quot;type&quot;
+                    xField={['year', 'type']}
+                    yField=&quot;value&quot;
+                    bar={{
+                        style: {
+                            stroke: '#000',
+                            strokeWidth: 1
+                        },
+                        state: {
+                            hover: {
+                                stroke: 'black'
+                            }
+                        }
+                    }}
+                /&gt;
+                &lt;Axis orient=&quot;bottom&quot; type=&quot;band&quot; /&gt;
+                &lt;Axis orient=&quot;left&quot; max={200} type=&quot;linear&quot; /&gt;
+                &lt;Legend visible={true} position=&quot;start&quot; orient=&quot;top&quot; padding={{ bottom: 12 }} /&gt;
+            &lt;/BarChart&gt;
+        &lt;/div&gt;
+    );
+};
+export default App;    
+</code></pre>
+
+<p>通过上述代码示例，可以更直观地理解两种组件在使用上的差异。    </p>
+<h2 id="_2">核心代码实现</h2>
+<p>从实现的角度，<code>&lt;VChart ``/``&gt;</code>和<code>&lt;LineChart ``/``&gt;</code>封装的原理差异并不多，首先所有Chart组件都是基于 <code>BaseChart</code>封装的，核心代码在以下文件：    </p>
+<ul>
+<li>
+<p><a href="https://github.com/VisActor/VChart/blob/develop/packages/react-vchart/src/containers/withContainer.tsx"><code>packages/react-vchart/src/containers/withContainer.tsx</code></a>    </p>
+</li>
+<li>
+<p><a href="https://github.com/VisActor/VChart/blob/develop/packages/react-vchart/src/charts/BaseChart.tsx"><code>packages/react-vchart/src/charts/BaseChart.tsx</code></a>    </p>
+</li>
+</ul>
+<p>对于语义化标签而言，除了上述模块外，主要是对组件和系列的封装，核心代码如下：    </p>
+<ul>
+<li>
+<p><a href="https://github.com/VisActor/VChart/blob/develop/packages/react-vchart/src/components/BaseComponent.tsx"><code>packages/react-vchart/src/components/BaseComponent.tsx</code></a>    </p>
+</li>
+<li>
+<p><a href="https://github.com/VisActor/VChart/blob/develop/packages/react-vchart/src/series/BaseSeries.tsx"><code>packages/react-vchart/src/series/BaseSeries.tsx</code></a>    </p>
+</li>
+</ul>
+<p>以AreaChart为例，主要的类关系图如下    </p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/U17mw4odYheCoiblgyjcfTYVnrh.gif" /></p>
+<p>在接下来的章节，我们将详细的分析Chart组件、系列组件、VChart组件的封装    </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>60. VChart 图表中数据采样的方法有哪些？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VChart 图表中数据采样的方法有哪些？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>请问 vchart 的折线图数据量很大的情况下，有没有一些数据采样的配置提高性能？</br></p>
+<h2 id="_3">解决方案</h2>
+<p>VChart 折线图 自<code>1.6.0</code>版本开始支持数据采样方法配置。</br>
+折线图在数据量远大于像素点时候的降采样策略，开启后可以有效的优化图表的绘制效率，默认关闭，也就是全部绘制不过滤数据点。<code>sampling</code> 配置可选值:</br>
+*  <code>'lttb'</code>: 采用 Largest-Triangle-Three-Bucket 算法，可以最大程度保证采样后线条的趋势，形状和极值。</br>
+*  <code>'min'</code>: 取过滤点的最小值</br>
+*  <code>'max'</code>: 取过滤点的最大值</br>
+*  <code>'sum'</code>: 取过滤点的和</br>
+*  <code>'average'</code>: 取过滤点的平均值</br>
+可以通过采样系数<code>samplingFactor</code>配置调整采样效果。</br></p>
+<pre class="codehilite"><code>sampling: 'lttb',
+samplingFactor: 0.1,&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<p>https://visactor.io/vchart/demo/line-chart/line-sampling</br></p>
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/H829bRSfDoR1A1xvfD8cL609nTe.gif' alt='' width='1485' height='1044'></p>
+<h2 id="_6">相关文档</h2>
+<ul>
+<li>github：https://github.com/VisActor/VChart</br></li>
+<li>数据采样配置 <code>smapling</code>：https://visactor.io/vchart/option/lineChart#sampling</br></li>
+</ul>
+</body>
+</html>

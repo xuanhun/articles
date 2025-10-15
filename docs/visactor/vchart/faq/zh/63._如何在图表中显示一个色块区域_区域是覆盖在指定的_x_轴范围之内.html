@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>63. 如何在图表中显示一个色块区域，区域是覆盖在指定的 x 轴范围之内？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何在图表中显示一个色块区域，区域是覆盖在指定的 x 轴范围之内？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>类似下图的效果，希望在图表里指定的 x 轴范围绘制一个颜色色块，在 VChart 该如何配置？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/SOYtb3xBOodWeSx72dpcnWY1n9f.gif' alt='' width='1108' height='488'></p>
+<h2 id="_3">解决方案</h2>
+<p>你可以通过 <code>markArea</code> 组件实现这个效果，使用 <code>markArea.coordinates</code> 属性声明要标注的数据范围。</br>
+*  <code>coordinates</code>：支持配置数据值，VChart 会自动根据数据映射到画布坐标进行范围绘制。</br></p>
+<pre class="codehilite"><code>  markArea: [
+    {
+      coordinates: [
+        {
+          Date: 'Jan-20',
+          Price: 0.18
+        },
+        {
+          Date: 'Mar-23',
+          Price: 0.18
+        },
+        {
+          Date: 'Mar-23',
+          Price: 0.12
+        },
+        {
+          Date: 'Jan-20',
+          Price: 0.12
+        }
+      ],
+      label: {
+        text: 'Electricite prices have surged since 2020',
+        position: 'insideTop'
+      }
+    }
+  ],&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<p>https://visactor.io/vchart/demo/marker/mark-area-basic</br></p>
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HO0MbfC8co3vstxnkMccptVUnhg.gif' alt='' width='1671' height='1044'></p>
+<h2 id="_6">相关文档</h2>
+<ul>
+<li>github：https://github.com/VisActor/VChart</br></li>
+<li>MarkArea 示例：https://visactor.io/vchart/demo/marker/mark-area-basic</br></li>
+<li>MarkArea 教程：https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/marker</br></li>
+</ul>
+</body>
+</html>

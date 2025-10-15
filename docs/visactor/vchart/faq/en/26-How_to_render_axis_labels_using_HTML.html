@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to use HTML to render axis labels?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-title">Question Title</h2>
+<p>How to use HTML to render axis labels?</br></p>
+<h2 id="problem-description">Problem Description</h2>
+<p>For the labels of the axis, how to use custom HTML rendering? Can I also implement custom jump links?</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/IDKxbWokWoZN2VxXDY1cTNHPnLc.gif' alt='' width='1544' height='1058'></p>
+<h2 id="solution">Solution</h2>
+<p>VChart axis labels support absolute positioning with HTML. To achieve this:</br>
+*  Step 1: VChart needs to enable the relevant plugin through <code>enableHtmlAttribute: true</code>.</br></p>
+<pre class="codehilite"><code>const vchart = new VChart(spec, { dom: CONTAINER_ID, enableHtmlAttribute: true });
+vchart.renderSync();&lt;/br&gt;
+</code></pre>
+
+<ul>
+<li>Step 2: When configuring the axis labels, return HTML type labels through the <code>formatMethod</code>.</br></li>
+<li>Step 3: Implement custom URL jumps through the <code>&lt;a&gt;</code> tag and set the mouse event of opening the tag to <code>pointerEvents: 'auto'</code>.</br></li>
+</ul>
+<pre class="codehilite"><code>axes: [
+    {
+      orient: 'bottom',
+      sampling: false,
+      label: {
+        style: {
+          forceBoundsWidth: 40
+        },
+        formatMethod: (label, a) =&gt; {
+          return {
+            type: 'html',
+            text: {
+              pointerEvents: 'auto',
+              id: `x-label-${label}`,
+              style: {
+                width: '40px',
+                overflow: 'hidden'
+              },
+              dom: `&lt;a href=&quot;https://visactor.com/vchart/demo/line-chart/dash-line&quot;&gt;${label}&lt;/a&gt;`
+            }
+          };
+        }
+      }
+    }
+  ],&lt;/br&gt;
+</code></pre>
+
+<h2 id="code-examples">Code Examples</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'line',
+  data: {
+    values: [
+      {
+        x: '1st',
+        y: 0.012
+      },
+      {
+        x: '2nd',
+        y: -0.01
+      },
+      {
+        x: '3rd',
+        y: 0.005
+      },
+      {
+        x: '4th',
+        y: 0.007
+      },
+      {
+        x: '5th',
+        y: 0.01
+      },
+      {
+        x: '6th',
+        y: 0.017
+      },
+      {
+        x: '7th',
+        y: 0.022
+      },
+      {
+        x: '8th (prediction)',
+        y: 0.033,
+        latest: true
+      }
+    ]
+  },
+  xField: 'x',
+  yField: 'y',
+  axes: [
+    {
+      orient: 'bottom',
+      sampling: false,
+      label: {
+        style: {
+          forceBoundsWidth: 40
+        },
+        formatMethod: (label, a) =&gt; {
+          return {
+            type: 'html',
+            text: {
+              pointerEvents: 'auto',
+              id: `x-label-${label}`,
+              style: {
+                width: '40px',
+                overflow: 'hidden'
+              },
+              dom: `&lt;a href=&quot;https://visactor.com/vchart/demo/line-chart/dash-line&quot;&gt;${label}&lt;/a&gt;`
+            }
+          };
+        }
+      }
+    }
+  ],
+  line: {
+    style: {
+      lineDash: data =&gt; {
+        if (data.latest) {
+          return [5, 5];
+        }
+        return [0];
+      }
+    }
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID, enableHtmlAttribute: true });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="related-documents">Related documents</h2>
+<ul>
+<li><a href="https%3A%2F%2Fgithub.com%2FVisActor%2FVChart">github</a></br></li>
+<li><a href="https%3A%2F%2Fvisactor.com%2Fvchart%2Foption%2FlineChart-axes-band%23label.formatMethod">Axis labelsformatMethodConfiguration document</a></br></li>
+<li><a href="https%3A%2F%2Fvisactor.com%2Fvchart%2Fguide%2Ftutorial_docs%2FRichtext_and_Dom">HTML extension plugin tutorial</a></br></li>
+</ul>
+</body>
+</html>

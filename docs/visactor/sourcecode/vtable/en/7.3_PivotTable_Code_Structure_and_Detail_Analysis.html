@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.3 PivotTable Code Structure and Detail Analysis</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="tree-display">Tree Display</h1>
+<h2 id="requirements">Requirements</h2>
+<p>A major feature of PivotTable is the tree-like <code>rowHeader</code> and <code>columnHeader</code>. Users can define the display format of the tree based on the following configuration:    </p>
+<ul>
+<li>
+<p><code>rowHierarchyType / columnHierarchyType</code> : Tree display mode    </p>
+</li>
+<li>
+<p>grid    </p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/FQABbDAB0o2vtKxp4Qjcc9DZnBf.gif' alt='' width='430' height='auto'></p>
+<ul>
+<li>tree    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Q1NsbNwRio0uEMxhFxYcu0mMnpe.gif' alt='' width='252' height='auto'></p>
+<ul>
+<li>grid-tree (only supports row)    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KiLTbkFzhoefrIxsbV3cI3hWngf.gif' alt='' width='516' height='auto'></p>
+<ul>
+<li>
+<p><code>indicatorsAsCol</code>: Whether indicators are displayed as list headers, default is true    </p>
+</li>
+<li>
+<p><code>rowExpandLevel / columnExpandLevel</code>: Default expand level    </p>
+</li>
+<li>
+<p>When customizing <code>rowTree / columnTree</code>, you can use <code>node.hierarchyState</code> to set the collapse state of each node    </p>
+</li>
+</ul>
+<h2 id="problem">Problem</h2>
+<p>From the above requirements, we might have some questions❓:    \r</p>
+<ol>
+<li>
+<p>How to render a tree-like <code>rowHeader / columnHeader</code>, and what <strong>data</strong> is needed?    </p>
+</li>
+<li>
+<p>Different <code>rowHierarchyType / columnHierarchyType</code> will have different <strong>merged cells and expansion logic</strong>, how to handle it more elegantly?    </p>
+</li>
+<li>
+<p>How does the <strong>layout algorithm</strong> handle these types of <code>HierarchyType</code>    </p>
+</li>
+</ol>
+<h2 id="source-code">Source Code</h2>
+<p>In section 7.2 "Automatic Organization of Dimension Tree", we learned that in the <code>setRecords</code> method of the <code>Dataset</code> module, the dimension members <code>rowKeys</code> collected from the raw data are used to <strong>call</strong> <code>**ArrToTree**</code> <strong>to assemble the dimension tree, stored in</strong> <code>**Dataset.rowHeaderTree**</code><strong>.</strong></p>
+<p>Subsequent PivotTable will continue to process based on <code>rowHeaderTree</code>, rendering the tree header. Let's take a look at the details of this entire process.    </p>
+<h3 id="datasetrowheadertree-colheadertree">Dataset.rowHeaderTree / colHeaderTree</h3>
+<ul>
+<li>
+<p>If the user passes a custom tree <code>customRowTree/colHeaderTree</code>, it is directly assigned to <code>dataset.rowHeaderTree / colHeaderTree</code>    </p>
+</li>
+<li>
+<p>Otherwise, use <code>ArrToTree</code> and <code>ArrToTree1</code> to convert dimension members <code>rowKeys</code> and <code>colKeys</code> into a tree structure, and then assign values.    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// packages/vtable/src/dataset/dataset.ts
+export class Dataset {
+    ...
+
+    setRecords(records: any[] | Record&lt;string, any[]&gt;) {
+        ...
+
+        if (this.customRowTree) {
+            this.rowHeaderTree = this.customRowTree;
+        } else {
+            if (this.rowHierarchyType === 'tree') {
+                this.rowHeaderTree = this.ArrToTree1(...)
+            } else {
+                this.rowHeaderTree = this.ArrToTree(...)
+            }
+        }
+
+        if (this.customColTree) {
+            this.colHeaderTree = this.customColTree;
+        } else {
+            this.colHeaderTree = this.ArrToTree(...)
+        }
+    }
+}    
+</code></pre>
+
+<h3 id="dimensiontree">DimensionTree</h3>
+<ul>
+<li>It will be passed from <code>dataset.rowHeaderTree / colHeaderTree</code> or user <code>custom header tree</code> as a parameter to the <code>DimensionTree</code> class, instantiated to generate <code>rowDimensionTree / columnDimensionTree</code></li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// packages/vtable/src/PivotTable.ts
+export class PivotTable extends BaseTable implements PivotTableAPI {
+    constructor(...) {
+        ...
+
+        const keysResults = parseColKeyRowKeyForPivotTable(this, options);
+        let { columnDimensionTree, rowDimensionTree } = keysResults;
+
+        ...
+
+        if (!options.columnTree) {
+
+            **columnDimensionTree = new DimensionTree(**
+                (this.dataset.colHeaderTree as ITreeLayoutHeadNode[]) ?? [],
+                ...
+            );
+        }
+
+        if (!options.rowTree) {
+
+            **rowDimensionTree = new DimensionTree(**
+                (this.dataset.rowHeaderTree as ITreeLayoutHeadNode[]) ?? [],
+                ...
+            )
+
+        }
+
+
+    }    
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>In the <code>constructor</code> function of the <code>DimensionTree</code> class, the core logic is in <code>this.setTreeNode(this.tree, 0, this.tree)</code>. <code>setTreeNode</code> is a recursive function that will <strong>traverse the tree</strong> and process each node with <code>setTreeNode</code>.</p>
+</li>
+<li>
+<p>Generate node <code>id</code>    </p>
+</li>
+<li>
+<p><strong>According to </strong><code>**hierarchyType**</code><strong> configuration and </strong><code>**node.hierarchyState**</code><strong>, update the </strong><code>**level**</code><strong> attribute of the node</strong> (to be used for layout later), update the <strong><code>DimensionTree</code></strong>'s <strong><code>totalLevel</code></strong> and <strong><code>size</code></strong> attributes    </p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/HV3nbhEezo70flxd4sHcKPVtnqh.gif' alt='' width='1000' height='auto'></p>
+<h3 id="pivotheaderlayoutmap">PivotHeaderLayoutMap</h3>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">**layoutMap is one of the core parameters of PivotTable,** which will directly determine the layout, width, and height of the cells.    
+</div>
+
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/PivotTable.ts
+export class PivotTable extends BaseTable implements PivotTableAPI {
+    constructor(...) {
+        ...
+
+        **this.internalProps.layoutMap = new PivotHeaderLayoutMap**(
+            this,
+            this.dataset,
+            columnDimensionTree,
+            rowDimensionTree
+        );
+    }    
+}    
+</code></pre>
+
+<p>Let's see what the <code>PivotHeaderLayoutMap</code> class does:    </p>
+<ol>
+<li><strong>Determine the logic for merged cells and node collapse state</strong>. The following four attributes will determine the display content and merged cell logic of <code>cornerHear</code>, <code>columnHear</code>, <code>rowHeader</code>    </li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/layout/pivot-header-layout.ts
+export class PivotHeaderLayoutMap implements LayoutMapAPI {
+    /**下面四份代表实际展示的 如果隐藏了某部分表头 那这里就会相比上面的数组少了隐藏掉的id 例如收hideIndicatorName影响*/
+    _cornerHeaderCellIds: number[][] = [];
+    private _columnHeaderCellIds: number[][] = [];
+    private _rowHeaderCellIds: number[][] = [];
+    private _rowHeaderCellIds_FULL: number[][] = []; //分页需求新增  为了保存全量的id  当页的是_rowHeaderCellIds
+
+    // 记录单元格 HeaderData 对象
+    cornerHeaderObjs: HeaderData[];
+    columnHeaderObjs: HeaderData[] = [];
+    rowHeaderObjs: HeaderData[] = [];
+    ...  
+}    
+</code></pre>
+
+<ul>
+<li>When <code>rowHierarchyType</code> is <code>grid</code>, the two-dimensional array <code>_rowHeaderCellIds</code> specifies the unique Id corresponding to each cell. If the Ids are the same, it indicates a merged cell situation. As shown in the left image below, Id:23 is a merged situation, and Id:27 is a non-merged situation. \r</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YGiqbH16soUzrexxVECcdcgrn6c.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>When <code>rowHierarchyType</code> is <code>tree</code>, all dimensions will be displayed in the same column, <code>_rowHeaderCellIds</code> will be as shown in the figure below: \r</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/P8hzbi3dYoUKJ2xC41GcYuEenxe.gif' alt='' width='842' height='auto'></p>
+<ul>
+<li>And <code>node.hierarchyState</code> will record the node's collapsed state    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KqblbdKpPopXLSxjxQvc11VTn3c.gif' alt='' width='870' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ItXHbqqswodGP9xCpJMcWINTnSg.gif' alt='' width='710' height='auto'></p>
+<ol>
+<li>The specific logic for generating row header and column header cell data can be seen in <code>this._addHeaders()</code>, <code>this._addHeadersForGridTreeMode()</code>, and <code>this._addHeadersForTreeMode()</code>.</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/layout/pivot-header-layout.ts
+export class PivotHeaderLayoutMap implements LayoutMapAPI {
+    ...
+
+    constructor(...) {
+
+        // 生成列表头单元格
+        this._generateColHeaderIds();
+        // 生成行表头单元格
+        this._generateRowHeaderIds();
+    }
+
+    _generateRowHeaderIds() {
+        if (this.rowDimensionTree.tree.children?.length &gt;= 1) {
+            if (this.rowHierarchyType === 'tree') {
+                **this._addHeadersForTreeMode(...)**
+            } else if (this.rowHierarchyType === 'grid-tree') {
+                const startRow = 0;
+                **this._addHeadersForGridTreeMode(...)**
+            } else {
+                **this._addHeaders(...)**
+            }
+    }
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>The logic of the three <code>this._addHeadersXX()</code> methods is similar, and they will combine with the <code>dealHeaderXX()</code> method to form recursive logic, <strong>traverse the tree, generate</strong> <code>**HeaderData**</code> <strong>type cell data</strong>, and perform appropriate storage.\r</p>
+</li>
+<li>
+<p>Generate <code>cornerHeadr</code> cell data; set column width    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/layout/pivot-header-layout.ts
+export class PivotHeaderLayoutMap implements LayoutMapAPI {
+    ...
+
+    constructor(...) {
+
+        this.cornerHeaderObjs = this._addCornerHeaders(
+          colDimensionKeys,
+          rowDimensionKeys,
+          this.columnsDefine.concat(...this.rowsDefine, ...extensionRowDimensions)
+        );
+
+        ...
+
+        this.setColumnWidths();
+    }
+}    
+</code></pre>
+
+<h3 id="create-scene-tree-rendering">Create Scene Tree &amp; Rendering</h3>
+<p>Create a scene tree, publish events, and celebrate!</p>
+<blockquote>
+<p><code>scenegraph.createSceneGraph()</code> actually belongs to the <strong>rendering engine</strong> (packages/vtable/src/scenegraph/scenegraph.ts), which is beyond the scope of this chapter, so it will not be analyzed in detail here.</p>
+</blockquote>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/PivotTable.ts
+export class PivotTable extends BaseTable implements PivotTableAPI {
+    constructor(...) {
+        ...
+
+        // 生成单元格场景树
+        this.scenegraph.createSceneGraph();
+
+        // 为了确保用户监听得到这个事件 这里做了异步 确保vtable实例已经初始化完成
+        setTimeout(() =&gt; {
+            this.fireListeners(TABLE_EVENT_TYPE.INITIALIZED, null);
+        }, 0);
+    }    
+}    
+</code></pre>
+
+<h2 id="process-summary">Process Summary</h2>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RGnzwGRjAhmCgHbthx5cXdWLngR.gif" /></p>
+<h1 id="custom-header">Custom Header</h1>
+<p>在<a href="https://www.visactor.io/vtable/guide/table_type/Pivot_table/custom_header"> VTable 自定义表头章节</a> 中，除了下面介绍了两种功能，还兼容了多种自定义维度树的 edge case，eg. 补全指标节点、自定义树不规则情况等。我们选取下面两种功能进行源码分析。    </p>
+<h2 id="custom-header-dimension-tree">Custom Header Dimension Tree</h2>
+<h3 id="requirements_1">Requirements</h3>
+<p>In certain business scenarios, the business side may expect the row and column dimension trees to be displayed exactly as specified. In this case, you can pass in the dimension trees using <code>rowTree</code> and <code>columnTree</code> to achieve this.    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DZeCb7UjXosoZVxECiRcKY1Fnze.gif' alt='' width='1000' height='auto'></p>
+<h3 id="source-code_1">Source Code</h3>
+<ul>
+<li>
+<p>Dataset    </p>
+</li>
+<li>
+<p>You can see that if the user passes a custom row header tree or column header tree, it is directly assigned to <code>dataset.rowHeaderTree / colHeaderTree</code>    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">export class Dataset {
+    ...
+
+    setRecords(records: any[] | Record&lt;string, any[]&gt;) {
+        ...
+
+        if (this.customRowTree) {
+            this.rowHeaderTree = this.customRowTree;
+        }
+        if (this.customColTree) {
+            this.colHeaderTree = this.customColTree;
+        }
+      }
+    }
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>DimensionTree    </p>
+</li>
+<li>
+<p>You can see that if the user passes a custom row header tree and column header tree, the tree provided by the user will be directly used in <code>new DimensionTree</code>    </p>
+</li>
+<li>
+<p>In fact, it is not using <code>dataset.rowHeaderTree / colHeaderTree</code> to generate <code>DimensionTree</code> </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages/vtable/src/PivotTable.ts
+export class PivotTable extends BaseTable implements PivotTableAPI {
+    constructor(...) {
+        ...
+
+        const keysResults = parseColKeyRowKeyForPivotTable(this, options);
+        let { columnDimensionTree, rowDimensionTree } = keysResults;
+    }    
+}
+
+// packages/vtable/src/layout/layout-helper.ts
+export function parseColKeyRowKeyForPivotTable(table: PivotTable, options: PivotTableConstructorOptions) {
+
+    if (options.columnTree) {
+        columnDimensionTree = new DimensionTree(
+            **(table.internalProps.columnTree as ITreeLayoutHeadNode[]) ?? [],**
+            ...
+        );
+    }
+    if (options.rowTree) {
+        rowDimensionTree = new DimensionTree(
+            **(table.internalProps.rowTree as ITreeLayoutHeadNode[]) ?? [],**
+            ...
+        );
+    }
+
+    return {
+        ...
+        columnDimensionTree,
+        rowDimensionTree
+    };
+}    
+</code></pre>
+
+<ul>
+<li>The subsequent process is consistent with the "tree display" process, which is to generate <code>layoutMap</code> and create a scene tree    </li>
+</ul>
+<h2 id="custom-header-column-merging">Custom Header Column Merging</h2>
+<h3 id="requirements_2">Requirements</h3>
+<p>In the node configuration of custom <code>rowTree</code> and <code>columnTree</code>, there is a <code>levelSpan</code> field that can be used to <strong>specify the range of header cell merging</strong>, with a default value of 1.    </p>
+<ul>
+<li>case1: Set "Taobao flagship store" with <code>levelSpan: 2</code>    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/H9e7bFDploGmPsxbXAvccTXlneh.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Fr4EbJPGUoqds5xQAt8cq0RFntd.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>case2: Set "Taobao" with <code>levelSpan: 2</code>    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YQ1RbVMN3o9clmxsbzJcZuEhnQc.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/PPF4brVESoMIhWxdnfGc7aBnnid.gif' alt='' width='1000' height='auto'></p>
+<p>From the two cases above, it can be seen that nodes with <code>levelSpan</code> set will <strong>merge downwards</strong> the corresponding level of cells; their descendant nodes will render normally, but the total depth of the header remains unchanged, and <strong>nodes exceeding the depth will be hidden</strong>. The business side can set <code>levelSpan</code> as needed to render a more flexible custom header tree.</p>
+<h3 id="source-code_2">Source Code</h3>
+<ul>
+<li>DimensionTree    </li>
+</ul>
+<p>If <code>columnTree</code> is passed and <code>levelSpan</code> is set for a certain node, it will affect the logic of <code>DimensionTree.setTreeNode</code>.    </p>
+<ul>
+<li>
+<p>You can see <code>node.afterSpanLevel = node.afterSpanLevel + node.levelSpan</code>    </p>
+</li>
+<li>
+<p><code>level</code>: The actual level where the node is located    </p>
+</li>
+<li>
+<p><code>**afterSpanLevel**</code>: Calculate the level in the case of node spanning (+spanLevel)**    </p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Nktfblz6Xok6ibxe3Yhc9TT2nac.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/KdxibjVd2oHhA4xIcAAc07bVnkd.gif' alt='' width='680' height='auto'></p>
+<ul>
+<li>
+<p>PivotHeaderLayoutMap    </p>
+</li>
+<li>
+<p>It will affect the generation of <code>this._columnHeaderCellIds</code>. After traversing the column header tree through <code>this._addHeaders</code> and <code>dealHeader</code>, it is finally as shown in the figure below.    \r</p>
+</li>
+</ul>
+<div style="display: flex;"><div style="flex: 37; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NOFmbYwAPoRgUIx1Gh4cWklfnWf.gif' alt='' width='1000' height='auto'>
+</div><div style="flex: 62; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SC3IbtJ4YoNtKvxSILBcGKsVn4f.gif' alt='' width='758' height='auto'>
+</div></div>
+
+<h1 id="implementation-of-typical-interactions">Implementation of Typical Interactions</h1>
+<h2 id="expand-collapse-dimension-tree">Expand &amp; Collapse Dimension Tree</h2>
+<h3 id="interaction-effects">Interaction Effects</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/T7aHbjZZpoGAoxxFSrbcMZqZnhG.gif' alt='' width='1000' height='auto'></p>
+<h3 id="source-code_3">Source Code</h3>
+<p>We take the example of <strong>collapsing dimension tree nodes</strong> (<code>HierarchyState</code> from <code>expand</code> -&gt; <code>collapse</code>) for analysis.    </p>
+<h4 id="pivottabletogglehierarchystate">PivotTable.toggleHierarchyState</h4>
+<p>This method is the entry point. You can see:    \r</p>
+<ul>
+<li>
+<p>Actually calls <code>this._refreshHierarchyState()</code>    </p>
+</li>
+<li>
+<p>After completion, publish the <code>PIVOT_TABLE_EVENT_TYPE.TREE_HIERARCHY_STATE_CHANGE</code> event    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">toggleHierarchyState(col: number, row: number, recalculateColWidths: boolean = true) {
+    const hierarchyState = this.getHierarchyState(col, row);
+    if (hierarchyState === HierarchyState.expand) {
+        **this._refreshHierarchyState(col, row, recalculateColWidths);**
+        **this.fireListeners(PIVOT_TABLE_EVENT_TYPE.TREE_HIERARCHY_STATE_CHANGE,** {
+            col: col,
+            row: row,
+            hierarchyState: HierarchyState.collapse
+        });
+    } 
+    ...
+}    
+</code></pre>
+
+<h4 id="pivottable_refreshhierarchystate">PivotTable._refreshHierarchyState</h4>
+<p>The core logic can be seen as:    \r</p>
+<ul>
+<li>
+<p>Call <code>layoutMap.toggleHierarchyState()</code> to get information about added, deleted, and modified rows    </p>
+</li>
+<li>
+<p>Finally, call <code>this.scenegraph.updateRow()</code> to trigger the scene tree to redraw the row    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">_refreshHierarchyState(col: number, row: number, recalculateColWidths: boolean = true, beforeUpdateCell?: Function) {
+
+    ...
+    // 更新hover图标
+    this.stateManager.updateHoverIcon(col, row, undefined, undefined);
+
+    const isChangeRowTree = this.internalProps.layoutMap.isRowHeader(col, row);
+    // 获取 增、删、改 的行的信息
+    const **result**: {
+      addCellPositionsRowDirection?: CellAddress[];
+      removeCellPositionsRowDirection?: CellAddress[];
+      updateCellPositionsRowDirection?: CellAddress[];
+      addCellPositionsColumnDirection?: CellAddress[];
+      removeCellPositionsColumnDirection?: CellAddress[];
+      updateCellPositionsColumnDirection?: CellAddress[];
+    } = isChangeRowTree
+      ? **(this.internalProps.layoutMap as PivotHeaderLayoutMap).toggleHierarchyState(col, row)**
+      : (this.internalProps.layoutMap as PivotHeaderLayoutMap).toggleHierarchyStateForColumnTree(col, row);
+
+    // 更新折叠图标
+    this.scenegraph.updateHierarchyIcon(col, row);
+
+    // 触发场景树更新行绘制
+    **this.scenegraph.updateRow**(
+        result.removeCellPositionsRowDirection,
+        result.addCellPositionsRowDirection,
+        result.updateCellPositionsRowDirection,
+        recalculateColWidths
+     );
+}    
+</code></pre>
+
+<h4 id="pivotheaderlayoutmaptogglehierarchystate">PivotHeaderLayoutMap.toggleHierarchyState</h4>
+<p>You can see that the logic of this function is somewhat similar to the logic of the <code>PivotHeaderLayoutMap</code> constructor.</p>
+<ul>
+<li>
+<p>Reset <code>rowDimensionTree</code>    </p>
+</li>
+<li>
+<p>Call <code>_addHeadersForTreeMode</code><strong> </strong>to traverse the tree and recollect <code>_rowHeaderCellFullPathIds</code>    </p>
+</li>
+<li>
+<p>Call <code>diffCellAddress</code> to collect information on added, deleted, and modified rows, and finally return </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">export class PivotHeaderLayoutMap implements LayoutMapAPI {
+     // 点击某个单元格的展开折叠按钮 改变该节点的状态 维度树重置
+     toggleHierarchyState(col: number, row: number) {
+
+         this.rowDimensionTree.reset(this.rowDimensionTree.tree.children);
+         this._rowHeaderCellFullPathIds_FULL = [];
+         if (this.rowHierarchyType === 'tree') {
+             // 递归树重新生成
+             **this._addHeadersForTreeMode**(
+                this._rowHeaderCellFullPathIds_FULL,
+                0,
+                this.rowDimensionTree.tree.children,
+                [],
+                this.rowDimensionTree.totalLevel,
+                true,
+                this.rowsDefine,
+                this.rowHeaderObjs
+             );
+         }
+
+         ...
+         this._rowHeaderCellFullPathIds_FULL = transpose(this._rowHeaderCellFullPathIds_FULL);
+
+         let diffCell: {
+             addCellPositionsRowDirection?: CellAddress[];
+             removeCellPositionsRowDirection?: CellAddress[];
+             updateCellPositionsRowDirection?: CellAddress[];
+             addCellPositionsColumnDirection?: CellAddress[];
+             removeCellPositionsColumnDirection?: CellAddress[];
+             updateCellPositionsColumnDirection?: CellAddress[];
+         };
+         if (this.rowHierarchyType === 'tree') {
+             diffCell = diffCellAddress(
+               col,
+               row,
+               oldRowHeaderCellIds.map(oldCellId =&gt; oldCellId[col - this.leftRowSeriesNumberColumnCount]),
+               this._rowHeaderCellFullPathIds_FULL.map(newCellId =&gt; newCellId[col - this.leftRowSeriesNumberColumnCount]),
+               oldRowHeaderCellPositons,
+               this
+             );
+         }
+
+         ...
+         this.generateCellIdsConsiderHideHeader();
+
+         ...
+         return diffCell;
+     }
+}    
+</code></pre>
+
+<h4 id="scenegraphupdaterow">Scenegraph.updateRow</h4>
+<p>The general logic is as follows:    \r</p>
+<ul>
+<li>
+<p>Call <code>updateRow()</code> method to add or delete rows    </p>
+</li>
+<li>
+<p>Call <code>this.recalculateColWidths()</code> to recalculate column widths    </p>
+</li>
+<li>
+<p>Call <code>this.component.updateScrollBar()</code> to update the scrollbar    </p>
+</li>
+<li>
+<p>Finally call <code>this.updateNextFrame()</code> to re-render    </p>
+</li>
+</ul>
+<h3 id="process-summary_1">Process Summary</h3>
+<ul>
+<li>
+<p>The core logic is in <code>PivotHeaderLayoutMap.toggleHierarchyState</code>: it will recursively regenerate the tree to create new header tree cell information (<code>_columnHeaderCellIds</code>, <code>_rowHeaderCellIds</code>); and collect information on added, deleted, and modified rows.    </p>
+</li>
+<li>
+<p>Finally, re-render the table with the generated change information    </p>
+</li>
+</ul>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

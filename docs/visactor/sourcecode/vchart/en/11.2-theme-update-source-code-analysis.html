@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11.2 Source Code Interpretation of Theme Updates</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="basic-concepts-of-theme-updates">Basic Concepts of Theme Updates</h1>
+<p>VChart theme switching is a common operation: for example, according to different seasons, holidays, or internationalization, personalized color schemes, and the common night mode. Users can manually or listen to the user's system to switch different styles of themes to adapt to different usage environments.    </p>
+<h2 id="theme-update-examples">Theme Update Examples</h2>
+<p>For example, registration and switching of night mode:    </p>
+<pre class="codehilite"><code class="language-xml">VChart.ThemeManager.registerTheme('darkTheme', { ... });
+VChart.ThemeManager.registerTheme('lightTheme', { ... });
+
+function toggleTheme(isDarkMode) {
+  const themeName = isDarkMode ? 'darkTheme' : 'lightTheme';
+  VChart.ThemeManager.setCurrentTheme(themeName);
+}    
+</code></pre>
+
+<p>Style switching for different application scenarios:</p>
+<pre class="codehilite"><code class="language-xml">// 不同风格的主题配置
+const themes = {
+  'finance': { ... },
+  'medical': { ... },
+  'technology': { ... }
+};
+
+Object.keys(themes).forEach(key =&gt; {
+  VChart.ThemeManager.registerTheme(key + 'Theme', themes[key]);
+});
+
+function switchDashboardTheme(businessType) {
+  const themeName = businessType + 'Theme';
+  VChart.ThemeManager.setCurrentTheme(themeName);
+}    
+</code></pre>
+
+<h1 id="source-code-location-and-content-related-to-themes">Source Code Location and Content Related to Themes</h1>
+<ul>
+<li>
+<p>package/vchart/scr/core/<strong>vchart.ts</strong>: The theme updater for a single chart instance, implementing the specific theme application logic, transforming the global theme into actual style changes for the chart. The main update logic of the chart is here.    </p>
+</li>
+<li>
+<p>package/vchart/src/core/instance-manager.ts: The central hub for chart instance registration and management, providing the infrastructure for traversing and locating theme instance updates, ensuring that each chart can receive theme updates.    </p>
+</li>
+<li>
+<p>package/vchart/src/theme/theme-manager.ts: The global theme scheduling center, responsible for theme registration, retrieval, and global updates, providing a unified theme management entry and coordination mechanism.    </p>
+</li>
+</ul>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">Through the methods defined in the `VChart` class, the core rendering and update logic of the chart is implemented. `ThemeManager` and `InstanceManager` are responsible for the global management of themes and instances, respectively, forming a decoupled, flexible, and extensible chart library architecture; `VChart` provides a unified update entry, implementing most of the update operation logic; while `ThemeManager` and `InstanceManager` achieve global theme updates through instance registration and traversal mechanisms.    </div>
+<h1 id="in-depth-analysis-of-the-theme-update-process">In-depth Analysis of the Theme Update Process</h1>
+<p>The VChart official website divides theme updates into two dimensions, namely    </p>
+<ul>
+<li>
+<p>Updating the theme of <strong>a single chart instance</strong>    </p>
+</li>
+<li>
+<p>Updating the theme of <strong>all charts globally</strong> through <code>ThemeManager</code>.    </p>
+</li>
+</ul>
+<p>The specific approach can be viewed at <a href="https://www.visactor.io/vchart/guide/tutorial_docs/Theme/Customize_Theme">🎁 VisActor Data Visualization Competition</a>. Both methods use the same <code>setCurrentTheme</code> call to switch themes. The former is called by an instance generated by the VChart object, updating a single chart; the latter is called through <code>ThemeManager</code>, updating the global chart theme. Therefore, my approach to reading the source code is based on the declaration and definition of the <code>setCurrentTheme</code> method, delving deeper layer by layer.    </p>
+<h2 id="example">Example:</h2>
+<p>Updating a single instance:    </p>
+<pre class="codehilite"><code class="language-xml">const vchart = new VChart(spec, { dom: CONTAINER_ID });
+//单个theme实例的更新
+vchart.setCurrentTheme('userTheme');    
+</code></pre>
+
+<p>Update of global themes:</p>
+<pre class="codehilite"><code class="language-xml">// 注册主题
+VChart.ThemeManager.registerTheme('userTheme', theme);
+//全局主题更新
+VChart.ThemeManager.setCurrentTheme('userTheme');    
+</code></pre>
+
+<h2 id="theme-update-executor-vchartts-rnrnanalyze-update-behavior-focusing-on-reading-this-call-chain-rnrnu0060setcurrentthemeu0060-u0060setcurrentthemesyncu0060u0026u0060updatecustomconfigandrerenderu0060-u0060_setcurrentthemeu0060-execution-process-rnrn-u0060_setcurrenttheme-u0060rnr">Theme Update Executor: VChart.ts \r\n\r\nAnalyze update behavior, focusing on reading this call chain: \r\n\r\n\u0060setCurrentTheme()\u0060→ \u0060setCurrentThemeSync()\u0060\u0026\u0060updateCustomConfigAndRerender()\u0060→ \u0060_setCurrentTheme()\u0060 execution process \r\n\r\n### \u0060_setCurrentTheme()  \u0060\r\n\r</h2>
+<pre class="codehilite"><code class="language-xml"> protected _setCurrentTheme(name?: string): IUpdateSpecResult {
+    this._updateCurrentTheme(name);
+    this._initChartSpec(this._getSpecFromOriginalSpec(), 'setCurrentTheme');
+    this._chart?.setCurrentTheme();
+    return { change: true, reMake: false };
+  }    
+</code></pre>
+
+<p>First, analyze the internal private method _setCurrentTheme, first trigger <code>_updateCurrentTheme</code>, enter the theme merging and parsing process explained in section 11-1, then reinitialize the chart specification (spec). <code>chart</code> is the core rendering instance of the chart, responsible for specific rendering and interaction logic. Here, the method <code>setCurrentTheme</code> is called, which will be analyzed in detail below.</p>
+<p>Finally, the returned { change: true, reMake: false } indicates: change means the configuration has changed, triggering a re-render, informing the rendering engine that an update is needed. reMake means a complete rebuild of the chart is not necessary, only a partial update is required. This structure is returned to trigger the chart update behavior in the subsequent <code>setCurrentThemeSync</code> in <code>updateCustomConfigAndRerender</code>.</p>
+<h3 id="setcurrentthemesync-updatecustomconfigandrerender"><code>setCurrentThemeSync()</code> &amp; <code>updateCustomConfigAndRerender()</code></h3>
+<pre class="codehilite"><code class="language-xml"> /**
+   * **同步方法** 设置当前主题。
+   * **注意，如果在 spec 上配置了 theme，则 spec 上的 theme 优先级更高。**
+   * @param name 主题名称
+   * @returns
+   */
+  setCurrentThemeSync(name: string) {
+    if (!ThemeManager.themeExist(name)) {
+      return this as unknown as IVChart;
+    }
+    const result = this._setCurrentTheme(name);
+    this._setFontFamilyTheme(this._currentTheme?.fontFamily as string);
+    this.updateCustomConfigAndRerender(result, true, {
+      transformSpec: false,
+      actionSource: 'setCurrentTheme'
+    });
+    return this as unknown as IVChart;
+  }    
+</code></pre>
+
+<p>After checking for null, we first get the agreed object { change: true, reMake: false }, which means the theme is updated and must trigger a re-render, but there is no need to completely rebuild the table, just a partial update is sufficient.    </p>
+<h4 id="updatecustomconfigandrerender"><code>updateCustomConfigAndRerender()</code></h4>
+<pre class="codehilite"><code class="language-xml">   //result: { change: true, reMake: false };
+
+   //调用updateCustomConfigAndRerender
+   this.updateCustomConfigAndRerender(result, true, {
+      transformSpec: false,
+      actionSource: 'setCurrentTheme'
+   });
+
+  //updateCustomConfigAndRerender具体实现
+  updateCustomConfigAndRerender(
+    updateSpecResult: IUpdateSpecResult | (() =&gt; IUpdateSpecResult),
+    sync?: boolean,
+    option: IVChartRenderOption = {}
+  ) {
+    if (this._isReleased || !updateSpecResult) {
+      return undefined;
+    }
+    if (isFunction(updateSpecResult)) {
+      updateSpecResult = updateSpecResult();
+    }
+
+    if (updateSpecResult.reAnimate) {
+      this.stopAnimation();
+      this._updateAnimateState(true);
+    }
+
+    this._reCompile(updateSpecResult);
+    if (sync) {
+      return this._renderSync(option);
+    }
+    return this._renderAsync(option);
+  }
+</code></pre>
+
+<p><code>updateCustomConfigAndRerender</code> 是主题重渲染的核心逻辑，也是任何主题配置更改（数据模型、图表spec等发生更改时）重渲染的核心。在主题更新里的逻辑并不复杂，因为传入的<code>updateSpecResult</code>：{ change: true, reMake: false } 并不包括动画处理、也不是函数类型，只执行了<code>_reCompile()</code>和<code>_renderSync()</code>;    </p>
+<h5 id="recompile"><code>recompile()</code></h5>
+<pre class="codehilite"><code class="language-xml">  protected _reCompile(updateResult: IUpdateSpecResult, morphConfig?: IMorphConfig) {
+    if (updateResult.reMake) {
+      this._releaseData();
+      this._initDataSet();
+      this._chart?.release();
+      this._chart = null as unknown as IChart;
+    }
+
+    if (updateResult.reTransformSpec) {
+      // 释放图表等等
+      this._chartSpecTransformer = null;
+    }
+
+    // 卸载了chart之后再设置主题 避免多余的reInit
+    if (updateResult.changeTheme) {
+      this._setCurrentTheme();
+      this._setFontFamilyTheme(this._currentTheme?.fontFamily as string);
+    } else if (updateResult.changeBackground) {
+      this._compiler?.setBackground(this._getBackground());
+    }
+
+    if (updateResult.reMake) {
+      // 如果不需要动画，那么释放item，避免元素残留
+      this._compiler?.releaseGrammar(this._option?.animation === false || this._spec?.animation === false);
+      // chart 内部事件 模块自己必须删除
+      // 内部模块删除事件时，调用了event Dispatcher.release() 导致用户事件被一起删除
+      // 外部事件现在需要重新添加
+      this._userEvents.forEach(e =&gt; this._event?.on(e.eType as any, e.query as any, e.handler as any));
+
+      if (updateResult.reSize) {
+        this._doResize();
+      }
+    } else {
+      if (updateResult.reCompile) {
+        // recompile
+        // 清除之前的所有 compile 内容
+        this._compiler?.clear(
+          { chart: this._chart, vChart: this },
+          this._option?.animation === false || this._spec?.animation === false
+        );
+        // TODO: 释放事件？ vgrammar 的 view 应该不需要释放，响应的stage也没有释放，所以事件可以不绑定
+        // 重新绑定事件
+        // TODO: 释放XX？
+        // 重新compile
+        this._compiler?.compile({ chart: this._chart, vChart: this }, {});
+      }
+      if (updateResult.reSize) {
+        const { width, height } = this.getCurrentSize();
+        this._chart.onResize(width, height, false);
+        this._compiler.resize(width, height, false);
+      }
+    }
+  }    
+</code></pre>
+
+<ul>
+<li>
+<p>When reMake is true, the chart will be completely reset through <code>releaseData</code>, <code>initDataSet</code>, and <code>release</code>, releasing all related resources to prepare for re-rendering. As mentioned earlier, theme updates do not completely reset the chart.    </p>
+</li>
+<li>
+<p>When reMake is false, re-compilation and chart resizing will be performed based on the values of <code>reCompile</code> and <code>reSize</code>, respectively. Operations are implemented through methods on instances such as <code>_chart</code> and <code>_compiler</code>.    </p>
+</li>
+</ul>
+<p>After reading the source code, it is known that theme updates do not trigger reCompile operations. Generally, reCompile is needed only when there are additions or deletions in the graphics.    </p>
+<h5 id="_rendersync"><code>_renderSync()</code></h5>
+<pre class="codehilite"><code class="language-xml">  protected _renderSync = (option: IVChartRenderOption = {}) =&gt; {
+    const self = this as unknown as IVChart;
+    if (!this._beforeRender(option)) {
+      return self;
+    }
+    // 填充数据绘图
+    this._compiler?.render(option.morphConfig);
+    this._afterRender();
+    return self;
+  };
+</code></pre>
+
+<p>This is a synchronous rendering method, which prepares and checks before rendering through <code>_beforeRender</code> to ensure that the rendering conditions are met; it calls the <code>render</code> method of <code>_compiler</code> to perform the actual chart drawing, and can pass in transformation configurations; after completing the drawing, <code>_afterRender</code> performs post-rendering cleanup and state updates, and returns the current instance.    </p>
+<h2 id="principle-of-global-update">Principle of Global Update</h2>
+<h3 id="theme-scheduling-center-theme-manager">Theme Scheduling Center theme-manager</h3>
+<p>As mentioned earlier, the VChart instance updates the theme for a single chart, while the themeManager updates the global theme    </p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">https://www.visactor.io/vchart/guide/tutorial_docs/Theme/Customize_Theme    
+After registering the theme in `ThemeManager`, you can use `ThemeManager.setCurrentTheme` to hot-update the registered theme by theme name. Note: This method will affect all chart instances on the page.    
+</div>
+
+<pre class="codehilite"><code class="language-xml">  static setCurrentTheme(name: string) {
+    if (!ThemeManager.themeExist(name)) {
+      return;
+    }
+    ThemeManager._currentThemeName = name;
+    InstanceManager.forEach((instance: IVChart) =&gt; instance?.setCurrentTheme(name));
+  }    
+</code></pre>
+
+<p>It is not difficult to see that this method globally sets the current theme name, then iterates over all registered chart instances and calls <code>setCurrentTheme</code> on each instance, thereby achieving a global update of the theme for all instances.    </p>
+<h3 id="reason-for-theme-instance-operations-instance-manager">Reason for Theme Instance Operations instance-manager</h3>
+<p>The operation of the instance on the chart is actually because, within the constructor of the VChart class, the current VChart instance is registered in <code>InstanceManager.instances</code>, thereby supporting global operations such as unified theme updates.    </p>
+<pre class="codehilite"><code class="language-xml">  export class VChart implements IVChart {
+      constructor(spec: ISpec, options: IInitOption) {
+          //......其他
+          InstanceManager.registerInstance(this);
+      }
+ }    
+</code></pre>
+
+<h1 id="conclusion">Conclusion</h1>
+<p>In summary, most of the update operations in vchart.ts are implemented in the VChart class, not only involving theme updates but also other situations that require updates. Theme updates are just a part of it; the theme-manager and instance-manager allow developers to manage global theme updates through the registration and traversal of instances, achieving both single instance updates and global updates of themes.</p>
+<hr />
+<h1 id="this-document-is-provided-by">This document is provided by</h1>
+<p>Dun Dun (https://github.com/Shabi-x)</p>
+<h1 id="this-document-is-revised-and-organized-by">This document is revised and organized by</h1>
+<p><a href="https://github.com/xuanhun">Xuan Hun</a></p>
+</body>
+</html>

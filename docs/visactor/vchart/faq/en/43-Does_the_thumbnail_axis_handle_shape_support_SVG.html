@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>20. Does the primitive shape support SVG?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="title">Title</h2>
+<p>Does the graphic shape in the chart support custom SVG?</br></p>
+<h2 id="description">Description</h2>
+<p>How to customize the start and end icons in datazoom? Tried the configurable items in dataZoom.startHandler.style symbolType and didn't find what I needed</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/UjNabX2gsonUhBxus1Xc4Pjjnsb.gif' alt='' width='996' height='180'></p>
+<h2 id="solution">Solution</h2>
+<p>Configure symbolType in the primitive style. The shape type of symbol supports passing in built-in types, and can also be set to a custom path string and svg image. The same configuration can be done for any symbol type primitive in VChart.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Tt2lbHrqFoc3Alxu16ycNDFHnff.gif' alt='' width='3254' height='1498'></p>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code>const spec = {
+  color: [
+    '#3855df',
+    '#ffc52b',
+    '#5ecf78',
+    '#fb7a00',
+    '#0acffd',
+    '#217dfd',
+    '#98dd61',
+    '#3150e0',
+    '#714efd',
+    '#0bcfff',
+    '#3d0dde',
+    '#ffc527',
+    '#f5c13f',
+    '#fb7a08',
+    '#95d8fd'
+  ],
+  type: 'rangeColumn',
+  direction: 'horizontal',
+  yField: 'type',
+  minField: 'start_time',
+  maxField: 'end_time',
+  seriesField: 'color',
+  dataZoom: [
+    {
+      orient: 'bottom',
+      height: 20,
+      start: 0.1,
+      endValue: 1681956000,
+      filterMode: 'axis',
+      brushSelect: false,
+      startText: {
+        formatMethod: text =&gt; Math.floor(text)
+      },
+      endText: {
+        formatMethod: text =&gt; Math.floor(text)
+      },
+      startHandler: {
+        style: {
+          dy: -12,
+          dx: -8,
+          symbolType: '&lt;svg t=&quot;1714125379383&quot; class=&quot;icon&quot; viewBox=&quot;0 0 1024 1024&quot; version=&quot;1.1&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; p-id=&quot;20427&quot; width=&quot;200&quot; height=&quot;200&quot;&gt;&lt;path d=&quot;M827.505255 195.268312C652.829957 20.593014 369.558335 20.593014 194.883037 195.269335 20.202623 369.94975 20.201599 653.220349 194.876897 827.895647c174.681438 174.681438 457.952037 174.679391 632.632451 0C1002.18567 653.220349 1002.18567 369.94975 827.505255 195.268312zM352.449679 703.530175l-63.700811 0L288.748868 319.832306l63.700811 0L352.449679 703.530175zM543.467177 703.530175l-63.700811 0L479.766366 319.832306l63.700811 0L543.467177 703.530175zM735.848743 703.530175l-63.700811 0L672.147932 319.832306l63.700811 0L735.848743 703.530175z&quot; fill=&quot;#272636&quot; p-id=&quot;20428&quot;&gt;&lt;/path&gt;&lt;/svg&gt;'
+        }
+      }
+    }
+  ],
+  axes: [
+    { orient: 'left', type: 'band', bandPadding: 0.5, visible: false },
+    {
+      type: 'time',
+      orient: 'bottom',
+      layers: [
+        {
+          tickStep: 28800,
+          timeFormat: '%Y%m%d %H:%M'
+        }
+      ]
+    }
+  ],
+  title: {
+    textStyle: {
+      character: [
+        {
+          text: 'Time-Consuming Distribution',
+          fontWeight: 400,
+          fill: '#222'
+        },
+        {
+          text: 'Show the SQL distribution of TOP 100',
+          fontWeight: 200,
+          fontSize: 10,
+          fill: '#555'
+        }
+      ]
+    }
+  },
+  tooltip: {
+    visible: true,
+    dimension: {
+      visible: false
+    },
+    mark: {
+      title: {
+        key: 'Query ID',
+        value: datum =&gt; 'Query ID: ' + datum['id']
+      },
+      content: [
+        {
+          key: 'Time Consuming',
+          value: datum =&gt; datum['useTime']
+        },
+        {
+          key: 'start time',
+          value: datum =&gt; datum['start_time']
+        },
+        {
+          key: 'end time',
+          value: datum =&gt; datum['end_time']
+        }
+      ]
+    }
+  },
+  data: [
+    {
+      id: 'data0',
+      values: [
+        {
+          start_time: 1681926000,
+          end_time: 1681927200,
+          type: 'TOP 1',
+          color: 'A',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681926000,
+          end_time: 1681959600,
+          type: 'TOP 2',
+          color: 'B',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681925400,
+          end_time: 1681974000,
+          type: 'TOP 3',
+          color: 'C',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681924800,
+          end_time: 1681933200,
+          type: 'TOP 4',
+          color: 'D',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681959600,
+          end_time: 1681963200,
+          type: 'TOP 5',
+          color: 'E',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681970400,
+          end_time: 1681971000,
+          type: 'TOP 5',
+          color: 'F',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681992000,
+          end_time: 1681992600,
+          type: 'TOP 5',
+          color: 'G',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681956000,
+          end_time: 1681963200,
+          type: 'TOP 6',
+          color: 'H',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681990200,
+          end_time: 1681993800,
+          type: 'TOP 7',
+          color: 'I',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681948800,
+          end_time: 1681959600,
+          type: 'TOP 8',
+          color: 'J',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        },
+        {
+          start_time: 1681945200,
+          end_time: 1681956000,
+          type: 'TOP 9',
+          color: 'K',
+          id: 'a90292870-9282',
+          useTime: '100ms'
+        }
+      ].reverse()
+    }
+  ]
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID, animation: false });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="results">Results</h2>
+<p>Online demo：https://codesandbox.io/p/sandbox/svg-symbol-8k9tdz?file=%2Fsrc%2Findex.ts%3A208%2C29</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WY3rbaQqbobdJTx4ZAlcM5npnbb.gif' alt='' width='1492' height='1062'></p>
+<h2 id="related-documentation">Related Documentation</h2>
+<p>DataZoom Demo: https://visactor.bytedance.net/vchart/demo/data-zoom/state-with-data</br>
+Related Api：https://visactor.io/vchart/option/lineChart#dataZoom.startHandler.style.symbolType</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

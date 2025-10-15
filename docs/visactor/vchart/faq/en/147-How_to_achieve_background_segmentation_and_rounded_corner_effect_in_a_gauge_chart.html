@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>147-How_to_achieve_background_segmentation_and_rounded_corner_effect_in_a_gauge_chart</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-achieve-background-segmentation-and-rounded-corner-effect-in-a-gauge-chart">How to achieve background segmentation and rounded corner effect in a gauge chart?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>I saw this demo on the vchart website: <a href="https://www.visactor.io/vchart/demo/gauge-chart/clock">https://www.visactor.io/vchart/demo/gauge-chart/clock</a></p>
+<p>It looks like a variant of the gauge chart. Now I need to change the background of the regular gauge chart to a similar style, with segments and rounded corners. What should I do?</p>
+<p>I had tried to add the <code>circularProgress</code> series to gauge chart. But I can't achieve background segmentation and rounded corner effect.</p>
+<h2 id="solution">Solution</h2>
+<p>You can refer to the following demo and use another set of data to define background segmentation, and change the background series (corresponding attribute name of spec is "gauge") to the "gauge" series.</p>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const spec = {
+  type: 'gauge',
+  data: [
+    {
+      id: 'pointer',
+      values: [
+        {
+          type: 'A',
+          value: 0.6
+        }
+      ]
+    },
+    {
+      id: 'segment',
+      values: [
+        {
+          type: 'level1',
+          value: 0.4
+        },
+        {
+          type: 'level2',
+          value: 0.6
+        },
+        {
+          type: 'level3',
+          value: 0.8
+        }
+      ]
+    }
+  ],
+  gauge: {
+    type: 'gauge',
+    dataIndex: 1,
+    categoryField: 'type',
+    valueField: 'value',
+    seriesField: 'type',
+    segment: {
+      style: {
+        cornerRadius: 10
+      }
+    }
+  },
+  pointer: {
+    style: {
+      fill: '#666666'
+    }
+  },
+  categoryField: 'type',
+  valueField: 'value',
+  outerRadius: 0.8,
+  innerRadius: 0.5,
+  startAngle: -180,
+  endAngle: 0,
+  axes: [{ type: 'linear', orient: 'angle', grid: { visible: false } }]
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="result">Result</h2>
+<p><img alt="demo" src="/vchart/faq/65-0.png" /></p>
+<h2 id="quote">Quote</h2>
+<p>github：<a href="https://github.com/VisActor/VChart">https://github.com/VisActor/VChart</a></p>
+<p>gauge series spec: <a href="https://www.visactor.io/vchart/option/gaugeChart#gauge%EF%BC%88gauge%20%E7%B3%BB%E5%88%97%E7%89%88%E6%9C%AC%EF%BC%89.type('gauge')">https://www.visactor.io/vchart/option/gaugeChart#gauge%EF%BC%88gauge%20%E7%B3%BB%E5%88%97%E7%89%88%E6%9C%AC%EF%BC%89.type('gauge')</a></p>
+</body>
+</html>

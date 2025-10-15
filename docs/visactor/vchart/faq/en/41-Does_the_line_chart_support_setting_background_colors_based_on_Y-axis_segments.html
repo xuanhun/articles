@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can a line chart set different background colors for each section along the y-axis?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>Can a line chart set different background colors for each section along the y-axis?</br></p>
+<h2 id="problem-description">Problem Description</h2>
+<p>In the following line chart, is it possible to set background colors for each section along the y-axis?</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VWGZbRM14oC1mOxSGn2cyOJSnUe.gif' alt='' width='1496' height='1040'></p>
+<h2 id="solution">Solution</h2>
+<p>There are two ways you can achieve this background color request.</br>
+*  Solution 1: You can set the grid fill color by configuring <code>axes.grid.alternateColor</code>:</br></p>
+<pre class="codehilite"><code>axes: [
+    {
+      orient: 'left',
+      grid: {
+        alternateColor: [
+          'rgba(0, 255, 0, 0.3)', 
+          'rgba(255, 0, 0, 0.2)',
+          'rgba(0, 0, 255, 0.2)'
+          ]
+      }
+    }
+  ]&lt;/br&gt;
+</code></pre>
+
+<ul>
+<li>Solution 2: VChart supports a variety of annotation components, among which <code>markArea</code> can be used to configure annotation blocks. Therefore, we can configure the background color blocks in the following way</br></li>
+</ul>
+<pre class="codehilite"><code>markArea: [
+    {
+      y: 0,
+      y1: 5,
+      area: {
+        style: {
+          fill: 'red',
+          fillOpacity: 0.2
+        }
+      }
+    },
+
+    {
+      y: 5,
+      y1: 10,
+      area: {
+        style: {
+          fill: 'yellow',
+          fillOpacity: 0.2
+        }
+      }
+    },
+
+    {
+      y: 10,
+      y1: 15,
+      area: {
+        style: {
+          fill: 'pink',
+          fillOpacity: 0.2
+        }
+      }
+    },
+
+    {
+      y: 15,
+      y1: 20,
+      area: {
+        style: {
+          fill: 'green',
+          fillOpacity: 0.2
+        }
+      }
+    },
+   ]&lt;/br&gt;
+</code></pre>
+
+<h2 id="code-examples">Code Examples</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'line',
+  data: {
+    values: [
+      {
+        time: '2:00',
+        value: 8
+      },
+      {
+        time: '4:00',
+        value: 9
+      },
+      {
+        time: '6:00',
+        value: 11
+      },
+      {
+        time: '8:00',
+        value: 14
+      },
+      {
+        time: '10:00',
+        value: 16
+      },
+      {
+        time: '12:00',
+        value: 17
+      },
+      {
+        time: '14:00',
+        value: 17
+      },
+      {
+        time: '16:00',
+        value: 16
+      },
+      {
+        time: '18:00',
+        value: 15
+      }
+    ]
+  },
+  xField: 'time',
+  yField: 'value',
+  markArea: [
+    {
+      y: 0,
+      y1: 5,
+      area: {
+        style: {
+          fill: 'red',
+          fillOpacity: 0.2
+        }
+      }
+    },
+
+    {
+      y: 5,
+      y1: 10,
+      area: {
+        style: {
+          fill: 'yellow',
+          fillOpacity: 0.2
+        }
+      }
+    },
+
+    {
+      y: 10,
+      y1: 15,
+      area: {
+        style: {
+          fill: 'pink',
+          fillOpacity: 0.2
+        }
+      }
+    },
+
+    {
+      y: 15,
+      y1: 20,
+      area: {
+        style: {
+          fill: 'green',
+          fillOpacity: 0.2
+        }
+      }
+    },
+   ]
+};&lt;/br&gt;
+</code></pre>
+
+<h2 id="results-show">Results Show</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AJaHbsUkJoK4QVxVJuWcfHmGnvf.gif' alt='' width='1474' height='1070'></p>
+<h2 id="related-documents">Related Documents</h2>
+<ul>
+<li><a href="https%3A%2F%2Fgithub.com%2FVisActor%2FVChart">github</a></br></li>
+<li><a href="https%3A%2F%2Fvisactor.com%2Fvchart%2Fguide%2Ftutorial_docs%2FChart_Concepts%2Fmarker">Marker Data Labeling Tutorial</a></br></li>
+<li><a href="https%3A%2F%2Fvisactor.com%2Fvchart%2Foption%2FlineChart%23markArea">MarkArea Configuration Document</a></br></li>
+</ul>
+</body>
+</html>

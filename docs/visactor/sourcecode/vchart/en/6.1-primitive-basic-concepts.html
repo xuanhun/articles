@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6.1 Basic Concepts of Marks</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="basic-concepts">Basic Concepts</h1>
+<p>In VChart, <strong>Marks</strong> are the basic drawing units that make up a chart, representing the basic visual elements in a chart, such as points, lines, rectangles, polygons, etc. Generally, the users of marks mainly include:</p>
+<ul>
+<li>
+<p><code>Series</code>: The part of the chart used to display data. Different types of series are composed of different types of marks. For example, a line chart is composed of point marks (endpoints) and line marks, while a pie chart is mainly composed of arc marks and area marks... At this time, the types of marks contained in the series are determined by the type of series.</p>
+</li>
+<li>
+<p><code>Component</code>: Chart elements that provide auxiliary capabilities in the chart, helping with chart reading and interaction, such as axes, legends, annotations, etc. These components are also composed of marks. Thus, marks are not only used to display data but also serve as the basic units that make up various elements in a chart.</p>
+</li>
+</ul>
+<h1 id="functions-of-marks">Functions of Marks</h1>
+<p>Overall, the functions of marks can be summarized as:</p>
+<ol>
+<li>
+<p><strong>Constituting Charts</strong></p>
+</li>
+<li>
+<p>Composing various components of a chart, for example, a legend item is composed of <code>symbol</code> marks and <code>text</code> marks.</p>
+</li>
+<li>
+<p><strong>Displaying Data</strong></p>
+</li>
+<li>
+<p>Data Mapping: Marks map data into visual elements, making abstract data intuitive and understandable.</p>
+</li>
+<li>
+<p>Information Conveyance: Through different types and styles of marks, convey the characteristics and trends of data.</p>
+</li>
+<li>
+<p>Interaction Support: Marks support user interaction with the chart, such as hover, click, etc., enhancing the explorability of data.</p>
+</li>
+</ol>
+<h1 id="overview-of-mark-types">Overview of Mark Types</h1>
+<p>VChart defines various basic and composite mark types, including but not limited to:</p>
+<p><strong>Basic Marks:</strong></p>
+<ul>
+<li>
+<p><strong>Symbol:</strong> Used to represent basic shapes of data points, such as points in a scatter plot.</p>
+</li>
+<li>
+<p><strong>Rectangle (rect):</strong> Used to draw bars in a bar chart, etc.</p>
+</li>
+<li>
+<p><strong>Line:</strong> Used to connect data points, commonly seen in line charts.</p>
+</li>
+<li>
+<p><strong>Rule:</strong> Draws a straight line at a specific position, can be used to indicate thresholds, etc.</p>
+</li>
+<li>
+<p><strong>Arc:</strong> Used to draw arcs, such as sectors in a pie chart.</p>
+</li>
+<li>
+<p><strong>Area:</strong> Represents filled areas, commonly used in area charts.</p>
+</li>
+<li>
+<p><strong>Text:</strong> Adds text annotations in the chart.</p>
+</li>
+<li>
+<p><strong>Path:</strong> Draws paths of arbitrary shapes.</p>
+</li>
+<li>
+<p><strong>Image:</strong> Embeds images in the chart.</p>
+</li>
+<li>
+<p><strong>3D Rectangle (rect3d):</strong> Used to draw 3D bar charts, etc.</p>
+</li>
+<li>
+<p><strong>3D Arc (arc3d):</strong> Used to draw sectors of 3D pie charts, etc.</p>
+</li>
+<li>
+<p><strong>Polygon:</strong> Draws polygonal areas.</p>
+</li>
+</ul>
+<p><strong>Custom Marks:</strong> See details</p>
+<h1 id="code-structure">Code Structure</h1>
+<p>The core code entry for implementing marks is <code>packages/vchart/src/mark</code>. This section provides a brief description of the code structure and functionality. For the specific logic of marks, see .</p>
+<p>The <code>mark</code> module can be divided into the following core modules:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/L30MbO0T4od8ndxmypVciRK9nDe.gif' alt='' width='846' height='auto' /></p>
+<p>Among them:    </p>
+<ul>
+<li>
+<p>All specific Marks inherit from <code>BaseMark</code> and bridge with vgrammar through <code>CompilableMark</code>    </p>
+</li>
+<li>
+<p>All Marks implement the <code>IMarkRaw</code> interface, and for the style system, the <code>IVisualSpecStyle</code> interface needs to be implemented    </p>
+</li>
+</ul>
+<p>The inheritance chain where the graphic element is located:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/O3BxbTey0ostv1x1WMAcI9NNnGb.gif' alt='' width='1000' height='auto' /></p>
+<ol>
+<li>
+<p>Basic Module (base/)</p>
+</li>
+<li>
+<p>Core file: <code>base-mark.ts</code></p>
+</li>
+<li>
+<p>Function overview: The base class for all graphic elements, containing common attributes and operations of the elements. Key attributes include:</p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">  // 存储图元的样式状态，包括 normal、hover、selected 等状态的样式配置。
+  declare stateStyle: IMarkStateStyle&lt;T&gt;;
+
+  // 图元的初始化选项，包含上下文、全局缩放、模型等信息。
+  protected declare _option: IMarkOption;
+
+  // 图元的属性上下文，通常与图元的使用者（如 series 或 component）相关。
+  protected _attributeContext: IModelMarkAttributeContext;
+
+  // 扩展通道，用于在计算通道时添加默认通道以确保更新有效。
+  _extensionChannel: {
+    [key: string | number | symbol]: string[];
+  } = {};
+
+  // 扩展计算通道，用于在计算属性时添加额外的计算逻辑。
+  _computeExChannel: {
+    [key: string | number | symbol]: ExChannelCall;
+  } = {};    
+</code></pre>
+
+<p>The key interfaces provided externally are:    </p>
+<pre class="codehilite"><code class="language-Typescript">// *根据 spec 初始化 style*
+initStyleWithSpec(spec: IMarkSpec&lt;T&gt;, key?: string);
+
+// 设置图元style
+setStyle&lt;U extends keyof T&gt;(style: Partial&lt;IMarkStyle&lt;T&gt;&gt;,state: StateValueType = 'normal',level: number = 0,stateStyle = this.stateStyle);
+
+// 获取style
+getStyle(key: string, state: StateValueType = 'normal'): any {return this.stateStyle[state][key]?.style;};
+
+// 计算属性值 这些属性值最终会被传递给底层渲染引擎（如 VGrammar）进行绘制
+getAttribute&lt;U extends keyof T&gt;(key: U, datum: Datum, state: StateValueType = 'normal', opt?: IAttributeOpt);
+
+// 设置属性值
+setAttribute&lt;U extends keyof T&gt;(attr: U,style: MarkInputStyle&lt;T[U]&gt;,state: StateValueType = 'normal',level: number = 0,stateStyle = this.stateStyle);    
+</code></pre>
+
+<ol>
+<li>
+<p>Interface Definition (interface/)    </p>
+</li>
+<li>
+<p>Core File: <code>common.ts</code>    </p>
+</li>
+<li>
+<p>Key Interfaces:    </p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// IMarkRaw 
+export interface IMarkRaw&lt;T extends ICommonSpec&gt; extends ICompilableMark {
+  // 图元状态样式（例如：hover，selected分别是什么样式）
+  readonly stateStyle: IMarkStateStyle&lt;T&gt;;
+  // 图元属性
+  getAttribute: &lt;U extends keyof T&gt;(key: U, datum: any, state?: StateValueType, opt?: any) =&gt; unknown;
+  setAttribute: &lt;U extends keyof T&gt;(attr: U, style: StyleConvert&lt;T[U]&gt;, state?: StateValueType, level?: number) =&gt; void;
+  // 图元样式
+  setStyle: (style: Partial&lt;IMarkStyle&lt;T&gt;&gt;, state?: StateValueType, level?: number) =&gt; void;
+  initStyleWithSpec: (spec: any, key?: string) =&gt; void;
+}
+
+// IMarkOption 用于初始化和管理图元的上下文、全局映射等信息。
+export interface IMarkOption extends ICompilableMarkOption {
+  model: IModel;
+  map: Map&lt;StringOrNumber, IModel | IMark&gt;;
+  // 全局映射
+  globalScale: IGlobalScale;
+  // 关联系列编号
+  seriesId?: number;
+  // 组件图元具体类型
+  componentType?: string;
+  attributeContext?: IModelMarkAttributeContext;
+}
+</code></pre>
+
+<ol>
+<li>
+<p>Specific Primitive Implementation:</p>
+</li>
+<li>
+<p>Representative files: <code>line.ts</code> / <code>symbol.ts</code> / <code>arc-3d.ts</code>, etc.</p>
+</li>
+<li>
+<p>Define additional configurations and operations for each type of primitive, generally need to implement:</p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">protected _getDefaultStyle() {
+  const defaultStyle: IMarkStyle&lt;IGroupMarkSpec&gt; = {
+    ...super._getDefaultStyle()
+    // 图元特有的配置
+  };
+  return defaultStyle;
+}    
+</code></pre>
+
+<p>For example, for the line element, the <code>_getIgnoreAttributes</code> method has been added to obtain the ignored attributes:</p>
+<pre class="codehilite"><code class="language-Typescript">protected _getIgnoreAttributes(): string[] {
+  if (this.model?.type === SeriesTypeEnum.radar &amp;&amp; this.model?.coordinate === *'polar'*) {
+    return [];
+  }
+  return [*'fill'*, *'fillOpacity'*];
+}    
+</code></pre>
+
+<ol>
+<li>
+<p>Primitive Set Management (mark-set)    </p>
+</li>
+<li>
+<p>Core file: <code>index.ts</code>    </p>
+</li>
+<li>
+<p>Main functions:    </p>
+</li>
+<li>
+<p>Provides unified management of multiple primitive instances, supporting add, delete, search, and update operations;    </p>
+</li>
+<li>
+<p>Supports searching primitives by name, type, ID, additional information, and other dimensions;    </p>
+</li>
+<li>
+<p>Stores metadata associated with Mark (<code>IMarkInfo</code>), used for style control and business logic judgment    </p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-xml">export class MarkSet {
+  protected _children: IMark[] = [];  // 存储所有 Mark 实例
+  protected _markNameMap: Record&lt;string, IMark&gt; = {}; // 名称索引
+  protected readonly _infoMap = new Map&lt;IMark, IMarkInfo&gt;(); // Mark 附加信息
+  // 添加 Mark 并关联信息
+  addMark(mark?: IMark, markInfo?: IMarkInfo) {
+    this._children.push(mark);
+    this._markNameMap[mark.name] = mark;
+    this._infoMap.set(mark, merge({}, MarkSet.defaultMarkInfo, markInfo));
+  }
+  // 按类型过滤 Mark
+  getMarksInType(type: string | string[]): IMark[] {
+    const types = array(type);
+    return this._children.filter(m =&gt; types.includes(m.type));
+  }
+  // 按自定义信息查找 Mark
+  getMarkWithInfo(info: Partial&lt;IMarkInfo&gt;) {
+    return this._children.find(mark =&gt; {
+      return Object.keys(info).every(key =&gt; info[key] === this._infoMap.get(mark)[key]);
+    });
+  }
+  // 其他核心方法
+  removeMark() { /* 删除逻辑 */ }
+  clear() { /* 清空集合 */ }
+  get() { /* 多方式获取 Mark */ }
+}    
+</code></pre>
+
+<p># This document was revised and organized by the following person 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>13. VTable使用问题：如何分别设置单元格四周边框样式</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何分别设置单元格四周边框样式</br></p>
+<h2 id="_2">问题描述</h2>
+<p>如何分别设置单元格四周边框样式，实现一个只有上下单元格边界线，没有左右边界线</br></p>
+<h2 id="_3">解决方案</h2>
+<p>table中的单元格样式，无论在column的style里或者theme里，单元格边框相关配置都支持配置为数组，分别代表上右下左四个方向的边框样式</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const option = {
+  columns: [
+    {
+      // ...
+      style: {
+        cellBorderLineWidth: [1, 0, 1, 0]
+        // ...
+      }
+    }
+  ]
+  // ...
+}&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NZaXbTuVOotRSixyDQpcYtXVnCd.gif' alt='' width='1698' height='1082'></p>
+<p>完整示例代码（可以粘贴到 <a href="https%3A%2F%2Fwww.visactor.io%2Fvtable%2Fdemo%2Ftable-type%2Flist-table-tree">编辑器</a> 上尝试一下）：</br></p>
+<pre class="codehilite"><code>let tableInstance;
+fetch('https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/North_American_Superstore_data.json')
+  .then(res =&gt; res.json())
+  .then(data =&gt; {
+    const columns = [
+      {
+        field: 'Order ID',
+        title: 'Order ID',
+        width: 'auto'
+      },
+      {
+        field: 'Customer ID',
+        title: 'Customer ID',
+        width: 'auto'
+      },
+      {
+        field: 'Product Name',
+        title: 'Product Name',
+        width: 'auto'
+      },
+      {
+        field: 'Category',
+        title: 'Category',
+        width: 'auto'
+      },
+      {
+        field: 'Sub-Category',
+        title: 'Sub-Category',
+        width: 'auto'
+      },
+      {
+        field: 'Region',
+        title: 'Region',
+        width: 'auto'
+      },
+      {
+        field: 'City',
+        title: 'City',
+        width: 'auto'
+      },
+      {
+        field: 'Order Date',
+        title: 'Order Date',
+        width: 'auto'
+      },
+      {
+        field: 'Quantity',
+        title: 'Quantity',
+        width: 'auto'
+      },
+      {
+        field: 'Sales',
+        title: 'Sales',
+        width: 'auto'
+      },
+      {
+        field: 'Profit',
+        title: 'Profit',
+        width: 'auto'
+      }
+    ];
+
+    const option = {
+      records: data,
+      columns,
+      widthMode: 'standard',
+      theme: {
+        headerStyle: {
+          borderLineWidth: [1, 0, 1, 0]
+        },
+        bodyStyle: {
+          borderLineWidth: [1, 0, 1, 0]
+        }
+      }
+      // theme: VTable.themes.SIMPLIFY
+    };
+    tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID), option);
+    window['tableInstance'] = tableInstance;
+  });&lt;/br&gt;
+</code></pre>
+
+<h2 id="_6">相关文档</h2>
+<p>相关api：https://www.visactor.io/vtable/option/ListTable#theme.bodyStyle.borderColor</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

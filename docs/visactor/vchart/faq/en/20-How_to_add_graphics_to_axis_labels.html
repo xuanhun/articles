@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to make the axis label with graphics in VChart?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-title">Question title</h2>
+<p>How to make axis labels with graphics in VChart?</br></p>
+<h2 id="problem-description">Problem description</h2>
+<p>Want to mark the special value label of the x-axis with a graph</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WedKbY1PIoM8C0x3kxIcj1eGnMf.gif' alt='' width='715' height='206'></p>
+<h2 id="solution">Solution</h2>
+<p>The label of the coordinate axis currently supports the configuration of rich text content.</br></p>
+<pre class="codehilite"><code> label: {
+        formatMethod: label =&gt; {
+          return {
+            type: 'rich',
+            text: [
+              {
+                text: `${label}`,
+                fontSize: 16,
+                fontWeight: 'bold',
+                fontStyle: 'italic'
+              },
+              { image: `icon address`, width: 40, height: 40 },
+            ]
+          };
+        }
+      }&lt;/br&gt;
+</code></pre>
+
+<h2 id="code-example">Code example</h2>
+<pre class="codehilite"><code>const rankIcon = {
+  'Top 1': 'https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/gold-medal.svg',
+  'Top 2': 'https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/silver-medal.svg',
+  'Top 3': 'https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/bronze-medal.svg'
+};
+const spec = {
+  type: 'bar',
+  height: 300,
+  data: [
+    {
+      id: 'barData',
+      values: [
+        { name: 'Top 1', value: 990 },
+        { name: 'Top 2', value: 680 },
+        { name: 'Top 3', value: 255 }
+      ]
+    }
+  ],
+  barWidth: 20,
+  yField: 'name',
+  xField: 'value',
+  bar: {
+    style: {
+      cornerRadius: [0, 10, 10, 0],
+      fill: {
+        gradient: 'linear',
+        x0: 0,
+        y0: 0.5,
+        x1: 1,
+        y1: 0.5,
+        stops: [
+          { offset: 0, color: 'rgb(255,163,1)' },
+          { offset: 1, color: 'rgb(255,4,0)' }
+        ]
+      }
+    }
+  },
+  barBackground: {
+    visible: true
+  },
+  label: {
+    visible: true,
+    position: 'center',
+    style: {
+      fill: 'white',
+      stroke: false
+    }
+  },
+  direction: 'horizontal',
+  seriesField: 'type',
+  padding: { left: 50 },
+  axes: [
+    {
+      orient: 'left',
+      minWidth: 50,
+      label: {
+        formatMethod: label =&gt; {
+          return {
+            type: 'rich',
+            text: [
+              { image: rankIcon[label], width: 40, height: 40 },
+              {
+                text: `${label}`,
+                fontSize: 16,
+                fontWeight: 'bold',
+                fontStyle: 'italic'
+              }
+            ]
+          };
+        }
+      }
+    }
+  ]
+};
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="results-show">Results show</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NoDfbCtxyo1VEuxKhcmcZhxKnF3.gif' alt='' width='840' height='308'></p>
+<h2 id="related-documents">Related Documents</h2>
+<ul>
+<li>github：https://www.visactor.io/vchart/option/barChart-axes-band#label.formatMethod</br></li>
+<li>Related demo: https://www.visactor.io/vchart/demo/axis/axis-richtext-label?keyword=axis</br></li>
+</ul>
+</body>
+</html>

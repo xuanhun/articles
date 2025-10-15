@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>82-How_to_use_chart_components_in_Taro</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-use-chart-components-in-taro-framework">How to use chart components in Taro framework?</h1>
+<h2 id="problem-description">Problem Description</h2>
+<p>I want to use charting components in Taro framework, any recommendations for out-of-the-box charting libraries?</p>
+<h2 id="solution">solution</h2>
+<p>Different chart libraries have different solutions. The following introduces the use of <a href="https://www.visactor.io/vchart/">VChart</a> chart library. In order to facilitate users to quickly access, VChart encapsulates the corresponding chart components: <code>@visactor/taro-vchart</code>. Currently, the environments supported by this component are:</p>
+<ul>
+<li><code>tt</code> byte applet.</li>
+<li><code>lark</code> Feishu applet.</li>
+<li><code>h5</code> browser environment, equivalent to <code>web</code>.</li>
+<li><code>web</code> browser environment, equivalent to <code>h5</code>.</li>
+</ul>
+<p>It is also very simple to use, just declare the component directly and pass in the corresponding chart configuration:</p>
+<pre class="codehilite"><code>&lt;VChart
+   type=&quot;tt&quot;
+   spec={spec}
+   canvasId=&quot;pie&quot;
+   style={{ height: '35vh', width: '100%' }}
+   onChartInit={chart =&gt; {
+     console.log('init pie');
+   }}
+   onChartReady={chart =&gt; {
+     console.log('ready pie');
+   }}
+   onChartUpdate={chart =&gt; {
+     console.log('update pie');
+   }}
+/&gt;
+</code></pre>
+
+<h2 id="code-example">Code Example</h2>
+<p>You can view our code repository directly: <a href="https://github.com/VisActor/VChart/blob/develop/packages/taro-vchart/gallery/pages/chart/index.tsx">Link</a></p>
+<h2 id="result-display">Result display</h2>
+<p>Let’s take the Feishu Mini Program as an example to see how VChart performs on the Feishu Mini Program:</p>
+<p>Clone our warehouse: <a href="https://github.com/VisActor/VChart">https://github.com/VisActor/VChart</a>, run:</p>
+<pre class="codehilite"><code>#clone
+$ git clone git@github.com:VisActor/VChart.git
+$ cdVChart
+# Install dependencies
+$ rush update
+# compile
+$ rush run -p @visactor/taro-vchart -s dev:lark
+</code></pre>
+
+<p>Then use Feishu developer tools to open and import <code>packages/taro-vchart/dist</code>.</p>
+<p><img alt="" src="/vchart/faq/90-1.png" /></p>
+<h2 id="related-documents">Related documents</h2>
+<ul>
+<li><a href="https://www.visactor.io/vchart/guide/tutorial_docs/Cross-terminal_and_Developer_Ecology/mini-app/how">Cross-terminal compatibility instructions</a></li>
+<li><a href="https://www.visactor.io/vchart/guide/tutorial_docs/cross-terminal_and_developer_ecology/taro">Taro usage tutorial</a></li>
+</ul>
+</body>
+</html>

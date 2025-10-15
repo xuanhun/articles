@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3.3 Row Height, Column Width Calculation</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="background-of-the-requirement">Background of the Requirement</h2>
+<p>During the rendering process of the table, cells are generated, but unlike the native DOM, Canvas cells cannot be expanded by content. We must know the row height and column width of the content in order to dynamically adjust the width and height of the cells based on the row height and column width.</p>
+<h3 id="solution">Solution</h3>
+<p>Suppose we have a piece of text     \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CpLIbXURWoMWixxpW4qcaFn9nIc.gif' alt='' width='378' height='auto'></p>
+<p>We want to calculate its width and height through Canvas, the usual operation is like this:    \r</p>
+<pre class="codehilite"><code class="language-javascript">const canvas = document.getElementById(&quot;canvas&quot;);
+const ctx = canvas.getContext(&quot;2d&quot;);
+ctx.font = ....
+let measure = ctx.measureText(&quot;@Visactor/VTable&quot;);
+const { 
+  actualBoundingBoxLeft，
+  actualBoundingBoxRight，
+  actualBoundingBoxAscent，
+  actualBoundingBoxDescent, 
+  width 
+} = measureText;
+const realWidth = Math.max(actualBoundingBoxLeft + actualBoundingBoxRight, width);
+const height = actualBoundingBoxAscent + actualBoundingBoxDescent;
+console.log(realWidth，height);    
+</code></pre>
+
+<h3 id="limitations">Limitations</h3>
+<p>However, this method can only obtain the most basic width and height, but there are many other influencing factors within the VTable, such as wrapping operations, which will affect the final calculation of width and height. So how to accurately calculate row height and column width for different configurations becomes a challenge. Next, let's see how the VTable operates internally.    \r</p>
+<h2 id="bounding-box">Bounding Box</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ZKj4bIrZ2o28FfxajKucgjuanlg.gif' alt='' width='529' height='auto'></p>
+<p>Before introducing the specific calculation logic, it is necessary to first introduce the concept of bounding boxes.    \r</p>
+<p>In the field of computer and graphic vision, a bounding box is a container that encloses a group of objects. By wrapping complex objects in simple containers, it is possible to approximate the shape of complex geometries with simple bounding boxes, which can improve computational efficiency. Additionally, simple objects are generally easier to check for overlap with each other.    \r</p>
+<p>In VRender, AABBBounds is implemented. AABBBounds is a relatively simple type of bounding box with poor tightness. Within VTable, each basic primitive maintains its own AABBBounds, which can be used to calculate width and height.</p>
+<p>Record the coordinates of the four vertices of the current bounding box in the AABBBounds instance. With the concept of a bounding box, it becomes much more convenient to implement functions such as width and height calculation, rotation, and cropping.    \r</p>
+<p>For example, if we want to get the height of a piece of text, we can directly calculate it using <code>this.y2 - this.y1</code>.    </p>
+<pre class="codehilite"><code class="language-Typescript">// VisActor/VUtil/blob/main/packages/vutils/src/data-structure/bounds.ts
+export class Bounds implements IBounds {
+  // 默认初始值是Number.MAX_VALUE
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+
+  constructor(bounds?: Bounds) {
+    if (bounds) {
+      this.setValue(bounds.x1, bounds.y1, bounds.x2, bounds.y2);
+    } else {
+      this.clear();
+    }
+  }
+  // ...
+  rotate(angle: number = 0, x: number = 0, y: number = 0) {
+    const p = this.rotatedPoints(angle, x, y);
+    return this.clear().add(p[0], p[1]).add(p[2], p[3]).add(p[4], p[5]).add(p[6], p[7]);
+  }
+  width(): number {
+    if (this.empty()) {
+      return 0;
+    }
+    return this.x2 - this.x1;
+  }
+  height(): number {
+    if (this.empty()) {
+      return 0;
+    }
+    return this.y2 - this.y1;
+  }    
+</code></pre>
+
+<p>Related Documents    </p>
+<ul>
+<li>
+<p><a href="https://baike.baidu.com/item/%E5%8C%85%E5%9B%B4%E7%9B%92/4562345">包围盒概念</a>    </p>
+</li>
+<li>
+<p>https://visactor.com/vrender/guide/asd/FAQ/What_Is_BoundsPadding    </p>
+</li>
+</ul>
+<h2 id="basic-width-and-height-calculation">Basic Width and Height Calculation</h2>
+<p>The underlying calculation of the width and height of the VTable relies on the AABBBounds provided by Visactor/Vutils to complete the calculation.    \r</p>
+<ul>
+<li>Accurate calculation of text width and height    \r</li>
+</ul>
+<p>First, use getTextBounds to get the bounding box corresponding to the text, and then use the internal width and height to get the dimensions. \r</p>
+<pre class="codehilite"><code class="language-Typescript">  // VisActor/VUtil/blob/main/packages/vutils/src/graphics/text/measure/textMeasure.ts
+  /** 精确计算文本宽高 */
+  fullMeasure(text: TextMeasureInput): ITextSize {
+    if (isNil(text)) {
+      return { width: 0, height: 0 };
+    }
+    if (isNil(this._option.getTextBounds) || !this._notSupportVRender) {
+      return this.measureWithNaiveCanvas(text); // 降级
+    }
+    const { fontFamily, fontSize, fontWeight, textAlign, textBaseline, ellipsis, limit, lineHeight } = this.textSpec;
+    let size: ITextSize;
+    //...
+     const bounds = this._option.getTextBounds({
+        text,
+        fontFamily,
+        fontSize,
+        fontWeight,
+        textAlign,
+        textBaseline,
+        ellipsis: !!ellipsis,
+        maxLineWidth: limit || Infinity,
+        lineHeight
+      });
+     size = { width: bounds.width(), height: bounds.height() };
+     //...
+    return size;    
+</code></pre>
+
+<ul>
+<li>Use native Canvas to calculate width and height    </li>
+</ul>
+<p>When encountering situations where VRender is not supported, native Canvas will be used to perform calculations.    </p>
+<pre class="codehilite"><code class="language-Typescript">// VisActor/VUtil/blob/main/packages/vutils/src/graphics/text/measure/textMeasure.ts
+  protected _measureWithNaiveCanvas(text: string): ITextSize {
+    if (!this.initContext()) {
+      return this._quickMeasureWithoutCanvas(text); // 降级
+    }
+    const metrics = this._context!.measureText(text);
+    const { fontSize, lineHeight } = this.textSpec;
+    return {
+      width: metrics.width,
+      height: (lineHeight as number) ?? fontSize,
+      fontBoundingBoxAscent: metrics.fontBoundingBoxAscent,
+      fontBoundingBoxDescent: metrics.fontBoundingBoxDescent
+    };
+  }
+</code></pre>
+
+<h2 id="column-width-calculation">Column Width Calculation</h2>
+<p>Let's first look at the calculation of column width    \r</p>
+<h3 id="column-width-calculation-mode">Column Width Calculation Mode</h3>
+<p>Table column width calculation modes, there are three configurations below:    </p>
+<ul>
+<li>
+<p>'standard': Use the width attribute specified width as the column width.</p>
+</li>
+<li>
+<p>'adaptive': Use the width of the table container to allocate column widths.    </p>
+</li>
+<li>
+<p>'autoWidth': Automatically calculate the column width based on the content in the column header and body cells, ignoring the width attribute setting.    </p>
+</li>
+</ul>
+<h3 id="calculation-process">Calculation Process</h3>
+<h4 id="impact-in-different-calculation-modes">Impact in Different Calculation Modes</h4>
+<p>To calculate the column width of an entire column, it is not enough to obtain the column width of a single row. Instead, you need to find the maximum column width in the entire column (this has different effects under different calculation modes).</p>
+<p>Assuming there are the following three cells, the content length of the three cells is not the same, you cannot randomly take the width of one cell as the column width for this column, there must be a definite width.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QwIKb6bB7oerLTx20C2cvWc4ndh.gif' alt='' width='519' height='auto'></p>
+<p>In VTable, different calculation modes for column widths have different logic for adjusting column widths:    \r</p>
+<ul>
+<li>standard    </li>
+</ul>
+<p>Under standard width, all widths will follow the default configuration;    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/JTRPbhucfozkXExx5zIcF1DUnze.gif' alt='' width='1000' height='auto'></p>
+<p>For example, the column width of the three cells above will be uniformly adjusted to 80px;    \r</p>
+<ul>
+<li>autoWidth    </li>
+</ul>
+<p>In autoWidth mode, the width of the entire column will be adjusted based on the longest column among all columns. It should be noted that the maximum column width cannot exceed <code>limitMaxAutoWidth</code>;</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CO3xbFXReoJUfLxQvLRcCFMinMe.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>adaptive    </li>
+</ul>
+<p>In the container width adaptation mode, the column width is first calculated based on autoWidth, and then the column width is proportionally scaled according to the ratio of the container column width to the actual column width.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/C6NxbzzeHoARy6xu9PSci8g0nLf.gif' alt='' width='1000' height='auto'></p>
+<h4 id="multi-column-width-calculation">Multi-column Width Calculation</h4>
+<p>Here is the overall flowchart with multiple column widths    </p>
+<ul>
+<li>computeColsWidth (packages\vtable\src\scenegraph\layout\compute-col-width.ts)    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NYiAbWKgzoIbEvx9pmlcShscn2f.gif' alt='' width='1000' height='auto'></p>
+<p>Internally, it will traverse by column and call <code>computeColWidth</code> for each column to calculate the width of the column separately.    </p>
+<h4 id="single-column-width-calculation">Single Column Width Calculation</h4>
+<ul>
+<li>computeColWidth    </li>
+</ul>
+<h5 id="pre-process">Pre-process</h5>
+<p>In the process of obtaining the overall column width, each column is traversed to get the width of that column. Depending on the columnWidthComputeMode, different rows are involved in calculating the width of the column.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/BbYzwdNeQhoW7vbSxdVcmr28nt5.gif' alt='' width='820' height='auto'></p>
+<h5 id="source-code">Source Code</h5>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\layout\compute-col-width.ts
+export function computeColWidth(
+  col: number,
+  startRow: number,
+  endRow: number,
+  table: BaseTableAPI,
+  forceCompute: boolean = false *//forceCompute如果设置为true 即便不是自动列宽的列也会按内容计算列宽*
+): number {
+  // 先判断列宽缓存里的列宽，再判断是否配置中针对该列定义了列宽
+  let width = getColWidthDefinedWidthResizedWidth(col, table);
+
+  if (
+    table.internalProps.transpose &amp;&amp;
+    width === 'auto' &amp;&amp;
+    ((table.columnWidthComputeMode === 'only-header' &amp;&amp; col &gt;= table.rowHeaderLevelCount) ||
+      (table.columnWidthComputeMode === 'only-body' &amp;&amp; col &lt; table.rowHeaderLevelCount))
+  ) {
+    width = table.getDefaultColumnWidth(col);
+  }
+
+  if (forceCompute &amp;&amp; !table.internalProps.transpose) {
+    return computeAutoColWidth(width, col, startRow, endRow, forceCompute, table);
+  } else if (typeof width === 'number') {
+    return width;
+  } else if (width !== 'auto' &amp;&amp; typeof width === 'string') {
+    *// return calc.toPx(width, table.internalProps.calcWidthContext);*
+    return table._adjustColWidth(col, table._colWidthDefineToPxWidth(width));
+  }
+  return computeAutoColWidth(width, col, startRow, endRow, forceCompute, table);
+}    
+</code></pre>
+
+<h5 id="flowchart">Flowchart</h5>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/U0L9bUtB4ozAMhx3FcgcOho4n3d.gif' alt='' width='1000' height='auto'></p>
+<h4 id="auto-calculate-column-width">Auto Calculate Column Width</h4>
+<p>In the previous process, there will be logic involving automatic calculation of column width. The core logic for calculating column width is located in <code>computeAutoColWidth</code>.    </p>
+<ul>
+<li>computeAutoColWidth（packages\vtable\src\scenegraph\layout\compute-col-width.ts）    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/BIQdb7kIboiMOhxXpewc9txEn6e.gif' alt='' width='1000' height='auto'></p>
+<h4 id="single-text-width-measurement">Single Text Width Measurement</h4>
+<p>In the previous process of calculating width, there will be situations involving measuring text width. Let's analyze the process of measuring single text width below.    \r</p>
+<h5 id="overall-process">Overall Process</h5>
+<ul>
+<li>computeTextWidth （packages\vtable\src\scenegraph\layout\compute-col-width.ts）    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MvfnbDYdboUB0dxuVMkcNPuVnzh.gif' alt='' width='1000' height='auto'></p>
+<h5 id="merging-cells-handling">Merging Cells Handling</h5>
+<p>For merged cells, a text will be divided by multiple cells, so after calculating the width, it needs to be divided by the number of columns spanned by the merged cells to calculate the actual width occupied by the current cell.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/VDirbmFJXoWnADxQz32c9hIZn9f.gif' alt='' width='455' height='auto'></p>
+<h5 id="calculation-formulas-for-different-types-of-cell-widths">Calculation Formulas for Different Types of Cell Widths</h5>
+<p>After calculating the basic cell width, certain special cells need to be readjusted. Take the radio button as an example:    \r</p>
+<ul>
+<li>Radio button calculation formula:    \r</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/EkbWbbALJoxJgnxDMkgcYVVUnah.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QPr3bl1I3oQrO3xx09wcC76knMc.gif' alt='' width='540' height='auto'></p>
+<h4 id="column-width-calculation-overall-process">Column Width Calculation Overall Process</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Dy8ibrEPiodNWnxVhQfcIoGtn7e.gif' alt='' width='1000' height='auto'></p>
+<h3 id="recalculate">Recalculate</h3>
+<h4 id="trigger-timing">Trigger Timing</h4>
+<p>There are multiple trigger points for recalculation, including:    \r</p>
+<ul>
+<li>
+<p>Expand/Collapse Header    </p>
+</li>
+<li>
+<p>Change cell value    </p>
+</li>
+<li>
+<p>Add rows and columns    </p>
+</li>
+<li>
+<p>Click to sort    </p>
+</li>
+</ul>
+<h4 id="source-code-implementation">Source Code &amp; Implementation</h4>
+<p>Let's take <code>recalculateColWidths</code>, which is triggered when a new row is added, as an example to explain the process of recalculating column widths:    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\scenegraph.ts
+  */**
+*   * recalculates column width in all autowidth columns*
+*   */*
+  recalculateColWidths() {
+    const table = this.table;
+
+    if (table.widthMode === 'adaptive' || table.autoFillWidth || table.internalProps.transpose) {
+      computeColsWidth(this.table, 0, this.table.colCount - 1, true);
+    } else {
+      table._clearColRangeWidthsMap();
+      *// left frozen*
+      if (table.frozenColCount &gt; 0) {
+        computeColsWidth(this.table, 0, table.frozenColCount - 1, true);
+      }
+      *// right frozen*
+      if (table.rightFrozenColCount &gt; 0) {
+        computeColsWidth(this.table, table.rightFrozenColCount, table.colCount - 1, true);
+      }
+      *// body*
+      computeColsWidth(table, this.proxy.colStart, this.proxy.colEnd, true);
+    }
+  }    
+</code></pre>
+
+<p>It can be seen that VTable gradually updates all the columns, where the fourth parameter of all computeColsWidth is true. Let's see what VTable does when update is true.\r</p>
+<ul>
+<li>Source code     </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\scenegraph\layout\compute-col-width.ts
+function computeColsWidth() {
+// ...
+  if (update) {
+    for (let col = 0; col &lt; table.colCount; col++) {
+      const newColWidth = newWidths[col] ?? table.getColWidth(col) ?? table.getColWidth(col);
+      if (newColWidth !== oldColWidths[col]) {
+        table._setColWidth(col, newColWidth, false, true);
+      }
+    }
+    table.stateManager.checkFrozen();
+    for (let col = 0; col &lt; table.colCount; col++) {
+      const newColWidth = table.getColWidth(col);
+      if (newColWidth !== oldColWidths[col]) {
+        table.scenegraph.updateColWidth(col, newColWidth - oldColWidths[col], true, true);
+      }
+    }
+    table.scenegraph.updateContainer(true);
+  }
+  //...
+ }    
+</code></pre>
+
+<p>It can be seen that the internal process will judge column by column, comparing the newly calculated width with the old width. Only when the width changes will it readjust the table width and update the scene tree elements. Then update the scene tree container.    \r</p>
+<h2 id="line-height-calculation">Line Height Calculation</h2>
+<p>Next, let's look at the logic for calculating line height.    \r</p>
+<h3 id="altitude-calculation-mode">Altitude Calculation Mode</h3>
+<p>There are three modes for calculating line height: 'standard' (standard mode), 'adaptive' (adaptive container height mode), or 'autoHeight' (automatic line height mode), with 'standard' as the default.</p>
+<ul>
+<li>
+<p>'standard': Use <code>defaultRowHeight</code> and <code>defaultHeaderRowHeight</code> as row height;    </p>
+</li>
+<li>
+<p>'adaptive': Scale proportionally based on the calculated height and the ratio of the container height to the calculated height;    </p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/N9Ezb0XzaoQxD2x6WPjckoX0nGc.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>'autoHeight': Automatically calculate row height based on content, calculated based on fontSize and lineHeight (text line height), as well as padding. Related setting option <code>autoWrapText</code> for automatic line wrapping can calculate row height based on the content of the wrapped multi-line text;</li>
+</ul>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">Note that when autoFillHeight = true is configured, the enlargement according to the ratio will only occur if the row height does not exceed the container height.</div>
+</div>
+<h3 id="core-processing">Core Processing</h3>
+<h4 id="overall-process_1">Overall Process</h4>
+<ul>
+<li>computeRowsHeight    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XHtabRxawoEdkxxxbayc8fc1nsg.gif' alt='' width='1000' height='auto'></p>
+<p>The logic calculated for each line individually is mainly located in <code>computeRowHeight</code>, which calculates the row height based on the configuration information.    </p>
+<h5 id="pre-update-check">Pre-Update Check</h5>
+<p>To enter automatic line height calculation, one of the following conditions must be met:    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YzWdwXVPWhfcZzbMQ79c2nxXnrE.gif' alt='' width='820' height='auto'></p>
+<h5 id="body-section-update">body section update</h5>
+<p>Regarding the update of the body section, for certain special cases, there will be some performance optimizations. Let's see how it is specifically operated:</p>
+<ol>
+<li>Display in columns     </li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\scenegraph\layout\compute-row-height.ts
+if (
+  *// 以列展示 且符合只需要计算第一行其他行可复用行高的条条件*
+  !(
+    table.internalProps.transpose ||
+    (table.isPivotTable() &amp;&amp; !(table.internalProps.layoutMap as PivotHeaderLayoutMap).indicatorsAsCol)
+  ) &amp;&amp;
+  !(table.options as ListTableConstructorOptions).customComputeRowHeight &amp;&amp;
+  checkFixedStyleAndNoWrap(table)
+) {
+  *// check fixed style and no wrap situation, fill all row width single compute*
+  *// traspose table and row indicator pivot table cannot use single row height*
+  const height = computeRowHeight(table.columnHeaderLevelCount, 0, table.colCount - 1, table);
+  fillRowsHeight(
+    height,
+    table.columnHeaderLevelCount,
+    table.rowCount - 1 - table.bottomFrozenRowCount,
+    table,
+    update ? newHeights : undefined
+  );
+  *//底部冻结的行行高需要单独计算*
+  for (let row = table.rowCount - table.bottomFrozenRowCount; row &lt;= rowEnd; row++) {
+    const height = computeRowHeight(row, 0, table.colCount - 1, table);
+    if (update) {
+      newHeights[row] = Math.round(height);
+    } else {
+      table._setRowHeight(row, height);
+    }
+  }
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>Precondition check    </p>
+</li>
+<li>
+<p>Table row and column transposition is not enabled or it is not a pivot table    \r</p>
+</li>
+<li>
+<p>No custom line height calculation configured    \r</p>
+</li>
+<li>
+<p>checkFixedStyleAndNoWrap table columns and cell styles can be reused    </p>
+</li>
+<li>
+<p>Specific logic    </p>
+</li>
+<li>
+<p>Only calculate the first line in the body, reuse that height for other lines    \r</p>
+</li>
+<li>
+<p>The row height of the frozen bottom row needs to be calculated separately    \r</p>
+</li>
+<li>
+<p>Display by line    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\layout\compute-row-height.ts
+if (
+  *// 以行展示*
+  table.internalProps.transpose ||
+  (table.isPivotTable() &amp;&amp; !(table.internalProps.layoutMap as PivotHeaderLayoutMap).indicatorsAsCol)
+) {
+  for (let row = Math.max(rowStart, table.columnHeaderLevelCount); row &lt;= rowEnd; row++) {
+    let height;
+    if (checkFixedStyleAndNoWrapForTranspose(table, row)) {
+      *// 以行展示 只计算到body第一列样式的情况即可*
+      height = computeRowHeight(row, 0, table.rowHeaderLevelCount, table);
+    } else {
+      height = computeRowHeight(row, 0, table.colCount - 1, table);
+    }
+    if (update) {
+      newHeights[row] = Math.round(height);
+    } else {
+      table._setRowHeight(row, height);
+    }
+  }
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>Precondition check    </p>
+</li>
+<li>
+<p>The table is a transposed table or a pivot table with indicatorsAsCol configured as false    \r</p>
+</li>
+<li>
+<p>Specific logic    </p>
+</li>
+<li>
+<p>Loop through the body row section    </p>
+</li>
+<li>
+<p>Styles are reusable, and the line height calculation range only involves the line header    </p>
+</li>
+<li>
+<p>Non-reusable, line height calculation range to the end of the column    </p>
+</li>
+<li>
+<p>Fallback, loop through the body section, call computeRowHeight line by line    \r</p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\scenegraph\layout\compute-row-height.ts
+*// 以列展示 需要逐行计算情况*
+for (let row = Math.max(rowStart, table.columnHeaderLevelCount); row &lt;= rowEnd; row++) {
+  const height = computeRowHeight(row, 0, table.colCount - 1, table);
+  if (update) {
+    newHeights[row] = Math.round(height);
+  } else {
+    table._setRowHeight(row, height);
+  }
+}    
+</code></pre>
+
+<h4 id="high-reusability-determination">High Reusability Determination</h4>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">In cases where autoWrapText or enableLineBreak is set to true, the line height cannot be reused, and calculations need to be done for each line.    
+</div>
+<ul>
+<li>Judgment of ordinary cells <code>checkFixedStyleAndNoWrap</code>    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\layout\compute-row-height.ts
+function checkFixedStyleAndNoWrap(table: BaseTableAPI): boolean {
+  const { layoutMap } = table.internalProps;
+  const row = table.columnHeaderLevelCount;
+  *//设置了全局自动换行的话 不能复用高度计算*
+  if (
+    (table.internalProps.autoWrapText || table.internalProps.enableLineBreak || table.isPivotChart()) &amp;&amp;
+    (table.isAutoRowHeight() || table.options.heightMode === 'adaptive')
+  ) {
+    return false;
+  }
+  // 每列都需要判断
+  for (let col = 0; col &lt; table.colCount; col++) {
+    const cellDefine = layoutMap.getBody(col, row);
+    if (cellDefine.cellType === 'radio') {
+      return false;
+    }
+    // 判断是否配置了自定义函数
+    if (
+      typeof cellDefine.style === 'function' ||
+      typeof (cellDefine as ColumnData).icon === 'function' ||
+      (cellDefine.define as ColumnDefine)?.customRender ||
+      (cellDefine.define as ColumnDefine)?.customLayout ||
+      typeof cellDefine.define?.icon === 'function'
+    ) {
+      return false;
+    }
+    const cellStyle = table._getCellStyle(col, row); *//获取的style是结合了theme配置的style*
+    if (
+      typeof cellStyle.padding === 'function' ||
+      typeof cellStyle.fontSize === 'function' ||
+      typeof cellStyle.lineHeight === 'function' ||
+      cellStyle.autoWrapText === true
+    ) {
+      return false;
+    }
+  }
+</code></pre>
+
+<ul>
+<li>Determine <code>checkFixedStyleAndNoWrapForTranspose</code> in the case of transposed tables    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\scenegraph\layout\compute-row-height.ts
+function checkFixedStyleAndNoWrapForTranspose(table: BaseTableAPI, row: number): boolean {
+  const { layoutMap } = table.internalProps;
+  *//设置了全局自动换行的话 不能复用高度计算*
+  if (
+    (table.internalProps.autoWrapText || table.internalProps.enableLineBreak) &amp;&amp;
+    (table.isAutoRowHeight() || table.options.heightMode === 'adaptive')
+  ) {
+    return false;
+  }
+
+  const cellDefine = layoutMap.getBody(table.rowHeaderLevelCount, row);
+  // 判断是否配置了自定义函数
+  if (
+    typeof cellDefine.style === 'function' ||
+    typeof (cellDefine as ColumnData).icon === 'function' ||
+    (cellDefine.define as ColumnDefine)?.customRender ||
+    (cellDefine.define as ColumnDefine)?.customLayout ||
+    typeof cellDefine.define?.icon === 'function'
+  ) {
+    return false;
+  }
+  const cellStyle = table._getCellStyle(table.rowHeaderLevelCount, row);
+  if (
+    typeof cellStyle.padding === 'function' ||
+    typeof cellStyle.fontSize === 'function' ||
+    typeof cellStyle.lineHeight === 'function' ||
+    cellStyle.autoWrapText === true
+  ) {
+    return false;
+  }
+
+  return true;
+}    
+</code></pre>
+
+<h4 id="single-line-height-calculation">Single Line Height Calculation</h4>
+<ul>
+<li>computeRowHeight    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NoR5bEBXXo20xgxvTSOcNYoKnvd.gif' alt='' width='1000' height='auto'></p>
+<h4 id="text-height-calculation">Text Height Calculation</h4>
+<p><code>autoWrapText</code> mainly affects the calculation of text height. In the case of automatic line wrapping, AABBBounds will be generated, and the width of the text will be passed in during generation. This allows the height of the text to be calculated directly through AABBBounds. When automatic line wrapping is not enabled, only lineHeight will be used as the text height.    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Wuj2bjjWKoGqEnx6MUzcbP7bn4c.gif' alt='' width='647' height='auto'></p>
+<ul>
+<li>computeTextHeight process    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GKycbKL65oZ2GCxKmwAcykD6nlg.gif' alt='' width='1000' height='auto'></p>
+<p>The overall calculation formula is \u0060(Math.max(maxHeight, iconHeight) \u002B padding[0] \u002B padding[2]) / spanRow;\u0060    \r</p>
+<h4 id="general-process">General Process</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XcxQb5YRuoTXlWxE9bzc0fvFnbK.gif' alt='' width='1000' height='auto'></p>
+<h3 id="update-again">Update Again</h3>
+<p>Taking the resize of the scene tree as an example, the row height will only be recalculated when heightMode is adaptive or autoFillHeight is true. There are several situations here:    \r</p>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\scenegraph\scenegraph.ts
+resize() {
+    // ...
+    if (this.table.heightMode === 'adaptive') {
+      if (this.table.internalProps._heightResizedRowMap.size === 0) {
+        this.recalculateRowHeights();
+      } else {
+        this.dealHeightMode();
+      }
+    } else if (this.table.autoFillHeight) {
+      this.dealHeightMode();
+    }
+}    
+</code></pre>
+
+<ol>
+<li>
+<p>When the column width is not adjusted, it is necessary to recalculate the row height. During the calculation, the scene tree elements will be updated based on the changed rows.    \r</p>
+</li>
+<li>
+<p>recalculateRowHeights ()    </p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\scenegraph\scenegraph.ts
+  recalculateRowHeights() {
+    const table = this.table;
+    table.internalProps.useOneRowHeightFillAll = false;
+    if (table.heightMode === 'adaptive' || table.autoFillHeight) {
+      computeRowsHeight(this.table, 0, this.table.rowCount - 1, true, true);
+    } else {
+      *// top frozen*
+      if (table.frozenRowCount &gt; 0) {
+        computeRowsHeight(this.table, 0, table.frozenRowCount - 1, true, true);
+      }
+      *// bottom frozen*
+      if (table.bottomFrozenRowCount &gt; 0) {
+        computeRowsHeight(this.table, table.bottomFrozenRowCount, table.rowCount - 1, true, true);
+      }
+      computeRowsHeight(table, this.proxy.rowStart, this.proxy.rowEnd, true, true);
+    }
+  }
+</code></pre>
+
+<ol>
+<li>If the column width has been manually adjusted or autoFillHeight is enabled, it will enter dealHeightMode.    \r</li>
+</ol>
+<p>Because there is no need to calculate the line height in standard mode, the cache can be used directly during resize. Therefore, only in <code>adaptive</code> or <code>autoFillHeight</code> mode will the height of each line be readjusted and allocated based on the cached height.    </p>
+<ul>
+<li>dealHeightMode    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\scenegraph\scenegraph.ts
+  dealHeightMode() {
+    const table = this.table;
+    *// 处理adaptive高度*
+    if (table.heightMode === 'adaptive') {
+      *// 清空行高缓存*
+      table._clearRowRangeHeightsMap();
+      *// 计算可分配高度 = 总高度 - 表头高度 - 底部冻结高度*
+      const totalDrawHeight = table.tableNoFrameHeight - columnHeaderHeight - bottomHeaderHeight;
+      *// 计算实际内容高度*
+      for (let row = startRow; row &lt; endRow; row++) {
+        actualHeight += table.getRowHeight(row);
+      }
+      *// 计算缩放比例*
+      const factor = totalDrawHeight / actualHeight;
+      *// 按比例分配行高（最后一行处理余数）*
+      for (let row = startRow; row &lt; endRow; row++) {
+        if (row === endRow - 1) {
+          rowHeight = totalDrawHeight - 前N-1行总高度;
+        } else {
+          rowHeight = Math.round(原始行高 * factor);
+        }
+      }
+    } else if (table.autoFillHeight) {
+      *// 计算总内容高度*
+      for (let row = 0; row &lt; table.rowCount; row++) {
+        actualHeight += table.getRowHeight(row);
+      }
+      *// 当实际高度 &lt; 画布高度时*
+      if (实际高度 &lt; 画布高度) {
+        *// 计算缩放比例（排除表头）*
+        const factor = (canvasHeight - 表头高度) / (实际高度 - 表头高度);
+        *// 按比例对行高进行缩放（最后一行处理剩余可分配高度）*
+        for (let row = startRow; row &lt; endRow; row++) {
+          if (row === endRow - 1) {
+            rowHeight = 剩余可分配高度;
+          } else {
+            rowHeight = Math.round(原始行高 * factor);
+          }
+        }
+      }
+    }
+  }    
+</code></pre>
+
+<h1 id="this-document-is-provided-by-the-following-personnel">This document is provided by the following personnel</h1>
+<p>taiiiyang( https://github.com/taiiiyang)     </p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

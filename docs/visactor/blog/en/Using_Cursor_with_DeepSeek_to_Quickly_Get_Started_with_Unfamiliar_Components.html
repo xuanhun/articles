@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Using Cursor with DeepSeek to Quickly Get Started with Unfamiliar Components</title>
+    <meta name="keywords" content="VisActor, VChart, VTable, VStory, VMind, VGrammar, VRender, Visualization, Chart, Data, Table, Graph, Gis, LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>In today's software development field, developers face the challenge of continuously improving development efficiency and reducing the learning curve. The core purpose of this document is to help developers achieve this goal, especially by cleverly using <strong>component official documentation</strong> and combining tools like <strong>Cursor</strong> and <strong>DeepSeek</strong> to let AI automatically generate the required code, quickly lowering the entry barrier. Next, we will experiment with several projects in the relatively new open-source project, VisActor (https://www.visactor.com; https://www.visactor.io/), an open-source visualization solution, to see how effective it is.</p>
+<h1 id="preparation">Preparation</h1>
+<h2 id="create-a-test-project">Create a Test Project</h2>
+<p>For example, I have a simple project initialized with <code>npx create-react-app my-app --template typescript</code>, which looks like this after starting:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/C4cabsu8goKMv4xiaBtcDqvmnuf.gif' alt='' width='1000' height='auto'></p>
+<h2 id="obtain-deepseek-api-key">Obtain DeepSeek API Key</h2>
+<p>Register with DeepSeek and create your API key on the <a href="https://platform.deepseek.com/api_keys">DeepSeek API</a> official website.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/JNQPbFzIOoYknHxr3aDcg60onCg.gif' alt='' width='1000' height='auto'></p>
+<h2 id="configure-cursor">Configure Cursor</h2>
+<p>Official website: https://www.cursor.com/</p>
+<p>Download and register, open your VChart project with Cursor, and configure Cursor.</p>
+<p>Using DeepSeek-V3 as an example, its API model name is <code>deepseek-chat</code>, and the API address is https://api.deepseek.com/v1. For more details, see the <a href="https://api-docs.deepseek.com/zh-cn">API usage official website</a>.</p>
+<p>Create a new model on the model page, set the corresponding API address and model name.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WBBCb55WwoF3HUxnhGtc6P5Un5c.gif' alt='' width='1000' height='auto'></p>
+<p>Of course, you can also use any other AI model; here, we use DeepSeek.</p>
+<h1 id="inject-official-tutorial-into-docs">Inject Official Tutorial into @Docs</h1>
+<h1 id="practical-verification">Practical Verification</h1>
+<h2 id="vtable-test">VTable Test</h2>
+<p>VTable (https://www.visactor.io/vtable/; https://www.visactor.com/vtable/) is a powerful table component in the VisActor visualization library. It is designed to meet diverse data presentation needs, offering high flexibility and customizability. Whether it's simple data listing or complex data analysis display scenarios, VTable can provide excellent solutions.</p>
+<p>VTable has the following core features:</p>
+<ul>
+<li>
+<p>Supports various table types: basic tables, pivot tables, transposed tables, pivot charts, etc.</p>
+</li>
+<li>
+<p>Powerful interaction features: sorting, filtering, row and column dragging, cell editing, etc.</p>
+</li>
+<li>
+<p>Rich cell types: text, charts, progress bars, checkboxes, sparklines, etc.</p>
+</li>
+<li>
+<p>High-performance rendering: supports smooth display of millions of data</p>
+</li>
+<li>
+<p>Multi-platform adaptation: perfect support for mainstream frameworks like Vue, React</p>
+</li>
+</ul>
+<h3 id="invoke-ai-interaction-panel-in-cursor-and-generate-code">Invoke AI Interaction Panel in Cursor and Generate Code</h3>
+<p>After setting up the project environment, use <code>cmd + i</code> to invoke the AI interaction panel. We directly let AI generate a basic table code snippet for inserting VTable.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AIWSbqgyhog1DZxaYGCcl9kinsb.gif' alt='' width='1000' height='auto'></p>
+<p>However, the initial generation result shows that AI does not recognize VTable's <code>ListTable</code>, possibly due to the inability to accurately recognize VTable's ListTable configuration.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/IfZ4bjODTocB2oxPfDScNdvnnEg.gif' alt='' width='1000' height='auto'></p>
+<h3 id="inject-official-tutorial-into-docs_1">Inject Official Tutorial into @Docs</h3>
+<p>To solve the above problem, we inject the official tutorial into @Docs.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DOapbrW3gowfgDxw6v9cagArnPe.gif' alt='' width='1000' height='auto'></p>
+<p>Explicitly specify <code>VisActor VTable</code> in the <code>prompt</code> in @Docs. After this step, we are pleasantly surprised to find that AI can correctly write the implementation logic according to the <code>option</code> in VTable.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HOHPbR1gho68fAxnA0XcWR3Xnuc.gif' alt='' width='1000' height='auto'></p>
+<h3 id="code-application-and-effect-display">Code Application and Effect Display</h3>
+<p>Copy the generated code into the corresponding file, run the project, and you can see the initial effect, with the table correctly generated.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Vbf8bECXsoJngRxMxdzcbZgunfb.gif' alt='' width='1000' height='auto'></p>
+<p>Then, we continue to let AI modify the table style. AI provided reasonable modification suggestions,</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/CM5lbR4tIokooxxxNotcvtakngd.gif' alt='' width='1000' height='auto'></p>
+<p>After running the project again, we got a display effect that better meets the requirements:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Co0mb5MdhoTuE1xGpwtcqC5Vngu.gif' alt='' width='406' height='auto'></p>
+<h2 id="vchart-test">VChart Test</h2>
+<h3 id="add-a-bar-chart">Add a Bar Chart</h3>
+<p>Invoke AI interaction with the <code>cmd+i</code> command, and let AI help us generate a simple bar chart code first.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WnzubAlKKo70ePxjlVbclc6ynmg.gif' alt='' width='970' height='auto'></p>
+<p>Directly apply this spec, and we check the result; a simple bar chart is rendered. It can be seen that DeepSeek has a certain understanding of VChart, and simple charts can be directly added. Let's try a more complex scenario.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HYjbb8u8ToXkbBxJ8o6cGqPgn8f.gif' alt='' width='1000' height='auto'></p>
+<h3 id="complex-scenario-inject-docs">Complex Scenario, Inject Docs</h3>
+<p>We hope to add an average auxiliary line on the y-axis, check the result, but the result is incorrect. Upon closer inspection, it can be found that although the markLine is written as if it is correct, the spec does not conform to the specification, and the average line is calculated. We solve this problem by injecting docs.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/UJdkbdp0poJRSzxy94kcOHqZnsd.gif' alt='' width='980' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/RQgwbW3WGopiNAxoEAXcJhornqc.gif' alt='' width='1000' height='auto'></p>
+<h4 id="set-docs">Set Docs</h4>
+<p>Enter the Cursor settings page, select <code>Features</code>, add new docs, the docs address is https://visactor.com/vchart (https://visactor.io/vchart); you can also directly add through @Docs on the editing page.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/JQarbKxBEoKc3FxjN4Fc9jydnXb.gif' alt='' width='1000' height='auto'></p>
+<h3 id="experimental-results">Experimental Results</h3>
+<p>By editing again with the newly added docs, the correct result can be obtained!</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/PJXKbmAccoeUmjxXButcR45dnZe.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/SIFlbNJ5eo0bbjxRRMCcoruFnWp.gif' alt='' width='1000' height='auto'></p>
+<h2 id="vstory-test">VStory Test</h2>
+<p>VStory (GitHub: https://github.com/VisActor/VStory/; site: https://www.visactor.io/vstory/, https://www.visactor.com/vstory/) is a narrative-oriented visualization development framework that integrates the capabilities of all VisActor visualization components, making it more challenging to use. We conduct a simple test.</p>
+<p>Invoke AI interaction with the <code>cmd+i</code> command, and let AI help us generate a simple dashboard demo first.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WNZAbOsbVoBd46xTGChcqbm3nbh.gif' alt='' width='766' height='auto'></p>
+<p>It can be found that it is completely incorrect because DeepSeek uses data from 2023, and VStory had not been released at that time, so it does not know how to use it. At this point, we need to let it read the documentation to learn.</p>
+<h3 id="inject-docs">Inject Docs</h3>
+<p>We solve this problem by injecting docs.</p>
+<p>Enter the Cursor settings page, select <code>Features</code>, add new docs, the docs address is https://visactor.com/vstory/guide/tutorial_docs/VStory_Website_Guide; you can also directly add through @Docs on the editing page.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OtoTbG06lodqIaxBCkscQztNnoh.gif' alt='' width='1000' height='auto'></p>
+<h3 id="experimental-results_1">Experimental Results</h3>
+<p>By editing again with the newly added docs, the correct result can be obtained!</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HqKdbVHgYoM9a6xmsZqcuZ4QnDq.gif' alt='' width='754' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/X1UZb9HXsoIdiRxqLCucJbqPnZc.gif' alt='' width='1000' height='auto'></p>
+<p><strong>Since VStory uses VChart, VTable, and VRender, to achieve better results, you should add the documentation of VChart, VTable, and VRender to the context simultaneously.</strong></p>
+<h1 id="simple-summary">Simple Summary</h1>
+<ol>
+<li>
+<p>Improve Development Efficiency</p>
+</li>
+<li>
+<p>Quick Access: Directly access VisActor API documentation through Cursor</p>
+</li>
+<li>
+<p>Intelligent Suggestions: Precise code completion based on VisActor documentation</p>
+</li>
+<li>
+<p>Enhance Development Experience</p>
+</li>
+<li>
+<p>Seamless Integration: Directly obtain VTable usage guidance in the development environment</p>
+</li>
+<li>
+<p>Real-time Feedback: Quickly verify code effects</p>
+</li>
+<li>
+<p>Reduce Learning Costs</p>
+</li>
+<li>
+<p>Documentation Assistance: Access VisActor official examples at any time</p>
+</li>
+<li>
+<p>Code Generation: Automatically generate code that complies with VisActor standards</p>
+</li>
+<li>
+<p>Improve Code Quality</p>
+</li>
+<li>
+<p>Standard Check: Ensure code complies with VTable best practices</p>
+</li>
+<li>
+<p>Performance Optimization: Automatically generate high-performance table configurations</p>
+</li>
+</ol>
+<h1 id="contact-us">Contact Us</h1>
+<p>GitHub: <a href="https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2FVisActor">github.com/VisActor</a></p>
+<p>Leave a message on the VisActor WeChat subscription account (you can join the WeChat group through the subscription account menu):</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VyPsbaIz8offShxlv0ZcqqD8nfd.gif' alt='' width='258' height='auto'></p>
+<p>VisActor official website: <a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.io/</a>; <a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.</a>com</p>
+<p>Feishu Group:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NAQhbtdelofTIyxk9pgcE3hqnQG.gif' alt='' width='264' height='auto'></p>
+<p>Discord: https://discord.com/invite/3wPyxVyH6m </p>
+</body>
+</html>

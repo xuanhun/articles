@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1. How to implement multi-group bar chart and interact with highlighting by grouping dimension?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="title">Title</h2>
+<p>How to implement multi-group bar chart and interact with highlighting by grouping dimension?</br></p>
+<h2 id="description">Description</h2>
+<p>Solution for implementing a multi-group bar chart similar to the following figure: </br>
+1. Expect two groups to differentiate in style through color transparency.</br>
+1. When the mouse hovers over a column block, all blocks of the same color are highlighted in linkage.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Es5DbciM9oSzIsxkpp9crpPTnyh.gif' alt='' width='1030' height='510'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/O72XboUIYoaAgaxeqGZcacxun2k.gif' alt='' width='153' height='353'></p>
+<h2 id="solution">Solution</h2>
+<ol>
+<li>Requires 4 data fields:</br></li>
+<li>3 grouping fields: There are 3 layers of grouping on the x-axis, corresponding to fields <code>xField: ['type', 'type1', 'type2']</code>;</br></li>
+<li>1 series field: used to distinguish color series, <code>seriesField: 'color'</code></br></li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Np1zbHvqnoSXfKxM1KUctNCunI8.gif' alt='' width='1562' height='778'></p>
+<ol>
+<li>Highlight interaction: You can configure the built-in <code>element-highlight-by-group</code>interaction in VChart, specify the interaction highlighting state to be named <code>'highligh'</code>, so as to add a stroke effect to the column in the graphic style:</br></li>
+</ol>
+<pre class="codehilite"><code>  interactions:[
+    {
+       type: 'element-highlight-by-group',
+       highlightState:'highlight'
+    }
+  ],
+  bar:{
+    state:{
+      highlight:{
+        stroke:&quot;black&quot;,
+        lineWidth:1,
+        zIndex:100
+      }
+    }
+  },&lt;/br&gt;
+</code></pre>
+
+<h2 id="code-example">Code Example</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/QsmQblpxzovAc4xhr8vcRbV0nPc.gif' alt='' width='812' height='410'></p>
+<pre class="codehilite"><code>const spec = {
+  type: 'bar',
+  height:400,
+  data: [
+    {
+      values: [
+        { type: 'Category One', min: 80,  color: 'A', type1: 'p', type2: 'T' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p', type2: 'T' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p', type2: 'T' },
+        { type: 'Category One', min: 75,  color: 'C', type1: 'p', type2: 'T' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p', type2: 'T' },
+
+        { type: 'Category One', min: 70,  color: 'A', type1: 'p', type2: 'T1' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p', type2: 'T1' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p', type2: 'T1' },
+        { type: 'Category One', min: 50,  color: 'C', type1: 'p', type2: 'T1' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p', type2: 'T1' },
+
+        { type: 'Category One', min: 70,  color: 'A', type1: 'p', type2: 'T2' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p', type2: 'T2' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p', type2: 'T2' },
+        { type: 'Category One', min: 50,  color: 'C', type1: 'p', type2: 'T2' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p', type2: 'T2' },
+
+        { type: 'Category One', min: 70,  color: 'A', type1: 'p', type2: 'T3' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p', type2: 'T3' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p', type2: 'T3' },
+        { type: 'Category One', min: 50,  color: 'C', type1: 'p', type2: 'T3' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p', type2: 'T3' },
+
+        { type: 'Category One', min: 70,  color: 'A', type1: 'p', type2: 'T4' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p', type2: 'T4' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p', type2: 'T4' },
+        { type: 'Category One', min: 50,  color: 'C', type1: 'p', type2: 'T4' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p', type2: 'T4' },
+
+        { type: 'Category One', min: 80,  color: 'A', type1: 'p1', type2: 'T' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p1', type2: 'T' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p1', type2: 'T' },
+        { type: 'Category One', min: 75,  color: 'C', type1: 'p1', type2: 'T' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p1', type2: 'T' },
+
+        { type: 'Category One', min: 70,  color: 'A', type1: 'p1', type2: 'T1' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p1', type2: 'T1' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p1', type2: 'T1' },
+        { type: 'Category One', min: 50,  color: 'C', type1: 'p1', type2: 'T1' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p1', type2: 'T1' },
+
+        { type: 'Category One', min: 70,  color: 'A', type1: 'p1', type2: 'T2' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p1', type2: 'T2' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p1', type2: 'T2' },
+        { type: 'Category One', min: 50,  color: 'C', type1: 'p1', type2: 'T2' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p1', type2: 'T2' },
+
+        { type: 'Category One', min: 70,  color: 'A', type1: 'p1', type2: 'T3' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p1', type2: 'T3' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p1', type2: 'T3' },
+        { type: 'Category One', min: 50,  color: 'C', type1: 'p1', type2: 'T3' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p1', type2: 'T3' },
+
+        { type: 'Category One', min: 70,  color: 'A', type1: 'p1', type2: 'T4' },
+        { type: 'Category One', min: 40,  color: 'B', type1: 'p1', type2: 'T4' },
+        { type: 'Category One', min: 40,  color: 'D', type1: 'p1', type2: 'T4' },
+        { type: 'Category One', min: 50,  color: 'C', type1: 'p1', type2: 'T4' },
+        { type: 'Category One', min: 30,  color: 'E', type1: 'p1', type2: 'T4' },
+
+
+
+        { type: 'Category Two', min: 76,  color: 'A', type1: 'p', type2: 'T' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p', type2: 'T' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p', type2: 'T' },
+        { type: 'Category Two', min: 65,  color: 'C', type1: 'p', type2: 'T' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p', type2: 'T' },
+
+        { type: 'Category Two', min: 70,  color: 'A', type1: 'p', type2: 'T1' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p', type2: 'T1' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p', type2: 'T1' },
+        { type: 'Category Two', min: 50,  color: 'C', type1: 'p', type2: 'T1' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p', type2: 'T1' },
+
+        { type: 'Category Two', min: 70,  color: 'A', type1: 'p', type2: 'T2' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p', type2: 'T2' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p', type2: 'T2' },
+        { type: 'Category Two', min: 50,  color: 'C', type1: 'p', type2: 'T2' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p', type2: 'T2' },
+
+        { type: 'Category Two', min: 70,  color: 'A', type1: 'p', type2: 'T3' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p', type2: 'T3' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p', type2: 'T3' },
+        { type: 'Category Two', min: 50,  color: 'C', type1: 'p', type2: 'T3' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p', type2: 'T3' },
+
+        { type: 'Category Two', min: 70,  color: 'A', type1: 'p', type2: 'T4' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p', type2: 'T4' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p', type2: 'T4' },
+        { type: 'Category Two', min: 50,  color: 'C', type1: 'p', type2: 'T4' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p', type2: 'T4' },
+
+        { type: 'Category Two', min: 80,  color: 'A', type1: 'p1', type2: 'T' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p1', type2: 'T' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p1', type2: 'T' },
+        { type: 'Category Two', min: 75,  color: 'C', type1: 'p1', type2: 'T' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p1', type2: 'T' },
+
+        { type: 'Category Two', min: 70,  color: 'A', type1: 'p1', type2: 'T1' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p1', type2: 'T1' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p1', type2: 'T1' },
+        { type: 'Category Two', min: 50,  color: 'C', type1: 'p1', type2: 'T1' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p1', type2: 'T1' },
+
+        { type: 'Category Two', min: 70,  color: 'A', type1: 'p1', type2: 'T2' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p1', type2: 'T2' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p1', type2: 'T2' },
+        { type: 'Category Two', min: 50,  color: 'C', type1: 'p1', type2: 'T2' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p1', type2: 'T2' },
+
+        { type: 'Category Two', min: 70,  color: 'A', type1: 'p1', type2: 'T3' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p1', type2: 'T3' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p1', type2: 'T3' },
+        { type: 'Category Two', min: 50,  color: 'C', type1: 'p1', type2: 'T3' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p1', type2: 'T3' },
+
+        { type: 'Category Two', min: 70,  color: 'A', type1: 'p1', type2: 'T4' },
+        { type: 'Category Two', min: 40,  color: 'B', type1: 'p1', type2: 'T4' },
+        { type: 'Category Two', min: 40,  color: 'D', type1: 'p1', type2: 'T4' },
+        { type: 'Category Two', min: 50,  color: 'C', type1: 'p1', type2: 'T4' },
+        { type: 'Category Two', min: 30,  color: 'E', type1: 'p1', type2: 'T4' },
+      ]
+    }
+  ],
+  interactions:[
+    {
+       type: 'element-highlight-by-group',
+       highlightState:'highlight'
+    }
+  ],
+  bar:{
+    style:{
+      fillOpacity:(data) =&gt; data.type1 === 'p' ? 1: 0.5
+    },
+    state:{
+      highlight:{
+        stroke:&quot;black&quot;,
+        lineWidth:1,
+        zIndex:100
+      }
+    }
+  },
+  xField: ['type', 'type1', 'type2'],
+  yField: 'min',
+  seriesField: 'color',
+  axes: [
+    {
+      orient:&quot;left&quot;,
+      label:{ visible: false},
+      grid:{ style:{ lineDash:[4,4], stroke:'#dddddd'} }
+    },
+    {
+      orient:&quot;bottom&quot;,
+      paddingInner:[0.1,0.05,0.5]
+    }
+  ],
+  tooltip:{
+      visible:false
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="related-documentation">Related Documentation</h2>
+<p>Grouped Stacked Column Chart demo: https://www.visactor.io/vchart/demo/bar-chart/stack-column</br>
+Interactive demo: https://visactor.com/vchart/demo/axis/multiple-layers-of-axis?keyword=axis</br>
+Related api: https://visactor.com/vchart/option/barChart#interactions.type.element-highlight-by-group</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

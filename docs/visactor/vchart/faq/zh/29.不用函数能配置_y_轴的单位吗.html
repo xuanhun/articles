@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>29.不用函数能配置 y 轴的单位吗</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>不用函数能配置 y 轴的单位吗？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>请问一下不使用函数能支持 y 轴的格式化吗？比如一些默认的千分位，自动加单位这些。因为小程序场景里头里面只能用纯 json 配置，没法配置回调函数。</br></p>
+<h2 id="_3">解决方案</h2>
+<p>从 VChart 1.7.0版本开始，可以通过注册表达式函数的方法对自定义的函数内容进行注册：</br></p>
+<pre class="codehilite"><code>function labelFormat(key) {
+  return key + 'test';
+}
+
+// Global registration function
+VChart.registerFunction('labelFormat', labelFormat);&lt;/br&gt;
+</code></pre>
+
+<p>对应的图表配置中可以在任意支持自定义回调函数的地方使用这一注册函数的名称：</br></p>
+<pre class="codehilite"><code>const spec = {
+  type: 'bar',
+  data: [...],
+  xField: 'month',
+  yField: 'sales',
+  label: {
+    visible: true,
+    formatMethod: 'labelFormat'
+  }
+};&lt;/br&gt;
+</code></pre>
+
+<p>注册函数的功能在飞书小组件以及微信小程序等环境中均可生效。</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>function labelFormat(key) {
+  return key + 'test';
+}
+
+// Global registration function
+VChart.registerFunction('labelFormat', labelFormat);
+
+const spec = {
+  type: 'bar',
+  data: [
+    {
+      id: 'barData',
+      values: [
+        { month: 'Monday', sales: 22 },
+        { month: 'Tuesday', sales: 13 },
+        { month: 'Wednesday', sales: 25 },
+        { month: 'Thursday', sales: 29 },
+        { month: 'Friday', sales: 38 }
+      ]
+    }
+  ],
+  xField: 'month',
+  yField: 'sales',
+  label: {
+    visible: true,
+    formatMethod: 'labelFormat'
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OJd9bVlGAoTGPVxbAYWctU0bn8b.gif' alt='' width='1222' height='984'></p>
+<h2 id="_6">相关文档</h2>
+<ul>
+<li>function：https://www.visactor.io/vchart/guide/tutorial_docs/Function</br></li>
+<li>github：https://github.com/VisActor/VChart</br></li>
+</ul>
+</body>
+</html>

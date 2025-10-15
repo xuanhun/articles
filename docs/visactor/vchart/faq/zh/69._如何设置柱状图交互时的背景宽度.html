@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>69. 如何设置柱状图交互时的背景宽度？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何设置柱状图交互时的背景宽度？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>我想让hover时的柱子背景和柱子之间保留部分padding，我可以如何设置呢？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/RmUgblfEQovGlvxN7JqcmNXZnme.gif' alt='' width='1490' height='1160'></p>
+<h2 id="_3">解决方案</h2>
+<p>corsshair组件负责交互时的背景柱子显示，如果要让背景和柱子之间留有空隙，可以通过设置宽度百分比来实现，比如：设置corsshair.xField.line.width: '200%'</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XC4jb64ylo8lxzxgvFec475Zncf.gif' alt='' width='3298' height='1130'></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'bar',
+  data: [
+    {
+      id: 'barData',
+      values: [
+        { type: 'Autocracies', year: '1960', value: 126 },
+        { type: 'Autocracies', year: '1970', value: 117 },
+        { type: 'Autocracies', year: '1980', value: 114 },
+        { type: 'Autocracies', year: '1990', value: 111 },
+        { type: 'Autocracies', year: '2000', value: 89 },
+        { type: 'Autocracies', year: '2010', value: 80 },
+        { type: 'Autocracies', year: '2018', value: 80 },
+        { type: 'Democracies', year: '1960', value: 29 },
+        { type: 'Democracies', year: '1970', value: 38 },
+        { type: 'Democracies', year: '1980', value: 41 },
+        { type: 'Democracies', year: '1990', value: 57 },
+        { type: 'Democracies', year: '2000', value: 87 },
+        { type: 'Democracies', year: '2010', value: 98 },
+        { type: 'Democracies', year: '2018', value: 99 }
+      ]
+    }
+  ],
+  xField: ['year', 'type'],
+  yField: 'value',
+  seriesField: 'type',
+  legends: {
+    visible: true,
+    orient: 'top',
+    position: 'start'
+  },
+  crosshair: {
+    xField: {
+      line: {
+        width: '130%'
+      }
+    }
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>在线效果参考：https://codesandbox.io/p/sandbox/svg-symbol-8k9tdz?file=%2Fsrc%2Findex.ts%3A208%2C29</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/JbyIb4AqRook65xmPrHcdW2bnlN.gif' alt='' width='1616' height='988'></p>
+<h2 id="_6">相关文档</h2>
+<p>十字准星教程: https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Crosshair</br>
+相关api：https://www.visactor.io/vchart/option/barChart#crosshair.xField.line.width</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

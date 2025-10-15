@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>36. VTable表格组件如何自定义高亮部分单元格</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VTable表格组件如何自定义高亮部分单元格？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>使用VTable表格组件，如何自定义高亮部分单元格，并指定高亮的样式？</br></p>
+<h2 id="_3">解决方案</h2>
+<p>VTable支持自定义单元格样式，可以用来实现自定义高亮功能：</br></p>
+<h3 id="_4">注册样式</h3>
+<p>首先需要注册一个自定义样式</br>
+需要定义<code>id</code>和<code>style</code>两个属性：</br>
+*  id: 自定义样式的唯一id</br>
+*  style: 自定义单元格样式，与<code>column</code>中的<code>style</code>配置相同，最终呈现效果是单元格原有样式与自定义样式融合</br>
+自定义样式的注册分为两种方式，<code>option</code>中配置和使用API配置：</br>
+*  option option中的customCellStyle属性接收多个自定义样式对象组合而成的数组：</br></p>
+<pre class="codehilite"><code>// init option
+const option = {
+  // ......
+  customCellStyle: [
+    {
+      id: 'custom-1',
+      style: {
+        bgColor: 'red'
+      }
+    }
+  ]
+}&lt;/br&gt;
+</code></pre>
+
+<ul>
+<li>API 可以通过VTable实例提供的<code>registerCustomCellStyle</code>方法注册自定义样式：</br></li>
+</ul>
+<pre class="codehilite"><code>instance.registerCustomCellStyle(id, style)&lt;/br&gt;
+</code></pre>
+
+<h3 id="_5">分配样式</h3>
+<p>使用已注册的自定义样式，需要将自定义样式分配到单元格中，分配需要定义<code>cellPosition</code>和<code>customStyleId</code>两个属性：</br>
+*  cellPosition: 单元格位置信息，支持配置单个单元格与单元格区域</br>
+*  单个单元格：<code>{ row: number, col: number }</code></br>
+*  单元格区域：<code>{ range: { start: { row: number, col: number }, end: { row: number, col: number} } }</code></br>
+*  customStyleId: 自定义样式id，与注册自定义样式时定义的id相同</br>
+分配方式有两种，<code>option</code>中配置和使用API配置：</br>
+*  option option中的<code>customCellStyleArrangement</code>属性接收多个自定义分配样式对象组合而成的数组：</br></p>
+<pre class="codehilite"><code>// init option
+const option = {
+  // ......
+  customCellStyleArrangement: [
+    {
+      cellPosition: {
+        col: 3,
+        row: 4
+      },
+      customStyleId: 'custom-1'
+    },
+    {
+      cellPosition: {
+        range: {
+          start: {
+            col: 5,
+            row: 5
+          },
+          end: {
+            col: 7,
+            row: 7
+          }
+        }
+      },
+      customStyleId: 'custom-2'
+    }
+  ]
+}&lt;/br&gt;
+</code></pre>
+
+<ul>
+<li>API 可以通过VTable实例提供的<code>arrangeCustomCellStyle</code>方法分配自定义样式：</br></li>
+</ul>
+<pre class="codehilite"><code>instance.arrangeCustomCellStyle(cellPosition, customStyleId)&lt;/br&gt;
+</code></pre>
+
+<h3 id="_6">更新与删除样式</h3>
+<p>自定义样式在注册后，可以通过<code>registerCustomCellStyle</code>方法，对同一id的自定义样式进行更新，更新后，分配的自定义样式的单元格样式会被更新；如果<code>newStyle</code>为<code>undefined</code> | <code>null</code>，则表示删除该自定义样式，删除后，分配的自定义样式的单元格样式会还原默认样式</br></p>
+<pre class="codehilite"><code>instance.registerCustomCellStyle(id, newStyle)&lt;/br&gt;
+</code></pre>
+
+<p>已分配的自定义样式的单元格区域，可以通过<code>arrangeCustomCellStyle</code>方法，对单元格区域进行更新样式分配，更新后，单元格的样式会被更新；如果<code>customStyleId</code>为<code>undefined</code> | <code>null</code>，则表示还原单元格的样式为默认样式</br></p>
+<h2 id="_7">代码示例</h2>
+<p>demo：https://visactor.io/vtable/demo/custom-render/custom-style</br></p>
+<h2 id="_8">相关文档</h2>
+<p>相关api：https://visactor.io/vtable/option/ListTable#customCellStyle</br>
+教程：https://visactor.io/vtable/guide/custom_define/custom_style</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

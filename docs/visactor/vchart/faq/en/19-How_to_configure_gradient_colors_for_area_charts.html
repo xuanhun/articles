@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>19-How_to_configure_gradient_colors_for_area_charts</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-configure-gradient-colors-for-area-charts-can-stacked-area-charts-support-gradient-colors-with-different-gradient-directions">How to configure gradient colors for area charts? Can stacked area charts support gradient colors with different gradient directions?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>For an area chart similar to <a href="https://www.visactor.io/vchart/demo/area-chart/percentage-stacked-area">https://www.visactor.io/vchart/demo/area-chart/percentage-stacked-area</a>, how can I achieve a gradient effect? Is it possible to configure different gradient directions?</p>
+<p><img alt="area chart" src="/vchart/faq/23-0.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>The solutions for different chart libraries vary. Based on the demo you provided, in VChart , you only need to configure <code>area.style.fill</code> as a gradient color and change the values of x0, y0, x1, and y1 to change the direction of the gradient.</p>
+<p><img alt="code" src="/vchart/faq/23-1.png" /></p>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'area',
+  data: {
+    values: [
+      { type: 'Nail polish', country: 'Africa', value: 4229 },
+      { type: 'Nail polish', country: 'EU', value: 4376 },
+      { type: 'Nail polish', country: 'China', value: 3054 },
+      { type: 'Nail polish', country: 'USA', value: 12814 },
+      { type: 'Eyebrow pencil', country: 'Africa', value: 3932 },
+      { type: 'Eyebrow pencil', country: 'EU', value: 3987 },
+      { type: 'Eyebrow pencil', country: 'China', value: 5067 },
+      { type: 'Eyebrow pencil', country: 'USA', value: 13012 },
+      { type: 'Rouge', country: 'Africa', value: 5221 },
+      { type: 'Rouge', country: 'EU', value: 3574 },
+      { type: 'Rouge', country: 'China', value: 7004 },
+      { type: 'Rouge', country: 'USA', value: 11624 },
+      { type: 'Lipstick', country: 'Africa', value: 9256 },
+      { type: 'Lipstick', country: 'EU', value: 4376 },
+      { type: 'Lipstick', country: 'China', value: 9054 },
+      { type: 'Lipstick', country: 'USA', value: 8814 },
+      { type: 'Eyeshadows', country: 'Africa', value: 3308 },
+      { type: 'Eyeshadows', country: 'EU', value: 4572 },
+      { type: 'Eyeshadows', country: 'China', value: 12043 },
+      { type: 'Eyeshadows', country: 'USA', value: 12998 },
+      { type: 'Eyeliner', country: 'Africa', value: 5432 },
+      { type: 'Eyeliner', country: 'EU', value: 3417 },
+      { type: 'Eyeliner', country: 'China', value: 15067 },
+      { type: 'Eyeliner', country: 'USA', value: 12321 },
+      { type: 'Foundation', country: 'Africa', value: 13701 },
+      { type: 'Foundation', country: 'EU', value: 5231 },
+      { type: 'Foundation', country: 'China', value: 10119 },
+      { type: 'Foundation', country: 'USA', value: 10342 },
+      { type: 'Lip gloss', country: 'Africa', value: 4008 },
+      { type: 'Lip gloss', country: 'EU', value: 4572 },
+      { type: 'Lip gloss', country: 'China', value: 12043 },
+      { type: 'Lip gloss', country: 'USA', value: 22998 },
+      { type: 'Mascara', country: 'Africa', value: 18712 },
+      { type: 'Mascara', country: 'EU', value: 6134 },
+      { type: 'Mascara', country: 'China', value: 10419 },
+      { type: 'Mascara', country: 'USA', value: 11261 }
+    ]
+  },
+  title: {
+    visible: true,
+    text: '100% stacked area chart of cosmetic products sales'
+  },
+  percent: true,
+  xField: 'type',
+  yField: 'value',
+  seriesField: 'country',
+  legends: [{ visible: true, position: 'middle', orient: 'bottom' }],
+  axes: [
+    {
+      orient: 'left',
+      label: {
+        formatMethod(val) {
+          return `${(val * 100).toFixed(2)}%`;
+        }
+      }
+    }
+  ],
+  area: {
+    style: {
+      fill: {
+        gradient: 'linear',
+        x0: 0.5,
+        y0: 0,
+        x1: 0.5,
+        y1: 1,
+        stops: [
+          {
+            offset: 0,
+            opacity: 1
+          },
+          {
+            color: 'black',
+            offset: 1,
+            opacity: 0.3
+          }
+        ]
+      }
+    }
+  }
+};
+</code></pre>
+
+<h2 id="results">Results</h2>
+<p><a href="https://codesandbox.io/s/area-chart-linear-gradient-xhdmc7">Online demo</a></p>
+<p><code>``javascript livedemo
+const spec = {
+  type: 'area',
+  data: {
+    values: [
+      { type: 'Nail polish', country: 'Africa', value: 4229 },
+      { type: 'Nail polish', country: 'EU', value: 4376 },
+      { type: 'Nail polish', country: 'China', value: 3054 },
+      { type: 'Nail polish', country: 'USA', value: 12814 },
+      { type: 'Eyebrow pencil', country: 'Africa', value: 3932 },
+      { type: 'Eyebrow pencil', country: 'EU', value: 3987 },
+      { type: 'Eyebrow pencil', country: 'China', value: 5067 },
+      { type: 'Eyebrow pencil', country: 'USA', value: 13012 },
+      { type: 'Rouge', country: 'Africa', value: 5221 },
+      { type: 'Rouge', country: 'EU', value: 3574 },
+      { type: 'Rouge', country: 'China', value: 7004 },
+      { type: 'Rouge', country: 'USA', value: 11624 },
+      { type: 'Lipstick', country: 'Africa', value: 9256 },
+      { type: 'Lipstick', country: 'EU', value: 4376 },
+      { type: 'Lipstick', country: 'China', value: 9054 },
+      { type: 'Lipstick', country: 'USA', value: 8814 },
+      { type: 'Eyeshadows', country: 'Africa', value: 3308 },
+      { type: 'Eyeshadows', country: 'EU', value: 4572 },
+      { type: 'Eyeshadows', country: 'China', value: 12043 },
+      { type: 'Eyeshadows', country: 'USA', value: 12998 },
+      { type: 'Eyeliner', country: 'Africa', value: 5432 },
+      { type: 'Eyeliner', country: 'EU', value: 3417 },
+      { type: 'Eyeliner', country: 'China', value: 15067 },
+      { type: 'Eyeliner', country: 'USA', value: 12321 },
+      { type: 'Foundation', country: 'Africa', value: 13701 },
+      { type: 'Foundation', country: 'EU', value: 5231 },
+      { type: 'Foundation', country: 'China', value: 10119 },
+      { type: 'Foundation', country: 'USA', value: 10342 },
+      { type: 'Lip gloss', country: 'Africa', value: 4008 },
+      { type: 'Lip gloss', country: 'EU', value: 4572 },
+      { type: 'Lip gloss', country: 'China', value: 12043 },
+      { type: 'Lip gloss', country: 'USA', value: 22998 },
+      { type: 'Mascara', country: 'Africa', value: 18712 },
+      { type: 'Mascara', country: 'EU', value: 6134 },
+      { type: 'Mascara', country: 'China', value: 10419 },
+      { type: 'Mascara', country: 'USA', value: 11261 }
+    ]
+  },
+  title: {
+    visible: true,
+    text: '100% stacked area chart of cosmetic products sales'
+  },
+  percent: true,
+  xField: 'type',
+  yField: 'value',
+  seriesField: 'country',
+  legends: [{ visible: true, position: 'middle', orient: 'bottom' }],
+  axes: [
+    {
+      orient: 'left',
+      label: {
+        formatMethod(val) {
+          return</code>${(val * 100).toFixed(2)}%`;
+        }
+      }
+    }
+  ],
+  area: {
+    style: {
+      fill: {
+        gradient: 'linear',
+        x0: 0.5,
+        y0: 0,
+        x1: 0.5,
+        y1: 1,
+        stops: [
+          {
+            offset: 0,
+            opacity: 1
+          },
+          {
+            color: 'black',
+            offset: 1,
+            opacity: 0.3
+          }
+        ]
+      }
+    }
+  }
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+```</p>
+<h2 id="about-gradient-color-configuration">About gradient color configuration</h2>
+<p>From the above API, it can be seen that the gradient colors in VChart are consistent with the gradient color API in canvas and can better support various gradient requirements. You can understand the rules of gradient color rendering from the following diagram</p>
+<p><img alt="gradient" src="/vchart/faq/23-3.png" /></p>
+<h3 id="start-and-end-points">Start and end points</h3>
+<p>There are 2 sets of position information in the parameters, and the diagram above shows the meaning of the start and end points in gradient color rendering.</p>
+<ul>
+<li>Start point: (x0, y0)</li>
+<li>End point: (x1, y1)</li>
+</ul>
+<p><strong>Note</strong>: In VChart, the configuration of start and end points is slightly different from canvas. In canvas, positions are points in the canvas. In chartSpace, positions are proportional positions within the range of [0, 1] from the top left corner to the bottom right corner of the chart element. Please refer to the following diagram for specific details：</p>
+<p><img alt="gradient" src="/vchart/faq/23-4.png" /></p>
+<h3 id="gradient-stops">Gradient stops</h3>
+<p>This part is no different from the canvas API. Each stage needs to be configured with an offset and a color. Multiple stages can be configured.</p>
+<h2 id="related-documentation">Related Documentation</h2>
+<ul>
+<li><a href="https://www.visactor.io/vchart/demo/area-chart/percentage-stacked-area">Stacked Area Chart Demo</a></li>
+<li><a href="https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Types/Area">Area Chart Tutorial</a></li>
+<li><a href="https://www.visactor.io/vchart/option/areaChart#area.style.fill">Related option</a></li>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient">Canvas Gradient api</a></li>
+</ul>
+</body>
+</html>

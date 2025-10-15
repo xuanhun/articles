@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to set the bar width of a bar chart in VChart</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-title">Question title</h2>
+<p>How to set the bar width of a bar chart, expecting the bar width to remain unchanged when the chart container becomes larger</br></p>
+<h2 id="problem-description">Problem description</h2>
+<p>May I ask how to set the bar width of a bar chart so that when the chart container becomes larger, the bar width remains the same, always 16px?</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OqzwbQl7toNCJRxoYircVAuVnIc.gif' alt='' width='844' height='534'></p>
+<h2 id="solution">Solution</h2>
+<p>VChart's bar chart supports a set of bar width configuration options.</br>
+*  barWidth: width</br>
+*  barMinWidth: Minimum width</br>
+*  barMaxWidth: maximum width</br></p>
+<p>The default bar width of VChart is related to the width of the chart container. This logic ensures that when the chart container is small, the bars will not overlap.</br>
+In actual use, if there is a need for a fixed width of the column, you can use <code>barWidth</code>. If you just don't expect the column to be too wide and unsightly, you can use <code>barMaxWidth</code>to limit its maximum width, so that the container is relatively small and can be displayed correctly.</br></p>
+<h2 id="code-example">Code example</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'bar',
+  data: [
+    {
+      id: 'barData',
+      values: [
+        { month: 'Monday', sales: 22 },
+        { month: 'Tuesday', sales: 13 },
+        { month: 'Wednesday', sales: 25 },
+        { month: 'Thursday', sales: 29 },
+        { month: 'Friday', sales: 38 }
+      ]
+    }
+  ],
+  barWidth: 16,
+  // barMaxWidth: 16,
+  xField: 'month',
+  yField: 'sales'
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="results-show">Results show</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/UoR2baTA8o8KlnxOJ0fcaJGVn9f.gif' alt='' width='1108' height='531'></p>
+<p>Demo: https://codesandbox.io/p/sandbox/vchart-disabletriggerevent-forked-n5z7cl?file=%2Fsrc%2Findex.js%3A30%2C1</br></p>
+<h2 id="related-documents">Related Documents</h2>
+<p>Demo：https://codesandbox.io/p/sandbox/vchart-disabletriggerevent-forked-n5z7cl?file=%2Fsrc%2Findex.js%3A30%2C1</br>
+Tutorial:</br>
+*  Initialize VChart: https://visactor.io/vchart/api/API/vchart</br>
+*  Column width: https://www.visactor.io/vchart/option/barChart#barWidth</br>
+Github：https://github.com/VisActor/VChart/</br></p>
+</body>
+</html>

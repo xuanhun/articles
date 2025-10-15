@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1.搭建开发环境</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="github">Github</h1>
+<h2 id="11">1.1 注册账号</h2>
+<p>VisActor 团队通常在 github 上进行开发和 issue 维护，请打开 <a href="https://github.com/">Github 网站</a>，点击右上角 <code>Sign up</code> 按钮，注册一个自己的账号，开启你开源之旅的第一步。</p>
+<p>如果因为特殊情况，你无法打开 Github 站点，请告知我们并通过 <a href="https://gitee.com/VisActor/VChart">Gitee</a> 进行项目开发。</p>
+<h2 id="12-fork">1.2 Fork 项目</h2>
+<p>首先需要 fork 这个项目，进入<a href="https://github.com/VisActor/VChart">VChart 项目页面</a>，点击右上角的 Fork 按钮</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/LQbyb5XWgoV8w2x3D5uc8bIkn1c.gif' alt='' width='1000' height='auto'></p>
+<p>你的 github 帐号中会出现 xxxx(你的 github 用户名)/vchart 这个项目</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OuwMbtoyPof0S8xrisscWJ3Hneb.gif' alt='' width='849' height='auto'></p>
+<h1 id="_1">本地开发环境</h1>
+<h2 id="21-git">2.1 安装 git</h2>
+<p>由于代码托管在 github 上，我们使用git做版本控制。</p>
+<p>Git 是一种版本控制系统，用于跟踪和管理软件开发项目中的代码变更。它帮助开发者记录和管理代码的历史记录，方便团队协作、代码版本控制、合并代码等操作。通过 Git，您可以追踪每个文件的每个版本，并轻松地在不同版本之间进行切换和比较。Git 还提供了分支管理功能，使得可以同时进行多个并行开发任务。</p>
+<ul>
+<li>
+<p>访问 Git 官方网站：<a href="https://git-scm.com/">https://git-scm.com/</a></p>
+</li>
+<li>
+<p>下载最新版本的 Git 安装程序。</p>
+</li>
+<li>
+<p>运行下载的安装程序，按照安装向导的提示进行安装。</p>
+</li>
+<li>
+<p>安装完成后，你可以通过命令行使用 <code>git version</code> 命令确认安装成功。</p>
+</li>
+</ul>
+<pre class="codehilite"><code>HM4G2J09L6:~ xuanhun$ git version
+**git version 2.39.2 (Apple Git-143)**
+</code></pre>
+
+<h2 id="22-vscode">2.2 安装开发工具（推荐VSCode）</h2>
+<p>VisActor 整体上属于前端技术栈，能进行前端开发的工具很多，我们推荐使用VScode。当然，你也可以使用你喜欢的开发工具。</p>
+<p>如果你对VSCode 不是很熟悉的话，建议阅读官方文档：https://vscode.js.cn/docs/setup/setup-overview</p>
+<h2 id="23-marscode-ai">2.3 安装 豆包<a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI编程助手</a></h2>
+<p>豆包 MarsCode 编程助手是豆包旗下的 AI 编程助手，提供以智能代码补全为代表的 AI 功能。它支持主流的编程语言和 IDE，在开发过程中提供单行代码或整个函数的编写建议。此外，它还支持代码解释、单测生成和问题修复等功能，提高了开发效率和质量。 更多信息，请参考<a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">豆包 MarsCode 编程助手的文档</a>。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DLaKb4PysoADAZx0x1RcYjXbnBe.gif' alt='' width='760' height='auto'></p>
+<p>借助Marscode，VisActor 开发者可以更方便的进行代码理解、文档撰写、功能开发、单元测试等多项任务。在详细的各项任务贡献指南中，会有更详细的案例说明。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/BQeib7E2gonoOaxLPqjcRtAYngh.gif' alt='' width='1000' height='auto'></p>
+<h2 id="24-clone">2.4  Clone 代码到本地</h2>
+<p>进入 VChart 文件夹，添加 VChart 的远程地址</p>
+<pre class="codehilite"><code>git remote add upstream https://github.com/VisActor/VChart.git
+</code></pre>
+
+<p>获取 VChart 最新源码</p>
+<pre class="codehilite"><code>git pull upstream develop
+</code></pre>
+
+<h1 id="_2">初始化项目</h1>
+<p>首先，全局安装 <a href="https://rushjs.io/pages/intro/get_started/"><u>@microsoft/rush</u></a></p>
+<pre class="codehilite"><code>$ npm i --global @microsoft/rush
+</code></pre>
+
+<p>接下来执行命令查看demo</p>
+<pre class="codehilite"><code># 安装依赖
+$ rush update
+# 启动 vchart 的demo页
+$ rush start
+# 启动 react-vchart 的demo页
+$ rush react
+# 启动本地文档站点
+$ rush docs
+</code></pre>
+
+<h1 id="_3">下一步</h1>
+<p>到目前为止，你已经做好了开发代码的准备了。接下来请继续阅读下一节教程，开始不同类型的任务。</p>
+<p>github ：<a href="https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2FVisActor">github.com/VisActor</a></p>
+<p>VisActor 微信订阅号留言（可以通过订阅号菜单加入微信群）：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/KLjmbz9TtoGzPIxarv7cmhpgnSY.gif' alt='' width='258' height='auto'></p>
+<p>VisActor 官网：<a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.io/</a></p>
+<p>飞书群：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Cv9xb0zzLoUWyaxMVgccWuGPn7d.gif' alt='' width='264' height='auto'></p>
+<p>discord：https://discord.com/invite/3wPyxVyH6m</p>
+</body>
+</html>

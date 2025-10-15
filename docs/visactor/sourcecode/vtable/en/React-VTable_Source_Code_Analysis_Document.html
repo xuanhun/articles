@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React-VTable Source Code Analysis Document</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="1-overall-architecture">1. Overall Architecture</h1>
+<p>React-VTable 是一个基于 <a href="https://github.com/VisActor/VTable">@visactor/vtable</a> 封装的 React 组件库，提供了声明式的表格渲染能力。该库主要由以下几个部分组成：    </p>
+<ul>
+<li>
+<p><strong>Table Components</strong>: Including main table types such as ListTable, PivotTable, PivotChart    \r</p>
+</li>
+<li>
+<p><strong>Table Internal Element Components</strong>: such as ListColumn, PivotDimension, and other table internal configuration components    \r</p>
+</li>
+<li>
+<p><strong>Event Handling System</strong>: Unified management of table interaction events    </p>
+</li>
+<li>
+<p><strong>Container and Context Management Module</strong>: Handles the rendering container and lifecycle of tables, providing a table state sharing mechanism    \r</p>
+</li>
+<li>
+<p><strong>Custom Components</strong>: Use encapsulated React components or external React components to implement custom rendering functionality    </p>
+</li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/VsJvwOhk0hLD5ybWoO0cLzScnFc.gif" /></p>
+<h1 id="2-core-components">2. Core Components</h1>
+<h2 id="21-base-table-basetable">2.1 Base Table (BaseTable)</h2>
+<p><code>BaseTable</code> is the foundational component for all table types, defined in <code>src/tables/base-table.tsx</code>. It is responsible for:</p>
+<ul>
+<li>
+<p>Create and manage table instances    </p>
+</li>
+<li>
+<p>Handle table option and related configuration    </p>
+</li>
+<li>
+<p>Manage the lifecycle of the table    </p>
+</li>
+<li>
+<p>Bind event handler    </p>
+</li>
+</ul>
+<p>The BaseTable component uses React's forwardRef to expose the table instance to the parent component and provides table context through React's Context API.    </p>
+<p>Key Implementation:    </p>
+<pre class="codehilite"><code class="language-xml">const BaseTable: React.FC&lt;Props&gt; = React.forwardRef((props, ref) =&gt; {
+  // 状态管理和引用
+  const [updateId, setUpdateId] = useState&lt;number&gt;(0);
+  const tableContext = useRef&lt;TableContextType&gt;({});
+  useImperativeHandle(ref, () =&gt; tableContext.current?.table);
+
+  // 创建表格实例的方法
+  const createTable = useCallback(
+    (props: Props) =&gt; {
+      const vtable = new props.vtableConstrouctor(props.container, parseOption(props));
+      // ... 设置表格属性
+      tableContext.current = { ...tableContext.current, table: vtable };
+      // ... 其他初始化逻辑
+    },
+    [/* 依赖项 */]
+  );
+
+  // 更新表格逻辑与生命周期处理
+  // ...
+});    
+</code></pre>
+
+<p>Each time the props change, obtain the updated table option, compare and determine whether the table needs to be updated. If necessary, create or update the table instance.    </p>
+<p>Key Implementation:    </p>
+<pre class="codehilite"><code class="language-Typescript">const BaseTable: React.FC&lt;Props&gt; = React.forwardRef((props, ref) =&gt; {
+  // ...
+  // 
+    useEffect(() =&gt; {
+    const newOptionFromChildren = hasOption ? null : parseOptionFromChildren(props);
+
+    if (!tableContext.current?.table) {
+      // ... 创建table实例
+      createTable(props);
+      // ...
+      return;
+    }
+
+    if (hasOption) {
+      // ... 有option prop时只对比option和record两个props
+      if (!isEqual(eventsBinded.current.option, props.option, { skipFunction: skipFunctionDiff })) {
+        // ... option发生变化，更新表格实例option
+        tableContext.current.table.updateOption(option as any);
+      } else if (
+        hasRecords &amp;&amp;
+        !isEqual(eventsBinded.current.records, props.records, { skipFunction: skipFunctionDiff })
+      ) {
+        // ... record发生变化，更新表格实例option
+        tableContext.current.table.setRecords(props.records as any[]);
+      }
+      return;
+    }
+
+    // ... 从props及children中提取出option
+    const newOption = pickWithout(props, notOptionKeys);
+    if (
+      !isEqual(newOption, prevOption.current, { skipFunction: skipFunctionDiff }) ||
+      !isEqual(newOptionFromChildren, optionFromChildren.current, { skipFunction: skipFunctionDiff })
+    ) {
+      // ... option发生变化，更新表格实例option
+      tableContext.current.table.updateOption(option as any);
+    } else if (hasRecords &amp;&amp; !isEqual(props.records, prevRecords.current, { skipFunction: skipFunctionDiff })) {
+      // ... record发生变化，更新表格实例option
+      tableContext.current.table.setRecords(props.records);
+    }
+
+    // ......
+  }, [createTable, hasOption, hasRecords, parseOption, handleTableRender, renderTable, skipFunctionDiff, props]);
+});    
+</code></pre>
+
+<h2 id="22-specific-table-types">2.2 Specific Table Types</h2>
+<p>Similar to VTable, React-VTable provides several main table types:    </p>
+<ul>
+<li>
+<p><strong>ListTable</strong>: List table    </p>
+</li>
+<li>
+<p><strong>PivotTable</strong>: Pivot table    </p>
+</li>
+<li>
+<p><strong>PivotChart</strong>: Pivot Table    </p>
+</li>
+<li>
+<p><strong>Simplified Table</strong>: ListTableSimple and PivotTableSimple, simplified versions split for package size optimization, only containing basic text rendering. You can register the components you need to use as needed.    \r</p>
+</li>
+</ul>
+<p>These components are created using the <code>createTable</code> factory function, for example:    </p>
+<pre class="codehilite"><code class="language-xml">export const ListTable = createTable&lt;React.PropsWithChildren&lt;ListTableProps&gt;&gt;('ListTable', {
+  type: 'list-table',
+  vtableConstrouctor: ListTableConstrouctor as any
+});    
+</code></pre>
+
+<h1 id="3-component-system">3. Component System</h1>
+<h2 id="31-basic-component-creation">3.1 Basic Component Creation</h2>
+<p>React-VTable uses the <code>createComponent</code> factory function (defined in <code>src/table-components/base-component.tsx</code>) to create various internal table element components:</p>
+<pre class="codehilite"><code class="language-xml">export const createComponent = &lt;T extends ComponentProps&gt;(
+  componentName: string,
+  optionName: string,
+  supportedEvents?: Record&lt;string, string&gt; | null,
+  isSingle?: boolean
+) =&gt; {
+  // ...组件实现
+};    
+</code></pre>
+
+<p>This pattern allows the component to:    \r</p>
+<ul>
+<li>
+<p>Unified event binding handling    </p>
+</li>
+<li>
+<p>Handle component updates and unmounting    </p>
+</li>
+<li>
+<p>Parse subcomponent structure    </p>
+</li>
+<li>
+<p>Manage the state of components in the context of a table    </p>
+</li>
+</ul>
+<h2 id="32-component-types">3.2 Component Types</h2>
+<p>The main component types include:    </p>
+<ul>
+<li>
+<p><strong>List Component</strong>: such as <code>ListColumn</code>    </p>
+</li>
+<li>
+<p><strong>Pivot Table Components</strong>: Such as <code>PivotColumnDimension</code>, <code>PivotRowDimension</code>, <code>PivotIndicator</code>, <code>PivotColumnHeaderTitle</code>    </p>
+</li>
+<li>
+<p><strong>UI Components</strong>: such as <code>Menu</code>, <code>Tooltip</code>, <code>EmptyTip</code>    </p>
+</li>
+<li>
+<p><strong>Custom Component</strong>: such as <code>CustomComponent</code>    </p>
+</li>
+</ul>
+<p>These components mainly configure various parts of the table options, such as column attributes, dimensions of the pivot table, etc.; they do not render content and will eventually be converted into attribute values in the table instance options.</p>
+<h1 id="4-event-handling-system">4. Event Handling System</h1>
+<p>The event handling system is defined in <code>src/eventsUtils.ts</code>, providing:</p>
+<ul>
+<li>
+<p>Event Type Definition    </p>
+</li>
+<li>
+<p>Event callback function type    </p>
+</li>
+<li>
+<p>Event binding and unbinding logic    </p>
+</li>
+</ul>
+<p>Core code for event binding:    \r</p>
+<pre class="codehilite"><code class="language-xml">export const bindEventsToTable = &lt;T extends EventsProps&gt;(
+  table: IVTable,
+  newProps?: T | null,
+  prevProps?: T | null,
+  supportedEvents: Record&lt;string, string&gt; = TABLE_EVENTS
+) =&gt; {
+  // ... 事件处理逻辑
+  // 获取新旧props中的事件
+  const prevEventProps: EventsProps = prevProps ? findEventProps(prevProps, supportedEvents) : null;
+  const newEventProps: EventsProps = newProps ? findEventProps(newProps, supportedEvents) : null;
+
+  if (prevEventProps) {
+    // ... 解绑旧事件
+  }
+
+  if (newEventProps) {
+    // ... 绑定新事件
+  }
+};    
+</code></pre>
+
+<p>The table events in the event system are the same as VTable. The names of event callbacks have been modified according to the specifications for installing React components. The corresponding relationships are as follows:    \r</p>
+<table><colgroup><col style="width: 181px"><col style="width: 160px"></colgroup><tbody><tr><td rowspan="1" colspan="1">
+
+React-VTable Event Callback    
+</td><td rowspan="1" colspan="1">
+
+VTable Event Name    \r
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onClickCell    
+</td><td rowspan="1" colspan="1">
+
+click_cell    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onSelectedCell    
+</td><td rowspan="1" colspan="1">
+
+selected_cell    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onMouseMoveCell    
+</td><td rowspan="1" colspan="1">
+
+mousemove_cell    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onResizeColumn    
+</td><td rowspan="1" colspan="1">
+
+resize_column    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onSortClick    
+</td><td rowspan="1" colspan="1">
+
+sort_click    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+onScroll    
+</td><td rowspan="1" colspan="1">
+
+scroll    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+...    
+</td><td rowspan="1" colspan="1">
+
+...    
+</td></tr></tbody></table>
+
+<h1 id="5-context-and-containers">5. Context and Containers</h1>
+<h2 id="51-table-context">5.1 Table Context</h2>
+<p>The table context is defined in <code>src/context/table.tsx</code>, providing a shared mechanism for table instances and configurations.</p>
+<h2 id="52-container-components">5.2 Container Components</h2>
+<p><code>withContainer</code> is a higher-order component, defined in <code>src/containers/withContainer.tsx</code>, responsible for:    </p>
+<ul>
+<li>
+<p>Create and manage the DOM container for tables    </p>
+</li>
+<li>
+<p>Handling table size settings and updates    </p>
+</li>
+<li>
+<p>Manage the lifecycle of containers    </p>
+</li>
+</ul>
+<h1 id="6-custom-rendering">6. Custom Rendering</h1>
+<h2 id="61-core-file-structure">6.1 Core File Structure</h2>
+<p><code>custom</code> directory contains the following key files:    </p>
+<ul>
+<li>
+<p><code>custom-layout.tsx</code>: CustomLayout component    </p>
+</li>
+<li>
+<p><code>vtable-react-attribute-plugin.ts</code>: VRender renders React component plugin    </p>
+</li>
+<li>
+<p><code>vtable-browser-env-contribution.ts</code>: VRender browser environment adaptation plugin    </p>
+</li>
+<li>
+<p><code>reconciler.ts</code>: React rendering coordinator    </p>
+</li>
+<li>
+<p><code>graphic.ts</code>: Custom layout graphic component    </p>
+</li>
+</ul>
+<h2 id="62-customlayout-component">6.2 CustomLayout Component</h2>
+<p>The CustomLayout component enhances the custom rendering capabilities for VTable, allowing users to encapsulate their own React components using the CustomLayout component functionality, and use native DOM React components within the component.    </p>
+<p>The CustomLayout component is usually used as a subcomponent of columns, dimensions, or metrics. A CustomLayout component corresponds to multiple cells, which means it corresponds to multiple actual rendered component instances. Therefore, the main task within the CustomLayout component is to handle such correspondences.    \r</p>
+<p><code>custom-layout.tsx</code> implements the core component of CustomLayout:    </p>
+<pre class="codehilite"><code class="language-xml">export const CustomLayout: React.FC&lt;CustomLayoutProps&gt; = ({ children, componentId }) =&gt; {
+  // ... 创建Map，存储该CustomLayout对应所有单元格的组件实例
+  const container = useRef&lt;Map&lt;string, FiberRoot&gt;&gt;(new Map());
+
+  const createGraphic: ICustomLayoutFuc = useCallback(
+    args =&gt; {
+      // ... 使用reconcilor创建自定义组件
+    },
+    [children]
+  );
+
+  const removeContainer = useCallback((col: number, row: number) =&gt; {
+     // ... 使用reconcilor删除自定义组件
+  }, []);
+
+  useLayoutEffect(() =&gt; {
+    // ...
+    if (table &amp;&amp; !table.reactCustomLayout?.hasReactCreateGraphic(componentId, isHeaderCustomLayout)) {
+      // ... 如果该组件没有在表格中，记录创建与删除方法，并更新表格
+      table.reactCustomLayout?.setReactCreateGraphic(
+        componentId,
+        createGraphic,
+        isHeaderCustomLayout
+      );
+      table.reactCustomLayout?.setReactRemoveGraphic(componentId, removeContainer, isHeaderCustomLayout);
+      table.reactCustomLayout?.updateCustomCell(componentId, isHeaderCustomLayout); // update cell content
+    } else if (table) {
+      // ... 如果该组件在表格中，更新创建方法，并更新以创建的组件
+      table.reactCustomLayout?.setReactCreateGraphic(
+        componentId,
+        createGraphic,
+        isHeaderCustomLayout
+      );
+
+      container.current.forEach((value, key) =&gt; {
+        // 更新所有已创建的组件
+      });
+    }
+  });
+
+  return null;
+};    
+</code></pre>
+
+<h2 id="63-render-reconciler">6.3 Render Reconciler</h2>
+<p><code>reconciler.ts</code> implements the React rendering reconciler based on <code>react-reconciler</code>, responsible for coordinating React components with the VTable rendering system. Using Reconciler, the primitives in VTable custom rendering can be encapsulated as components in a React way. For detailed <code>react-reconciler</code> configuration, refer to https://github.com/facebook/react/tree/main/packages/react-reconciler    </p>
+<h2 id="64-react-property-handling-plugin">6.4 React Property Handling Plugin</h2>
+<p>VRender supports users in configuring React DOM components in the react attribute of primitives. VTable's custom rendering uses this feature, allowing users to use React DOM components in encapsulated custom components.    </p>
+<p><code>vtable-react-attribute-plugin.ts</code> implements the VRender rendering React component plugin, which is an extension of the ReactAttributePlugin provided by VRender, with some customization for table scenarios:    </p>
+<pre class="codehilite"><code class="language-xml">export class VTableReactAttributePlugin extends ReactAttributePlugin {
+  // ... 渲染graphic对应的HTMLElement
+  renderGraphicHTML(graphic: IGraphic) {
+    // ... 获取正确的HTML容器
+    if (container) {
+      container = checkFrozenContainer(graphic);
+    }
+
+    // 如果container变化，移除之前渲染过的组件
+    if (this.htmlMap &amp;&amp; this.htmlMap[id] &amp;&amp; container &amp;&amp; container !== this.htmlMap[id].container) {
+      this.removeElement(id);
+    }
+
+    if (!this.htmlMap || !this.htmlMap[id]) {
+      // 创建容器
+      const { wrapContainer, nativeContainer } = this.getWrapContainer(stage, container);
+
+      if (wrapContainer) {
+        if (!this.htmlMap) {
+          this.htmlMap = {};
+        }
+
+        // ... 实例化组件并缓存
+      }
+    } else {
+      // ... 更新组件
+    }
+
+    // ...
+  }
+
+  updateStyleOfWrapContainer(
+    graphic: IGraphic,
+    stage: IStage,
+    wrapContainer: HTMLElement,
+    nativeContainer: HTMLElement,
+    options: SimpleDomStyleOptions &amp; CommonDomOptions
+  ) {
+    // ... 更新graphic对应的HTMLElement style
+  }
+}    
+</code></pre>
+
+<h2 id="65-browser-environment-adaptation-browserenvcontribution">6.5 Browser Environment Adaptation BrowserEnvContribution</h2>
+<p><code>vtable-browser-env-contribution.ts</code> provides an adaptation layer for the browser environment, and is also an extension of the BrowserEnvContribution plugin provided by VRender, with some customization for table scenarios:    </p>
+<pre class="codehilite"><code class="language-xml">class VTableBrowserEnvContribution extends BrowserEnvContribution {
+  // 更新HTMLElement
+  updateDom(dom: HTMLElement, params: CreateDOMParamsTypeForVTable): boolean {
+    const tableDiv = dom.parentElement;
+    if (tableDiv &amp;&amp; params.graphic) {
+      // 获取该HTMLElement在表格中的位置和范围
+      const top = parseInt(params.style.top, 10);
+      const left = parseInt(params.style.left, 10);
+
+      let domWidth;
+      let domHeight;
+      if ((dom.style.display = 'none')) {
+        const cellGroup = getTargetCell(params.graphic);
+        domWidth = cellGroup.attribute.width ?? 1;
+        domHeight = cellGroup.attribute.height ?? 1;
+      } else {
+        domWidth = dom.offsetWidth;
+        domHeight = dom.offsetHeight;
+      }
+      if (top + domHeight &lt; 0 || left + domWidth &lt; 0 || top &gt; tableDiv.offsetHeight || left &gt; tableDiv.offsetWidth) {
+        // 如果超过表格显示范围，将style.display置为'none'，提升交互性能
+        dom.style.display = 'none';
+        return false;
+      }
+    }
+
+    // ... 更新style
+
+    return true;
+  }
+}    
+</code></pre>
+
+<h2 id="66-primitive-components">6.6 Primitive Components</h2>
+<p><code>graphic.ts</code> provides a componentized encapsulation of custom rendering primitives in VTable, allowing users to directly reference these primitive components from the @visactor/react-vtable repository.    </p>
+<h1 id="7-workflow">7. Workflow</h1>
+<ol>
+<li>
+<p>User creates a table component and configures properties    </p>
+</li>
+<li>
+<p>Internal components (such as ListColumn) parse configuration through the <code>parseOption</code> method    </p>
+</li>
+<li>
+<p>BaseTable creates a VTable instance and applies the configuration    </p>
+</li>
+<li>
+<p>Event system binds user-provided event handler functions    </p>
+</li>
+<li>
+<p>Handling Custom Components    </p>
+</li>
+</ol>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ujqcwmt3mhcO1ObYXGCcHFainRb.gif" /></p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

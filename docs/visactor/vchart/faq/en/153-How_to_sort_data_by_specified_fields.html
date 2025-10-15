@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to sort data by specified fields?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-description"><em>Question Description</em></h2>
+<p>For the line chart below, can the time sorting only be done externally?</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/RYUsbn3kvoY6yNxUFAPcVef3nCg.gif' alt='' width='1280' height='904'></p>
+<h2 id="solution"><em>Solution</em></h2>
+<p>When configuring the data, sorting can be done based on fields. Field types are divided into discrete types and continuous types, and sorting order needs to be configured based on field types.</br></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WZJUbgg8DotvA3xQMncc25Vmn5c.gif' alt='' width='1280' height='596'></p>
+<h2 id="code-example"><em>Code Example</em></h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'line',
+  data: {
+    values: [
+      { date: '2023-01-01', type: 'Product A', value: 99.9 },
+      { date: '2023-01-02', type: 'Product C', value: 93.4 },
+      { date: '2023-01-01', type: 'Product B', value: 96.6 },
+      { date: '2023-01-02', type: 'Product A', value: 96.7 },
+      { date: '2023-01-02', type: 'Product B', value: 91.1 },
+      { date: '2023-01-03', type: 'Product A', value: 100.2 },
+      { date: '2023-01-03', type: 'Product B', value: 99.4 },
+      { date: '2023-01-03', type: 'Product C', value: 91.7 },
+      { date: '2023-01-04', type: 'Product A', value: 104.7 },
+      { date: '2023-01-05', type: 'Product B', value: 96 },
+      { date: '2023-01-05', type: 'Product C', value: 92.3 },
+      { date: '2023-01-06', type: 'Product A', value: 95.6 },
+      { date: '2023-01-06', type: 'Product B', value: 89.1 },
+      { date: '2023-01-09', type: 'Product B', value: 100.6},
+      { date: '2023-01-09', type: 'Product C', value: 103.8},
+      { date: '2023-01-04', type: 'Product C', value: 93.1 },
+      { date: '2023-01-04', type: 'Product B', value: 108.1 },
+      { date: '2023-01-07', type: 'Product A', value: 95.3 },
+      { date: '2023-01-07', type: 'Product B', value: 89.2 },
+      { date: '2023-01-07', type: 'Product C', value: 95.7 },
+      { date: '2023-01-08', type: 'Product A', value: 96.1 },
+      { date: '2023-01-08', type: 'Product B', value: 97.6 },
+      { date: '2023-01-09', type: 'Product A', value: 96.1 },
+      { date: '2023-01-10', type: 'Product A', value: 101.6 },
+      { date: '2023-01-10', type: 'Product B', value: 108.3 },
+      { date: '2023-01-10', type: 'Product C', value: 108.9 }
+    ],
+    fields: {
+      date: {
+        type: 'ordinal', // 数据维度 date 的类型是离散类型
+        sortIndex: 1 // 数据会按照 date 进行排序
+      },
+    }
+  },
+  xField: 'date',
+  yField: 'value',
+  seriesField: 'type',
+  point: {
+    visible: false
+  },
+  line: {
+    style: {
+      lineWidth: 2
+    }
+  },
+  legends: { visible: true },
+  axes: [
+    {
+      orient: 'bottom',
+      // paddingInner: 1,
+      // paddingOuter: 0,
+      trimPadding: true
+    }
+  ]
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+</body>
+</html>

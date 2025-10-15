@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9. How to draw a dual-axis chart</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="title">Title</h2>
+<p>How to draw a dual-axis chart</br></p>
+<h2 id="describe">Describe</h2>
+<p>What methods can be used to draw a chart with two axes like this?</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Po2rbBUuuobGiLxPRLHc2W0Tnxb.gif' alt='' width='1714' height='1322'></p>
+<h2 id="solution">Solution</h2>
+<p>In VChart, you can add a right axis and bind the corresponding series to achieve this. Refer to the demo: https://visactor.io/vchart/demo/combination/dual-axis。</br></p>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'common',
+  seriesField: 'color',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { x: '周一', type: '早餐', y: 15 },
+        { x: '周一', type: '午餐', y: 25 },
+        { x: '周二', type: '早餐', y: 12 },
+        { x: '周二', type: '午餐', y: 30 },
+        { x: '周三', type: '早餐', y: 15 },
+        { x: '周三', type: '午餐', y: 24 },
+        { x: '周四', type: '早餐', y: 10 },
+        { x: '周四', type: '午餐', y: 25 },
+        { x: '周五', type: '早餐', y: 13 },
+        { x: '周五', type: '午餐', y: 20 },
+        { x: '周六', type: '早餐', y: 10 },
+        { x: '周六', type: '午餐', y: 22 },
+        { x: '周日', type: '早餐', y: 12 },
+        { x: '周日', type: '午餐', y: 19 }
+      ]
+    },
+    {
+      id: 'id1',
+      values: [
+        { x: '周一', type: '饮料', y: 22 },
+        { x: '周二', type: '饮料', y: 43 },
+        { x: '周三', type: '饮料', y: 33 },
+        { x: '周四', type: '饮料', y: 22 },
+        { x: '周五', type: '饮料', y: 10 },
+        { x: '周六', type: '饮料', y: 30 },
+        { x: '周日', type: '饮料', y: 50 }
+      ]
+    }
+  ],
+  series: [
+    {
+      type: 'bar',
+      id: 'bar',
+      dataIndex: 0,
+      label: { visible: true },
+      seriesField: 'type',
+      dataIndex: 0,
+      xField: ['x', 'type'],
+      yField: 'y'
+    },
+    {
+      type: 'line',
+      id: 'line',
+      dataIndex: 1,
+      label: { visible: true },
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      stack: false
+    }
+  ],
+  axes: [
+    { orient: 'left', seriesIndex: [0] },
+    { orient: 'right', seriesId: ['line'], grid: { visible: false } },
+    { orient: 'bottom', label: { visible: true }, type: 'band' }
+  ],
+  legends: {
+    visible: true,
+    orient: 'bottom'
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_1">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/B7chbaA57otpwNxbmdcc59eHnYd.gif' alt='' width='1260' height='1042'></p>
+<p>https://visactor.io/vchart/demo/combination/dual-axis</br></p>
+<h3 id="related-documents">Related Documents</h3>
+<p>Demo: <a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fdemo%2Fcombination%2Fdual-axis">https://visactor.io/vchart/demo/combination/dual-axis</a></br></p>
+<h3 id="tutorial">Tutorial:</h3>
+<ul>
+<li>Combination Chart: <a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fguide%2Ftutorial_docs%2FChart_Types%2FCombination">https://visactor.io/vchart/guide/tutorial_docs/Chart_Types/Combination</a> API:</br></li>
+<li>Combination Chart: <a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Foption%2FcommonChart">https://visactor.io/vchart/option/commonChart</a> Github: <a href="https%3A%2F%2Fgithub.com%2FVisActor%2FVChart%2F">https://github.com/VisActor/VChart/</a></br></li>
+</ul>
+</body>
+</html>

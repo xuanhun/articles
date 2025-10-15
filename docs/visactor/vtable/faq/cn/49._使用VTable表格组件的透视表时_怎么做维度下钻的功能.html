@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>27. 使用VTable表格组件的透视表时，怎么做维度下钻的功能</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>使用VTable表格组件的透视表时，怎么做维度下钻的功能</br></p>
+<h2 id="_2">问题描述</h2>
+<p>vtable透视表是否支持在前端做钻取交互？</br></p>
+<h2 id="_3">解决方案</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Op57be9kyoqNh1xRcpCcthEun3c.gif' alt='' width='949' height='787'></p>
+<p>配置上这个 有了图标  监听事件（<a href="https%3A%2F%2Fvisactor.io%2Fvtable%2Fapi%2Fevents%23DRILLMENU_CLICK">https://visactor.io/vtable/api/events#DRILLMENU_CLICK</a>）  获取新的数据后调用接口<code>updateOption</code>更新完整的配置。</br></p>
+<h2 id="_4">代码示例</h2>
+<p>具体可以参考官网的示例demo：https://visactor.io/vtable/demo/data-analysis/pivot-analysis-table-drill。</br>
+关键的配置drillDown：</br></p>
+<pre class="codehilite"><code>const option = {
+  records: data,
+  rows: [
+    {
+      dimensionKey: 'Category',
+      title: 'Category',
+      drillDown: true,
+      headerStyle: {
+        textStick: true
+      },
+      width: 'auto'
+    }
+  ],
+  columns: [
+    {
+      dimensionKey: 'Region',
+      title: 'Region',
+      headerStyle: {
+        textStick: true
+      },
+      width: 'auto'
+    }
+  ],
+  indicators: ...
+};&lt;/br&gt;
+</code></pre>
+
+<p>配置后显示下钻图标，监听图标的点击事件 <code>drillmenu_click</code>，事件处理逻辑中调用<code>updateOption</code>更新配置，配置的下钻图标变成下钻图标drillUp：</br></p>
+<pre class="codehilite"><code>tableInstance.on('drillmenu_click', args =&gt; {
+  if (args.drillDown) {
+    if (args.dimensionKey === 'Category') {
+      tableInstance.updateOption({
+        records: newData,
+        rows: [
+          {
+            dimensionKey: 'Category',
+            title: 'Category',
+            drillUp: true,
+            headerStyle: {
+              textStick: true
+            },
+            width: 'auto'
+          },
+          {
+            dimensionKey: 'Sub-Category',
+            title: 'Sub-Catogery',
+            headerStyle: {
+              textStick: true
+            },
+            width: 'auto'
+          }
+        ],
+        columns: ...,
+        indicators: ...
+      });
+    }
+  }&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>官网示例效果如下：</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OHN3byA1moz9IhxjS43clu86nEe.gif' alt='' width='1492' height='1016'></p>
+<h2 id="_6">相关文档</h2>
+<p>透视表上钻下钻用法教程：https://visactor.io/vtable/guide/data_analysis/pivot_table_dataAnalysis</br>
+透视表上钻下钻用法demo：https://visactor.io/vtable/demo/data-analysis/pivot-analysis-table-drill?open_in_browser=true</br>
+相关api：https://visactor.io/vtable/option/PivotTable-columns-text#drillDown</br>
+https://visactor.io/vtable/api/events?open_in_browser=true#DRILLMENU_CLICK</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

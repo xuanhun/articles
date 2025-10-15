@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.1 PivotTable Concepts and Capability Definition</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>鉴于本节其实跟代码没什么关系，并且 和 <a href="https://www.visactor.io/vtable/guide/table_type/Pivot_table/pivot_table_overview">官方文档</a> 已经写的很清楚了，这里写一些自己的理解    </p>
+<h2 id="pivottable-basic-concepts">PivotTable Basic Concepts</h2>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">Multidimensional analysis tables, also known as pivot tables or cross tables, refer to tables where one or more dimensions can be placed in **row dimensions** and **column dimensions**, displaying the **interrelationships between dimensions**. Users can easily analyze various scenario indicators and comparisons at a glance, aiming to assist business analysis in driving decision-making.</div>
+</div>
+<p>This might sound a bit abstract, and some readers may wonder: what does a table with multiple row dimensions + multiple column dimensions look like? Here's an example 🌰:    </p>
+<p>A marketing colleague <strong>every day</strong> needs to track the <strong>price</strong> of a certain robotic vacuum cleaner in <strong>various online stores</strong>. Let's analyze the scenario he faces:    \r</p>
+<ol>
+<li>"Each online store", we can summarize as the <code>channel</code> <strong>dimension (Dimension)</strong>. According to his daily work, there is the following <code>channel tree</code>:    </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OfNfbYOVbotVR7xn5hgcpBGunof.gif' alt='' width='1000' height='auto'></p>
+<ol>
+<li>According to the different levels of the <code>channel</code> dimension, it is divided into: <code>Channel | Platform | Store</code> three <strong>Dimension Levels</strong>. Taking the "Platform" dimension level as an example, there are three values: Taobao, JD, Douyin, which we call <strong>Dimension Members (Dimension Value)</strong>    </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TbISbGYb1oA9Qvx4HiZcXzPcnhc.gif' alt='' width='1000' height='auto'></p>
+<p>With <code>TypeScript</code> we can easily write type definitions for <code>channels</code>, as well as <code>channel trees</code>:    </p>
+<pre class="codehilite"><code class="language-xml">enum IChannel {
+  Channel = 'channel',     // 渠道
+  Platform = 'platfrom',   // 平台
+  Shop = 'shop'            // 店铺
+}
+
+const channelTree = [
+  {
+    nodeType: IChannel.Channel,
+    value: '线上',
+    children: [
+      {
+        nodeType: IChannel.Platform,
+        value: '淘宝',
+        children: [
+          {
+            nodeType: IChannel.Shop,
+            value: '淘宝旗舰店'
+          },
+          {
+            nodeType: IChannel.Shop,
+            value: '淘宝三方店'
+          }
+        ]
+      },
+      {
+        nodeType: IChannel.Platform,
+        value: '京东',
+        children: [
+          {
+            nodeType: IChannel.Shop,
+            value: '京东旗舰店'
+          },
+          {
+            nodeType: IChannel.Shop,
+            value: '京东三方店'
+          }
+        ]
+      },
+      {
+        nodeType: IChannel.Platform,
+        value: '抖音',
+        children: [
+          {
+            nodeType: IChannel.Shop,
+            value: '抖音旗舰店'
+          },
+          {
+            nodeType: IChannel.Shop,
+            value: '抖音三方店'
+          }
+        ]
+      }
+    ]
+  }
+];    
+</code></pre>
+
+<ol>
+<li>Since these data are collected "daily", over time, there is also the <code>time</code> <strong>dimension</strong> and <code>time tree</code>:    </li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CWtObUweho18DfxgrHBci8SpnNc.gif' alt='' width='656' height='auto'></p>
+<pre class="codehilite"><code class="language-xml">enum ITime {
+    Month = 'month',
+    Week = 'week',
+    Day = 'day'
+}
+
+const timeTree = [
+  {
+    nodeType: ITime.Month,
+    value: '3',
+    children: [
+      {
+        nodeType: ITime.Week,
+        value: '1',
+        children: [
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-03'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-04'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-05'
+          },
+          ...
+        ]
+      },
+      {
+        nodeType: ITime.Week,
+        value: '2',
+        children: [
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-10'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-11'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-12'
+          },
+          ...
+        ]
+      },
+      {
+        nodeType: ITime.Week,
+        value: '3',
+        children: [
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-17'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-18'
+          },
+          {
+            nodeType: ITime.Day,
+            value: '2025-03-19'
+          },
+          ...
+        ]
+      }
+    ]
+  }
+];    
+</code></pre>
+
+<ol>
+<li>What specific data is this marketing colleague analyzing - Price. It may be divided into original price, post-coupon price, etc. These specific data are referred to as <strong>Indicators</strong>. Combining the aforementioned channel tree and price tree, we can obtain such a multidimensional table. \r</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ucehb8ZHtoSpLXxTCFUcDjf7nsc.gif' alt='' width='1000' height='auto'></p>
+<h2 id="data-concepts">Data Concepts</h2>
+<p>Congratulations on reaching this point, you have already mastered the concept of multidimensional tables!    </p>
+<p>We further abstract the above multidimensional table and can conclude that displaying a multidimensional table requires the following data:    \r</p>
+<ol>
+<li>
+<p>Row header tree (rowTree): A tree structure representing the hierarchical relationship of row dimensions in the header. That is, the <code>timeTree</code> in the example above.    </p>
+</li>
+<li>
+<p>Column Tree (columnTree): A tree structure representing the hierarchical relationship of column dimensions in the header. That is, the <code>channelTree</code> in the example above.    </p>
+</li>
+<li>
+<p>Generally speaking, for convenience of display, the indicator will be a leaf node of the columnTree    \r</p>
+</li>
+<li>
+<p>Corner Header (cornHeader): The cell located at the intersection of the row header and the list header, used to display metric titles and other auxiliary information    \r</p>
+</li>
+<li>
+<p>Specific data (records): That is, the specific data under <strong>various dimensions</strong> and <strong>various indicators</strong> will be displayed in the data cells (we call this area the body)    \r</p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/W3lVbn6VyoRBH7xT7yyc2Ov9nmC.gif' alt='' width='1000' height='auto'></p>
+<h2 id="objective">Objective</h2>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">Implement a high-performance multidimensional analysis table with capabilities for data transformation, statistics, sorting, drilling, and visualization    
+</div>
+
+<h2 id="capability">Capability</h2>
+<p>The specific capabilities are outlined as follows: basic capabilities (aligned with the functionality of ListTable), as well as features unique to PivotTable.</p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/H7phwoISahq5TWbzVswchvrVnbG.gif" /></p>
+<h2 id="related-materials">Related Materials</h2>
+<ul>
+<li></li>
+<li>
+<p><a href="https://visactor.io/vtable/guide/table_type/Pivot_table/pivot_table_overview">官方文档</a>    </p>
+</li>
+</ul>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>19. VChart 图表标签格式化的方法有哪些？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VChart 图表标签格式化的方法有哪些？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>VChart 柱状图中，默认展示的是柱子对应数值的标签，我想展示类似 <code>x轴名称: y数值</code>这样的内容，有哪些办法可以自定义标签展示？</br></p>
+<h2 id="_3">解决方案</h2>
+<p>有两种推荐的配置方式：</br>
+1. 通过 <code>label.formatMethod</code> 配置格式化函数。</br>
+1. 函数参数为<code>(text: string | string[], datum?: any)</code>，<code>text</code> 为默认展示的文本，<code>datum</code>为图元数据。</br>
+1. 函数返回值可以是一个字符串或字符串数组。其中，字符串数组会默认换行展示。</br>
+1. 如果要配置为富文本，那么返回值则为富文本配置对象；</br></p>
+<pre class="codehilite"><code>label: {
+    formatMethod:(value, data) =&gt; `${data.name}: ${value}`
+}&lt;/br&gt;
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Lu0IbhIOtoCTHOxlZUAcGF6nn9e.gif' alt='' width='2842' height='894'></p>
+<ol>
+<li>通过 <code>label.formatter</code> 配置模板字符串。</br></li>
+</ol>
+<pre class="codehilite"><code>label: {
+   formatter: `{name} : {value}`
+}&lt;/br&gt;
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/JgcTblmKqorPmZxREk4chim4nLg.gif' alt='' width='2884' height='848'></p>
+<h2 id="_4">相关文档</h2>
+<p>formatMethod demo: <a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fdemo%2Flabel%2Frichtext-label">https://visactor.io/vchart/demo/label/richtext-label</a></br>
+Formatter demo：<a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fdemo%2Flabel%2Flabel-formatter">https://visactor.io/vchart/demo/label/label-formatter</a></br>
+相关配置项：https://visactor.io/vchart/option/barChart#label.formatMethod</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

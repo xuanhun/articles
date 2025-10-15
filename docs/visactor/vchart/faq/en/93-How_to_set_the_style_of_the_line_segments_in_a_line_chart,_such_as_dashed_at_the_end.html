@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>93-How_to_set_the_style_of_the_line_segments_in_a_line_chart,_such_as_dashed_at_the_end</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-set-the-style-of-the-line-segments-in-a-line-chart-such-as-dashed-at-the-end">How to set the style of the line segments in a line chart, such as dashed at the end?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>I have a line chart demand. In the chart, the last data point of the line is predicted data, so I want the last section of the line to be displayed as a dashed line, similar to the picture below. How can this be implemented more conveniently?<br />
+<img alt="demo" src="/vchart/faq/19-0.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>I recommend VChart, and the official website demo has the effect you need: https://visactor.io/vchart/demo/line-chart/dash-line . It can return different styles based on the data in the callback of the line mark style.</p>
+<ul>
+<li><code>lineDash</code>: Dashed mode. It uses a set of values to specify the alternating lengths of the lines and gaps that describe the pattern.</li>
+</ul>
+<pre class="codehilite"><code class="language-js">line: {
+  style: {
+    stroke: (data) =&gt; data.latest ? 'blue': 'green',
+    lineDash: data =&gt; data.latest ? [5, 5]: [0]
+  }
+},
+point: {
+  style: {
+    fill: (data) =&gt; data.latest ? 'blue': 'green',
+  }
+}
+</code></pre>
+
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const spec = {
+  type: 'line',
+  data: {
+    values: [
+      {
+        x: '1st',
+        y: 0.012
+      },
+      {
+        x: '2nd',
+        y: -0.01
+      },
+      {
+        x: '3rd',
+        y: 0.005
+      },
+      {
+        x: '4th',
+        y: 0.007
+      },
+      {
+        x: '5th',
+        y: 0.01
+      },
+      {
+        x: '6th',
+        y: 0.017
+      },
+      {
+        x: '7th',
+        y: 0.022
+      },
+      {
+        x: '8th (prediction)',
+        y: 0.033,
+        latest: true
+      }
+    ]
+  },
+  xField: 'x',
+  yField: 'y',
+  line: {
+    style: {
+      stroke: data =&gt; (data.latest ? 'blue' : 'green'),
+      lineDash: data =&gt; (data.latest ? [5, 5] : [0])
+    }
+  },
+  point: {
+    style: {
+      fill: data =&gt; (data.latest ? 'blue' : 'green')
+    }
+  }
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://visactor.io/vchart/demo/line-chart/dash-line">More demos</a></li>
+<li><a href="https://visactor.io/vchart/option/lineChart#line.style">Related API</a></li>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+</ul>
+</body>
+</html>

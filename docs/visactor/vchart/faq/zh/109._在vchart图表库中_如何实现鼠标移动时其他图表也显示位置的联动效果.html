@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>109. 在vchart图表库中，如何实现鼠标移动时其他图表也显示位置的联动效果？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">问题标题</h1>
+<p>在vchart图表库中，如何实现鼠标移动时其他图表也显示位置的联动效果？</br></p>
+<h1 id="_2">问题描述</h1>
+<p>我在使用vchart图表库时，遇到了一个问题。我希望在移动鼠标时，其他图表也能同时显示相应的位置，即实现联动效果。我不确定该如何实现这种功能，有相关的文档可以供我参考吗？</br></p>
+<h1 id="_3">解决方案</h1>
+<p>确实可以实现这种联动效果。你需要监听一个图表的 dimensionHover 事件，然后对其他图表模拟dimensionHover。</br>
+首先，你需要使用<code>on</code>方法来监听图表的<code>dimensionHover</code>事件，详细的API使用方式可以参考<a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fapi%2FAPI%2Fvchart%23on">vchart API</a>。</br></p>
+<pre class="codehilite"><code>vChart.on('dimensionHover', function(params) {
+// 处理逻辑
+});&lt;/br&gt;
+</code></pre>
+
+<p>然后，可以通过<code>setDimensionIndex</code>方法来对其他图表模拟<code>dimensionHover</code>效果，API详情参考<a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fapi%2FAPI%2Fvchart%23setdimensionindex">vchart API</a>。</br></p>
+<pre class="codehilite"><code>vChart.setDimensionIndex(value, {
+// options
+});&lt;/br&gt;
+</code></pre>
+
+<p>其中，</br>
+*  <code>value</code>是dimension值，</br>
+*  <code>options</code>是DimensionIndexOption类型的参数，可以用来筛选要触发dimension效果的轴、配置tooltip和crosshair等。</br></p>
+<h1 id="_4">相关文档</h1>
+<ul>
+<li><a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fapi%2FAPI%2Fvchart%23on">vchart on API</a></br></li>
+<li><a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fapi%2FAPI%2Fvchart%23setdimensionindex">vchart setDimensionIndex API</a></br></li>
+</ul>
+</body>
+</html>

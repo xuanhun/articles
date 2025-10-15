@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14.6.1 Introduction to Openinula-VChart</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="i-component-introduction">I. Component Introduction</h1>
+<p><code>@visactor/openinula-vchart</code> is a packaged version of the <a href="https://visactor.io/vchart">VChart</a> chart library provided by <a href="https://visactor.io/">VisActor</a> for <a href="https://openinula.net/">Openinula</a>. It offers a series of easy-to-use <a href="https://openinula.net/">Openinula</a> components for conveniently creating various types of charts in the <a href="https://openinula.net/">Openinula</a> development environment, including line charts, bar charts, pie charts, etc. The components of <code>@visactor/openinula-vchart</code> are highly customizable and extensible, allowing different chart effects to be achieved by passing different parameters and configurations.    </p>
+<h1 id="ii-component-overview">II. <strong>Component Overview</strong></h1>
+<p><strong>openinula-vchart</strong> provides two styles of components:    </p>
+<ol>
+<li>
+<p><strong>Unified entry components,</strong> such as: <code>&lt;VChart /&gt;</code> and <code>&lt;VChartSimple /&gt;</code>    </p>
+</li>
+<li>
+<p><strong>Semantic chart components, including:</strong>    </p>
+</li>
+<li>
+<p>Charts, such as: <code>&lt;LineChart /&gt;</code> <code>&lt;BarChart /&gt;</code> etc.    </p>
+</li>
+<li>
+<p>Series, such as <code>&lt;Line /&gt;</code> <code>&lt;Bar /&gt;</code> etc.    </p>
+</li>
+<li>
+<p>Controls, such as <code>&lt;legend /&gt;</code> <code>&lt;Axes /&gt;</code> etc.    </p>
+</li>
+</ol>
+<table><colgroup><col style="width: 200px"><col style="width: 153px"><col style="width: 200px"><col style="width: 200px"></colgroup><tbody><tr><td rowspan="1" colspan="1">
+
+Features    
+</td><td rowspan="1" colspan="1">
+
+`<VChart />`     
+</td><td rowspan="1" colspan="1">
+
+`<VChartSimple />`    
+</td><td rowspan="1" colspan="1">
+
+Semantic components    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+Configuration method    
+</td><td rowspan="1" colspan="1">
+
+Full spec    
+</td><td rowspan="1" colspan="1">
+
+Full spec, but only supports some charts    
+</td><td rowspan="1" colspan="1">
+
+Componentized declaration    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+Extensibility    
+</td><td rowspan="1" colspan="1">
+
+High    
+</td><td rowspan="1" colspan="1">
+
+High    
+</td><td rowspan="1" colspan="1">
+
+Medium    
+</td></tr><tr><td rowspan="1" colspan="1">
+
+Development experience    
+</td><td rowspan="1" colspan="1">
+
+Configuration-driven    
+</td><td rowspan="1" colspan="1">
+
+Configuration-driven    
+</td><td rowspan="1" colspan="1">
+
+Declarative development    
+</td></tr></tbody></table>
+<h1 id="iii-usage-examples">III. Usage Examples</h1>
+<h3 id="unified-entry-mode">Unified Entry Mode</h3>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/openinula-vchart';
+
+const spec = {
+  type: 'bar',
+  data: [{ values: [...] }]
+};
+
+export default () =&gt; &lt;VChart spec={spec} /&gt;;    
+</code></pre>
+
+<h3 id="declarative-pattern">Declarative Pattern</h3>
+<pre class="codehilite"><code class="language-xml">import { LineChart, Line, Axis, Legend } from '@visactor/openinula-vchart';
+
+export default () =&gt; (
+  &lt;LineChart data={[...]}&gt;
+    &lt;Line xField=&quot;date&quot; yField=&quot;value&quot; /&gt;
+    &lt;Axis orient=&quot;bottom&quot; /&gt;
+    &lt;Legend position=&quot;top&quot; /&gt;
+  &lt;/LineChart&gt;
+);    
+</code></pre>
+
+<p># This document was revised and organized by the following person 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

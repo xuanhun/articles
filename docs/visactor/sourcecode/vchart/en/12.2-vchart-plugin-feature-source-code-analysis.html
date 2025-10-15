@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12.2 VChart Plugin Functionality Source Code Explanation</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>In the previous section (#12.1 VChart Plugin Mechanism), the basic usage of plugins in VChart was introduced. In this section, I will delve into the source code to explore the implementation logic of various plugins in depth;    </p>
+<h2 id="relevant-source-code-locations">Relevant Source Code Locations</h2>
+<ul>
+<li>
+<p><code>packages/vchart/src/plugin/chart/formatter/</code> : Core implementation of the formatting plugin    </p>
+</li>
+<li>
+<p><code>packages/vchart/src/plugin/chart/media-query/</code> : Core implementation of the media query plugin    </p>
+</li>
+</ul>
+<h2 id="formatting-plugin">Formatting Plugin</h2>
+<h3 id="numerical-text-formatting">Numerical Text Formatting</h3>
+<pre class="codehilite"><code class="language-xml">  protected _formatSingleText(text: string | number, formatter: string): string | number {
+    const isNumeric = numberSpecifierReg.test(formatter);
+    if (isNumeric &amp;&amp; this._numericFormatter) {
+      // 内置的 formatter 逻辑，可以进行缓存性能优化
+      let numericFormat;
+      if (this._numericFormatterCache &amp;&amp; this._numericSpecifier) {
+        if (this._numericFormatterCache.get(formatter)) {
+          numericFormat = this._numericFormatterCache.get(formatter);
+        } else {
+          numericFormat = this._numericSpecifier(formatter) as any;
+          this._numericFormatterCache.set(formatter, numericFormat);
+        }
+        return numericFormat(Number(text));
+      }
+      return this._numericFormatter(formatter, Number(text));
+    } else if (formatter.includes('%') &amp;&amp; this._timeFormatter) {
+      return this._timeFormatter(formatter, text);
+    }
+    return text;
+  }
+</code></pre>
+
+<h3 id="time-text-formatting">Time Text Formatting</h3>
+<p>VChart for time format conversion in</p>
+<pre class="codehilite"><code class="language-xml">private readonly _timeModeFormat = {
+  utc: TimeUtil.getInstance().timeUTCFormat,
+  local: TimeUtil.getInstance().timeFormat
+};
+
+// 在 onInit 中设置时间格式化器
+onInit(service: IChartPluginService, chartSpec: any) {
+  const { timeMode, timeFormatter } = this._spec;
+
+  if (isFunction(timeFormatter)) {
+    // 使用自定义时间格式化函数
+    this._timeFormatter = timeFormatter;
+  } else if (timeMode &amp;&amp; this._timeModeFormat[timeMode]) {
+    // 使用内置的 UTC 或本地时间格式化
+    this._timeFormatter = this._timeModeFormat[timeMode];
+  }
+}
+
+// 在 _formatSingleText 中处理时间格式化
+protected _formatSingleText(text: string | number, formatter: string): string | number {
+  // 数值格式化逻辑...
+
+  // 时间格式化逻辑
+  else if (formatter.includes('%') &amp;&amp; this._timeFormatter) {
+    return this._timeFormatter(formatter, text);
+  }
+
+  return text;
+}    
+</code></pre>
+
+<h3 id="data-variable-replacement">Data Variable Replacement</h3>
+<ol>
+<li>
+<p><strong>Template Parsing</strong>:</p>
+</li>
+<li>
+<p>Use regular expression <code>/\{([^}]\u002B)\}/g</code> to match curly brace templates</p>
+</li>
+<li>
+<p>Support nested format definitions (e.g., <code>{field:format}</code>)</p>
+</li>
+<li>
+<p><strong>Field Extraction</strong>:</p>
+</li>
+<li>
+<p>Split field name and format specification with a colon (<code>field:format</code>)</p>
+</li>
+<li>
+<p><strong>Dynamic Replacement</strong>:</p>
+</li>
+<li>
+<p>Extract corresponding field values from the data object <code>datum</code></p>
+</li>
+<li>
+<p>Recursively apply format specifications for secondary formatting</p>
+</li>
+</ol>
+<h2 id="media-query-plugin">Media-query Plugin</h2>
+<p># This document was revised and organized by the following person
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

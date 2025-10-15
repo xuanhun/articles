@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>53. 如何限制Tooltip的行数？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">问题标题</h1>
+<p>如何限制Tooltip的行数？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>Tooltip中数据条数非常多的时候，超过20条后会自动归纳为其他，这个数量支持自定义吗？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/GKz8bdBkPojUa2xfPuBchH22nsh.gif' alt='' width='846' height='778'></p>
+<h2 id="_3">解决方案</h2>
+<p>tooltip支持通过 <code>maxLineCount</code>设置最大行数，需要注意的是，vchart的tooltip支持多种类型，现在需要分别设置；</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/T77GbT9YGo6gSKxMMHUcgcGxnRb.gif' alt='' width='3318' height='1212'></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'line',
+  data: {
+    values: [
+      { type: 'Nail polish', country: 'Africa', value: 4229 },
+      { type: 'Nail polish', country: 'EU', value: 4376 },
+      { type: 'Nail polish', country: 'China', value: 3054 },
+      { type: 'Nail polish', country: 'USA', value: 12814 },
+      { type: 'Eyebrow pencil', country: 'Africa', value: 3932 },
+      { type: 'Eyebrow pencil', country: 'EU', value: 3987 },
+      { type: 'Eyebrow pencil', country: 'China', value: 5067 },
+      { type: 'Eyebrow pencil', country: 'USA', value: 13012 },
+      { type: 'Rouge', country: 'Africa', value: 5221 },
+      { type: 'Rouge', country: 'EU', value: 3574 },
+      { type: 'Rouge', country: 'China', value: 7004 },
+      { type: 'Rouge', country: 'USA', value: 11624 },
+      { type: 'Lipstick', country: 'Africa', value: 9256 },
+      { type: 'Lipstick', country: 'EU', value: 4376 },
+      { type: 'Lipstick', country: 'China', value: 9054 },
+      { type: 'Lipstick', country: 'USA', value: 8814 },
+      { type: 'Eyeshadows', country: 'Africa', value: 3308 },
+      { type: 'Eyeshadows', country: 'EU', value: 4572 },
+      { type: 'Eyeshadows', country: 'China', value: 12043 },
+      { type: 'Eyeshadows', country: 'USA', value: 12998 },
+      { type: 'Eyeliner', country: 'Africa', value: 5432 },
+      { type: 'Eyeliner', country: 'EU', value: 3417 },
+      { type: 'Eyeliner', country: 'China', value: 15067 },
+      { type: 'Eyeliner', country: 'USA', value: 12321 },
+      { type: 'Foundation', country: 'Africa', value: 13701 },
+      { type: 'Foundation', country: 'EU', value: 5231 },
+      { type: 'Foundation', country: 'China', value: 10119 },
+      { type: 'Foundation', country: 'USA', value: 10342 },
+      { type: 'Lip gloss', country: 'Africa', value: 4008 },
+      { type: 'Lip gloss', country: 'EU', value: 4572 },
+      { type: 'Lip gloss', country: 'China', value: 12043 },
+      { type: 'Lip gloss', country: 'USA', value: 22998 },
+      { type: 'Mascara', country: 'Africa', value: 18712 },
+      { type: 'Mascara', country: 'EU', value: 6134 },
+      { type: 'Mascara', country: 'China', value: 10419 },
+      { type: 'Mascara', country: 'USA', value: 11261 }
+    ]
+  },
+  title: {
+    visible: true,
+    text: '100% stacked line chart of cosmetic products sales'
+  },
+  percent: true,
+  xField: 'type',
+  yField: 'value',
+  seriesField: 'country',
+  legends: [{ visible: true, position: 'middle', orient: 'bottom' }],
+  axes: [
+    {
+      orient: 'left',
+      label: {
+        formatMethod(val) {
+          return `${(val * 100).toFixed(2)}%`;
+        }
+      }
+    }
+  ],
+  tooltip: {
+    mark: {
+      maxLineCount: 2
+    },
+    dimension: {
+      maxLineCount: 2
+    }
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AiV0b1G0WoV43Kx81g6ciVEenIh.gif' alt='' width='1686' height='1056'></p>
+<h2 id="_6">相关文档</h2>
+<ul>
+<li><a href="https%3A%2F%2Fvisactor.com%2Fvchart%2Fguide%2Ftutorial_docs%2FChart_Concepts%2FTooltip">Tooltip提示信息教程</a></br></li>
+<li><a href="https%3A%2F%2Fvisactor.com%2Fvchart%2Foption%2FbarChart%23tooltip.dimension.maxLineCount">Tooltip配置文档</a></br></li>
+<li><a href="https%3A%2F%2Fgithub.com%2FVisActor%2FVChart">VChart github</a></br></li>
+</ul>
+</body>
+</html>

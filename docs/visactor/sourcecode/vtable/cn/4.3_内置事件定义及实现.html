@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4.3 内置事件定义及实现</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">简介</h2>
+<p>VTable 内部的事件监听了两种类型的事件，分别是原生 DOM 事件、内置自定义事件。    </p>
+<p>本文将讲解自定义事件的定义，以及 VTable 中自定义事件相关事项。    </p>
+<h2 id="_2">自定义事件</h2>
+<p>在前端开发中，Javascript 和 HTML 之间都是通过事件来进行通信，像是失焦、点击、鼠标移动等。事件是一种通信方式，我们可以通过监听事件来完成页面的交互功能。    </p>
+<p>但是对于复杂的项目，基础事件无法满足业务需求，这时就可以引入<strong>自定义事件</strong>了<strong>。</strong>    </p>
+<p>常规的事件采用的是观察者模式，他的触发时机是在用户进行相应操作后进行触发，而自定义事件采用的是发布-订阅的模式，允许开发者自行决定注册与触发时机。    </p>
+<p>自定义事件需要先进行注册，如下图所示，在E模块中先进行注册和传入对应的回调，随后便可以在其他模块中触发自定义事件，执行对应的回调。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/BxnIbI1s2oY5mkx04UYc319dnFd.gif' alt='' width='1000' height='auto'></p>
+<p>在 VTable 中，自定义模块最主要是用于下面这条链路，当用户进行交互的时候，触发对应的自定义事件，更改状态模块，触发表格组件重新渲染，实现 VTable 中的交互系统。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Zrh8bJscKoG9qgxAy46cGEYTn8c.gif' alt='' width='1000' height='auto'></p>
+<p>自定义事件除了用来在各个不同模块之间进行通信以外，还能用来让业务方注册自定义事件，实现自定义逻辑。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/JTi5bDQvnoCYKSxuIObckj9hnUb.gif' alt='' width='1000' height='auto'></p>
+<h2 id="_3">内置事件分类</h2>
+<p>在 VTable 内部，提供了高达 50 多种内置事件，下面根据不同的分类来介绍：    </p>
+<ul>
+<li>
+<p>单元格相关    </p>
+</li>
+<li>
+<p>CLICK_CELL   <em>鼠标点击单元格事件</em>    </p>
+</li>
+<li>
+<p>DBLCLICK_CELL <em>鼠标双击单元格事件</em>    </p>
+</li>
+<li>
+<p>SELECTED_CELL <em>单元格选中状态改变事件</em>    </p>
+</li>
+<li>
+<p>SELECTED_CLEAR <em>单元格选中状态改变事件</em>    </p>
+</li>
+<li>
+<p>DRAG_SELECT_END <em>拖拽框选单元格鼠标松开事件</em>     </p>
+</li>
+<li>
+<p>MOUSEDOWN_CELL <em>单元格上鼠标按下事件</em>     </p>
+</li>
+<li>
+<p>MOUSEUP_CELL <em>单元格鼠标松开事件</em>     </p>
+</li>
+<li>
+<p>MOUSEMOVE_CELL <em>鼠标在某个单元格上移动事件</em>    </p>
+</li>
+<li>
+<p>MOUSEENTER_CELL <em>鼠标进入单元格事件</em>    </p>
+</li>
+<li>
+<p>MOUSELEAVE_CELL <em>鼠标离开单元格事件</em>    </p>
+</li>
+<li>
+<p>CHANGE_CELL_VALUE  <em>更改单元格值的事件</em>    </p>
+</li>
+<li>
+<p>COPY_DATA <em>单元格内容复制事件</em>    </p>
+</li>
+<li>
+<p>CONTEXTMENU_CELL <em>单元格右键事件</em>    </p>
+</li>
+<li>
+<p>键盘相关事件    </p>
+</li>
+<li>
+<p>KEYDOWN <em>键盘按下事件</em>    </p>
+</li>
+<li>
+<p>表格相关事件    </p>
+</li>
+<li>
+<p>MOUSEENTER_TABLE <em>鼠标进入表格事件</em>    </p>
+</li>
+<li>
+<p>MOUSELEAVE_TABLE <em>鼠标离开表格事件</em>    </p>
+</li>
+<li>
+<p>MOUSEDOWN_TABLE <em>鼠标点击表格事件</em>    </p>
+</li>
+<li>
+<p>MOUSEMOVE_TABLE <em>鼠标在表格上移动事件</em>    </p>
+</li>
+<li>
+<p>行高列宽调整事件    </p>
+</li>
+<li>
+<p>RESIZE_COLUMN <em>列宽调整事件</em>    </p>
+</li>
+<li>
+<p>RESIZE_COLUMN_END <em>列宽调整结束事件</em>    </p>
+</li>
+<li>
+<p>RESIZE_ROW <em>行高调整事件</em>    </p>
+</li>
+<li>
+<p>RESIZE_ROW_END <em>行高调整结束事件</em>    </p>
+</li>
+<li>
+<p>拖拽表头移动位置的事件    </p>
+</li>
+<li>
+<p>CHANGE_HEADER_POSITION_START <em>拖拽表头或者拖拽行来移动位置开始事件</em>    </p>
+</li>
+<li>
+<p>CHANGE_HEADER_POSITION <em>拖拽表头或者行来移动位置的事件</em>    </p>
+</li>
+<li>
+<p>CHANGING_HEADER_POSITION  <em>拖拽表头或者拖拽行移动过程事件</em>    </p>
+</li>
+<li>
+<p>CHANGE_HEADER_POSITION_FAIL <em>拖拽表头或者行来移动位置的失败事件</em>    </p>
+</li>
+<li>
+<p>排序相关事件    </p>
+</li>
+<li>
+<p>SORT_CLICK <em>点击排序图标事件。</em><strong><em>ListTable 专有事件</em></strong>    </p>
+</li>
+<li>
+<p>PIVOT_SORT_CLICK <em>透视表中排序图标点击事件。</em><strong><em>PivotTable 透视表专有事件</em></strong>    </p>
+</li>
+<li>
+<p>AFTER_SORT <em>执行完排序事件。</em><strong><em>ListTable 专有事件</em></strong>** **    </p>
+</li>
+<li>
+<p>图标事件    </p>
+</li>
+<li>
+<p>ICON_CLICK <em>icon 图标点击事件</em>     </p>
+</li>
+<li>
+<p>FREEZE_CLICK <em>点击固定列图标冻结或者解冻事件</em>    </p>
+</li>
+<li>
+<p>DRILLMENU_CLICK <em>下钻按钮点击事件。</em><strong><em>透视表专有事件</em></strong>    </p>
+</li>
+<li>
+<p>滚动事件    </p>
+</li>
+<li>
+<p>SCROLL <em>滚动表格事件</em>    </p>
+</li>
+<li>
+<p>SCROLL_HORIZONTAL_END <em>横向滚动到右侧结束事件</em>    </p>
+</li>
+<li>
+<p>SCROLL_VERTICAL_END <em>竖向滚动条滚动到底部事件</em>    </p>
+</li>
+<li>
+<p>迷你图事件    </p>
+</li>
+<li>
+<p>MOUSEOVER_CHART_SYMBOL <em>鼠标经过迷你图标记事件</em>    </p>
+</li>
+<li>
+<p>下拉菜单事件    </p>
+</li>
+<li>
+<p>DROPDOWN_MENU_CLICK <em>下拉菜单选项的点击事件</em>     </p>
+</li>
+<li>
+<p>DROPDOWN_ICON_CLICK <em>点击下拉菜单按钮</em>    </p>
+</li>
+<li>
+<p>DROPDOWN_MENU_CLEAR  <em>清空下拉菜单事件（菜单显示时点击其他区域）</em>    </p>
+</li>
+<li>
+<p>SHOW_MENU <em>显示菜单事件</em>     </p>
+</li>
+<li>
+<p>HIDE_MENU <em>隐藏菜单事件</em>     </p>
+</li>
+<li>
+<p>图例事件    </p>
+</li>
+<li>
+<p>LEGEND_ITEM_CLICK <em>图例项点击事件。</em><strong><em>图例专有事件</em></strong>** **    </p>
+</li>
+<li>
+<p>LEGEND_ITEM_HOVER <em>图例项 hover 事件。</em><strong><em>图例专有事件</em></strong>** **    </p>
+</li>
+<li>
+<p>LEGEND_ITEM_UNHOVER <em>图例项 hover 到 unhover 事件。</em><strong><em>图例专有事件</em></strong>** **    </p>
+</li>
+<li>
+<p>LEGEND_CHANGE <em>颜色图例，尺寸图例，用户操作图例范围后触发该事件。</em><strong><em>图例专有事件</em></strong>** **    </p>
+</li>
+<li>
+<p>透视图坐标轴事件    </p>
+</li>
+<li>
+<p>MOUSEENTER_AXIS <em>鼠标进入到坐标轴上事件。</em><strong><em>坐标轴专有事件</em></strong>** **    </p>
+</li>
+<li>
+<p>MOUSELEAVE_AXIS <em>鼠标离开坐标轴事件。</em><strong><em>坐标轴专有事件</em></strong>** **    </p>
+</li>
+<li>
+<p>状态更改    </p>
+</li>
+<li>
+<p>CHECKBOX_STATE_CHANGE <em>更改 checkbox 复选框状态。</em><strong><em>ListTable 表格专有事件</em></strong>** **    </p>
+</li>
+<li>
+<p>RADIO_STATE_CHANGE <em>更改 radio 单选框状态。</em><strong><em>ListTable 表格专有事件</em></strong>** **    </p>
+</li>
+<li>
+<p>TREE_HIERARCHY_STATE_CHANGE <em>树形结构展开收起的点击事件</em>    </p>
+</li>
+<li>
+<p>生命周期    </p>
+</li>
+<li>
+<p>AFTER_RENDER <em>每次渲染完成后触发</em>     </p>
+</li>
+<li>
+<p>INITIALIZED <em>成功初始化完成后触发</em>     </p>
+</li>
+<li>
+<p>填充柄事件    </p>
+</li>
+<li>
+<p>DRAG_FILL_HANDLE_END <em>拖拽填充柄结束事件</em>     </p>
+</li>
+<li>
+<p>MOUSEDOWN_FILL_HANDLE <em>拖拽填充柄点击事件</em>     </p>
+</li>
+<li>
+<p>DBLCLICK_FILL_HANDLE <em>拖拽填充柄双击事件</em>     </p>
+</li>
+<li>
+<p>空数据提示    </p>
+</li>
+<li>
+<p>EMPTY_TIP_CLICK <em>空数据提示点击事件</em>    </p>
+</li>
+<li>
+<p>EMPTY_TIP_DBLCLICK <em>空数据提示双击事件</em>    </p>
+</li>
+</ul>
+<p>参考文档：    </p>
+<ul>
+<li>https://visactor.com/vtable/api/events    </li>
+</ul>
+<h2 id="_4">自定义事件的实现</h2>
+<p>自定义事件的实现，基于<code>EventTarget</code> 模块。    </p>
+<p>模块内部提供了 on 方法，通过该方法可以实现自定义事件注册的功能，同时自定义事件的类型也可以交由开发者自定义。    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\EventTarget.ts
+export class EventTarget {
+  private listenersData: {
+    listeners,
+    listenerData
+  } = {
+    listeners: {},
+    listenerData: {}
+  };
+  on(type, listener) {
+    const list: TableEventListener&lt;TYPE&gt;[] =
+      this.listenersData.listeners[type] || (this.listenersData.listeners[type] = []);
+    list.push(listener);
+
+    const id = idCount++;
+    this.listenersData.listenerData[id] = {
+      type,
+      listener,
+      remove: (): void =&gt; {
+        delete this.listenersData.listenerData[id];
+        const index = list.indexOf(listener);
+        list.splice(index, 1);
+        if (!this.listenersData.listeners[type].length) {
+          delete this.listenersData.listeners[type];
+        }
+      }
+    };
+    return id;
+  }
+  off(idOrType, listener): void {
+      //...
+  }
+  addEventListener(type, listener, option): void {
+      //...
+  }
+  removeEventListener(type, listener) {
+      //...
+  }
+  hasListeners(type) {
+      //...
+  }
+  fireListeners(type, event){
+      //...
+  }
+  release(): void {
+      //...
+  }
+}    
+</code></pre>
+
+<p>观察 on 方法，我们可以看到内部对注册的自定义事件回调做了收集，同时为每一个回调分配了唯一id，后续可通过该 id 对回调进行注销操作。    </p>
+<p>自定义事件的触发则是通过 <code>fireListeners</code>。    </p>
+<hr />
+<p>以双击自动列宽为例：    </p>
+<ol>
+<li>在 <code>EventManager</code>中注册 <code>DBLCLICK_CELL</code>事件    </li>
+</ol>
+<pre class="codehilite"><code class="language-xml">// packages\vtable\src\event\event.ts
+export class EventManager {
+    constructor() {
+        // ...
+        bindSelfEvent();
+        // ...
+    }
+    bindSelfEvent() {
+        // ...
+            this.table.on(TABLE_EVENT_TYPE.DBLCLICK_CELL, () =&gt; {
+                // 处理双击自动列宽
+            })
+        // ...
+    }
+}
+</code></pre>
+
+<ol>
+<li>在双击事件的回调中，触发 <code>DBLCLICK_CELL</code> 事件，执行处理双击自动列宽的逻辑。    </li>
+</ol>
+<pre class="codehilite"><code class="language-xml">// packages\vtable\src\event\listener\table-group.ts
+  eventManager.gesture.on('doubletap', e =&gt; {
+    dblclickHandler(e, table);
+  });
+
+  function dblclickHandler(e: FederatedPointerEvent, table: BaseTableAPI) {
+      // ...
+      table.fireListeners(TABLE_EVENT_TYPE.DBLCLICK_CELL, cellsEvent);
+      //...
+  }    
+</code></pre>
+
+<h2 id="_5">事件注册时机</h2>
+<p>VTable 中大部分的内置事件注册都是在 <code>EventManager</code> 事件管理模块中完成的，其余少部分的内置事件是在其它组件模块中单独去注册的，包括 <code>MenuHandler</code>、<code>EditManager</code>、 <code>TooltipHandler</code> 等。我们来简单看下各个模块都注册了哪些事件吧。    </p>
+<ul>
+<li>
+<p>EventManager    </p>
+</li>
+<li>
+<p>ICON_CLICK    </p>
+</li>
+<li>
+<p>DROPDOWN_MENU_CLICK    </p>
+</li>
+<li>
+<p>DBLCLICK_CELL    </p>
+</li>
+<li>
+<p>MOUSEMOVE_CELL    </p>
+</li>
+<li>
+<p>MOUSELEAVE_TABLE    </p>
+</li>
+<li>
+<p>...    </p>
+</li>
+<li>
+<p>MenuHandler    </p>
+</li>
+<li>
+<p>DROPDOWN_ICON_CLICK    </p>
+</li>
+<li>
+<p>DROPDOWN_MENU_CLEAR    </p>
+</li>
+<li>
+<p>CONTEXTMENU_CELL    </p>
+</li>
+<li>
+<p>EditManager    </p>
+</li>
+<li>
+<p>DBLCLICK_CELL    </p>
+</li>
+<li>
+<p>CLICK_CELL    </p>
+</li>
+<li>
+<p>TooltipHandler    </p>
+</li>
+<li>
+<p>MOUSEENTER_CELL    </p>
+</li>
+<li>
+<p>MOUSEMOVE_CELL    </p>
+</li>
+<li>
+<p>MOUSELEAVE_CELL    </p>
+</li>
+<li>
+<p>SELECTED_CELL    </p>
+</li>
+<li>
+<p>MOUSELEAVE_TABLE    </p>
+</li>
+<li>
+<p>SCROLL    </p>
+</li>
+<li>
+<p>...    </p>
+</li>
+</ul>
+<h2 id="_6">结语</h2>
+<p>VTable 中提供了十分丰富的内置事件，通过注册这些内置事件，业务方可以完成绝大多数的自定义业务逻辑，内置事件的存在使得表格能够更具灵活性。    </p>
+<h1 id="_7">本文档由以下人员提供</h1>
+<p>taiiiyang（https://github.com/taiiiyang）    </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

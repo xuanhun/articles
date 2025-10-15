@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>56.  react-vchart如何实现按需加载？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>react-vchart如何实现按需加载？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>H5项目使用vchart 体积超限 现在能支持按需加载吗? 目前只用了一个漏斗图</br></p>
+<h2 id="_3">解决方案</h2>
+<p>React-VChart 本身代码都支持按需加载，当需要 VChart 按需加载的时候，建议使用 <code>&lt;VChartSimple /&gt;</code> 标签，</br>
+<code>&lt;VChartSimple /&gt;</code>组件和<code>&lt;VChart /&gt;</code>组件使用方法基本完全相同，唯一差异点为，需要用户从 <code>@viasctor/vchart</code> 引用 <code>VChart</code> 构造类，并传入给 <code>&lt;VChartSimple /&gt;</code>; VChart 按需引用参考<a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fguide%2Ftutorial_docs%2FLoad_on_Demand">相关文档</a></br></p>
+<pre class="codehilite"><code>interface VChartSimpleProps extends EventsProps {
+  /** 图表定义 */
+  spec: any;
+  /** 图表配置 */
+  options?: ChartOptions;
+  /** 图表渲染完成事件 */
+  onReady?: (instance: VChart, isInitial: boolean) =&gt; void;
+  /** throw error when chart run into an error */
+  onError?: (err: Error) =&gt; void;
+  /**
+   * 切换到同步渲染
+   * @since 1.8.3
+   **/
+  useSyncRender?: boolean;
+  /**
+   * props更新的时候，跳过所有函数的检查，即所有的函数都认为没有更新
+   * @since 1.6.5
+   **/
+  skipFunctionDiff?: boolean;
+  /**
+   * VChart构造类
+   * @since 1.8.3
+   **/
+  vchartConstrouctor: IVChartConstructor;
+}&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>/* @refresh reset */
+import React, { useMemo } from &quot;react&quot;;
+
+import { VChartSimple } from &quot;@visactor/react-vchart&quot;;
+import { VChart } from &quot;@visactor/vchart/esm/core&quot; 
+import { registerFunnelChart } from &quot;@visactor/vchaart/esm/chart/funnel&quot;
+
+// eslint-disable-next-line react-hooks/rules-off-hooks
+VChart.useRegisters([registerFunnelChart])
+
+export const FunnelChart = (props) =&gt; {
+    const spec = useMemo(() =&gt;{
+     // ....
+    },[]);
+
+    return (
+        &lt;React.Fragment&gt;
+          &lt;VChartSimple spec={spec}_vchartConstrouctor={VChart} /&gt;
+        &lt;/React.Fragment&gt;
+    );
+};
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">相关文档</h2>
+<p>相关教程：</br>
+*  https://www.visactor.io/vchart/guide/tutorial_docs/Cross-terminal_and_Developer_Ecology/react</br>
+*  https://www.visactor.io/vchart/guide/tutorial_docs/Load_on_Demand</br></p>
+<p>github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

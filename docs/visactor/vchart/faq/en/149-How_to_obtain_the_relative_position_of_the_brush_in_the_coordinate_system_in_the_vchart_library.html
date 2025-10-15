@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>66. How to get the relative position of the brush in the coordinate system in the vchart chart library?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="question-title">Question title</h1>
+<p>How to obtain the relative position of brush in the coordinate system in the vchart chart library?</br></p>
+<h1 id="problem-description">Problem description</h1>
+<p>When I was using the vchart library, I encountered a problem. I listened to the onBrushEnd event and wanted to obtain the relative position of the area selected by the brush in the coordinate system. That is, after I drew a frame on the chart, I wanted to obtain the position range of this area on the x/y axis. I tried all the methods I could think of, but did not find the corresponding data.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/B3sPbRp0VoUiIMxG3Omcl6mSnve.gif' alt='' width='862' height='832'></p>
+<h1 id="solution">Solution</h1>
+<p>According to the design and usage of vchart, currently the vchart API does not directly provide this information, but it is still possible to obtain this necessary information through some other means. The specific steps are as follows:</br>
+1. Use <code>vchart.getAllComponents ()</code>to find the brush component</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/T7pfbmXYEou8nFxvasjcp5x3n7e.gif' alt='' width='688' height='1158'></p>
+<ol>
+<li>
+<p>In the brush component, there is a property called <code>_brushComponent. AABBBounds</code>, which is the relative position of the checkbox in the region.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/N1VXbiEbDopxdIxcW35cuM3rnMc.gif' alt='' width='624' height='606'></p>
+</li>
+<li>
+<p>Similarly, with the <code>vchart.getAllComponents ()</code>method, we can find the components for the x and y axes.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ANAabEOVsoY1d7xpTcPcOwzvnDe.gif' alt='' width='716' height='1082'></p>
+</li>
+<li>
+<p>In the found axis component, we can use the <code>_scale .invert (position)</code>method to convert the position of AABBBounds obtained in the previous step to specific values on the x and y axes.</br></p>
+</li>
+</ol>
+<p>In order to prevent a very small position shift when the user clicks and accidentally triggers the brush drawing, we can also set a <code>sizeThreshold</code>property for the brush. This property means the checkbox size threshold, which literally means the minimum size of the box you need to draw. The brush event will only be triggered when the size of the box is greater than this threshold.</br></p>
+<h1 id="related-documents">Related Documents</h1>
+<ul>
+<li>VChart <code>sizeThreshold</code>configuration item: https://www.visactor.io/vchart/option/barChart#brush.sizeThreshold</br></li>
+<li>VChart github：https://github.com/VisActor/VChart</br></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5.如何贡献代码</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">创建分支</h1>
+<p>VChart 默认分支为 develop 分支。无论是功能开发、bug 修复、文档编写，都请新建立一个分支，再合并到 develop 分支上。使用以下代码创建分支：</p>
+<pre class="codehilite"><code>// 创建文档、demo分支
+git checkout -b docs/add-funnel-demo
+</code></pre>
+
+<h1 id="issue">寻找或者创建issue</h1>
+<p>原则上，我们规定每一个pr都要有对应的issue。在开始开发之前，请确认是否有对应的issue，且issue没有被认领。</p>
+<h2 id="issue_1">搜索 issue</h2>
+<p>可以通过如下方式搜索 bug 或者 feature 相关的issue：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/TPy4bTm01o9MSgxiwZvcTz66nug.gif' alt='' width='487' height='auto'></p>
+<h2 id="issue_2">创建代码相关 issue</h2>
+<p>点击 “NEW ISSUE”，打开issue 选择页面，选择“<strong>Bug Report” 或者 “Feature Request”。</strong></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AhNvbxd1uoZZMHxuKxscjErrnDe.gif' alt='' width='611' height='auto'></p>
+<p>填写你要提交的文档 issue 相关信息,并打上合适的标签即可。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Odonb0WssownV3xTSQDcEudhnOi.gif' alt='' width='828' height='auto'></p>
+<h1 id="issue_3">认领issue</h1>
+<p>如果你想贡献代码，可以在该issue下留言认领。管理员会联系你，确认后将issue assign 给你。</p>
+<p>例如：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/MMCpb9MvEomle4xYIe1cauFUnCe.gif' alt='' width='988' height='auto'></p>
+<h1 id="_2">编写代码</h1>
+<p>VChart 源码在项目的中的位置如下：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NWpDbeBSxotFA9xf7GrcM6tUntb.gif' alt='' width='952' height='auto'></p>
+<p>VChart 生态所有的组件都在同一目录下，按包名进行拆分，开发者需要在自己的代码分支上开发代码，然后进行提交。 </p>
+<h1 id="marscode-ai">借助豆包<a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI编程助手</a>进行代码编写</h1>
+<p>借助豆包<a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI编程助手</a>，可以在代码编写的整个流程中提供全方面的帮助。</p>
+<p>如果你还没有安装<a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI编程助手</a>，请从该链接进入下载页面：https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a</p>
+<p>在代码编写中，合理使用 context 指令，可以提升内容的准确性。</p>
+<p><code>**⭐️ #Workspace**</code></p>
+<p>选择 Workspace 中的全局代码作为上下文，AI 将根据用户 Query 自动寻找相关代码 Context</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DWoabR7kIoqRe8xVu7RcqjjenFg.gif' alt='' width='1000' height='auto'></p>
+<p><code>**⭐️ #Files**</code></p>
+<p>搜索选择代码仓库中的文件作为上下文</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VcWsbki1MohwabxGtRPcZnXXnGb.gif' alt='' width='1000' height='auto'></p>
+<p><code>**⭐️ #Code**</code></p>
+<p>搜索选择代码仓库中的函数、类作为上下文</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/FDTHbZ2Hko9WrSx2JqWcJRRnnUf.gif' alt='' width='1000' height='auto'></p>
+<p>下面举例说明，如何使用<a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI编程助手</a> 进行代码编写。</p>
+<h2 id="51">5.1 快速熟悉整个仓库</h2>
+<p>这里 <strong>通过 # 唤起 #Workspace ，</strong>然后进行提问，希望它帮忙生成一份项目结构说明文档。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VuVub5lyZoVHQqxL3T9cvojUnVu.gif' alt='' width='1000' height='auto'></p>
+<p>我们仍然可以针对子文件夹，进行进一步的提问。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AdgDb1oGFoAyaRxkW8xciziInvf.gif' alt='' width='1000' height='auto'></p>
+<h2 id="52">5.2 解释代码</h2>
+<h3 id="521">5.2.1  生成代码说明</h3>
+<p>当我们在文件中选择一段代码，可以从悬浮菜单中选择 Explain 命令，<a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode</a> 会为我们生成详细的代码解释。我们可以在此基础上，进行校对和改编。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/K2RVbq5broy4rpxSStYcA4J7ndf.gif' alt='' width='1000' height='auto'></p>
+<p>也可以直接在对话框中输入Explain 命令。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/TH9ybov7JomacGxBX2QcccwFnvc.gif' alt='' width='1000' height='auto'></p>
+<p>这里也可以直接使用上面提到的 #Code  context 来结合Explain 和你的指令来进行更细节的任务。</p>
+<h3 id="522">5.2.2 生成针对整个文件的说明</h3>
+<p>Explain 可以和 Context 或者 Files 命令搭配使用，用来生成针对整个文件的说明文档。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HyeabsSvjoHYZ9xAbLRc55j8nDg.gif' alt='' width='1000' height='auto'></p>
+<h2 id="53">5.3 内容检索</h2>
+<p>通常我们的每个问答，<a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode</a>  都会给出参考文档，这些文档可以给我们提供更多参考上下文，供进一步分析。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OeF0bP4jPoUZWGxqDqScyHzhnvf.gif' alt='' width='1000' height='auto'></p>
+<p>也可以直接进行文件检索：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/SFvjbKHzOokvkPxFGH0cZKRanpc.gif' alt='' width='1000' height='auto'></p>
+<h2 id="54">5.4 代码生成</h2>
+<p>在日常编码中经常会碰到使用重复代码的场景，有时候可能并不知道某个功能是否有现成的函数已实现，此时用 <code>#Workspace</code> 来进行提问。例如：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/JpG9b7ggroUfX7xduo6cd3qXnOg.gif' alt='' width='1000' height='auto'></p>
+<h2 id="55">5.5 添加注释</h2>
+<p>使用 "/doc"命令生成代码注释。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/KAS2bRAVWo1K5ixXvfDceiZinEh.gif' alt='' width='1000' height='auto'></p>
+<h2 id="56">5.6 生成单测</h2>
+<p>VChart 单元测试代码在每个 package 的 “<strong>**tests</strong>” ** 目录下。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DHbGbulZ5onHbtx3KFscOLgXnFg.gif' alt='' width='1000' height='auto'></p>
+<p>使用 <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode</a> “/test” 指令可以快速的生成单测代码。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OnTDbxBAzoQ9h7xEk6vcpYjAnNd.gif' alt='' width='1000' height='auto'></p>
+<h2 id="57">5.7 智能提示</h2>
+<p>编写过程中，智能生成可选代码是编程助手的标配功能，大家自行体验吧。</p>
+<h1 id="_3">提交代码</h1>
+<p>文档完成之后，先把代码push到你的远程分支。例如：</p>
+<pre class="codehilite"><code>git commit -a -m &quot;docs: add custom funnel demo and related docs&quot; 
+</code></pre>
+
+<p>VisActor 的 commit 提交信息遵循 <a href="https://www.conventionalcommits.org/en/v1.0.0/">Conventional Commits</a> 规范，<strong>demo  使用docs</strong></p>
+<p><code>&lt;type&gt;[optional scope]: &lt;description&gt;</code></p>
+<p>其中常用的<code>type</code>包括 docs（文档、日志修改）、feat（新功能）、fix（问题修复）、refactor（代码重构）等，请根据实际情况选择。</p>
+<p>请用简短精确的英文描述编写 description</p>
+<p>提交 commit 之前，我们会进行 commit lint 检查，具体可以查看<a href="https://github.com/VisActor/VChart/blob/98711490e90532d896dd9e44dd00a3af5b95f06d/common/autoinstallers/lint/commitlint.config.js">检查规则</a>。</p>
+<p>一个常见的问题是远程的 upstream (@visactor/vchart) 有了新的更新， 从而会导致我们提交的 Pull Request 时会导致冲突。 因此我们可以在提交前先把远程其他开发者的 commit 和我们的 commit 合并。使用以下代码切换到 develop 分支:</p>
+<pre class="codehilite"><code>git checkout develop
+</code></pre>
+
+<p>使用以下代码拉出远程的最新代码:</p>
+<pre class="codehilite"><code>git pull upstream develop
+</code></pre>
+
+<p>切换回自己的开发分支:</p>
+<pre class="codehilite"><code>git checkout docs/add-funnel-demo
+</code></pre>
+
+<p>把 develop 的 commit 合并到自己分支：</p>
+<pre class="codehilite"><code>git rebase develop
+</code></pre>
+
+<p>把更新代码提交到自己的分支中:</p>
+<pre class="codehilite"><code>git push origin docs/add-funnel-demo
+</code></pre>
+
+<h1 id="pr">提交PR</h1>
+<p>你可以在你的 github 代码仓库页面点击 <code>Compare &amp; pull request</code> 按钮。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/H0J8bpv2qoodVCxPfFTcRHL1nCf.gif' alt='' width='1000' height='auto'></p>
+<p>或通过 <code>contribute</code> 按钮创建：</p>
+<p>按照模板填写本次提交的修改内容：</p>
+<ul>
+<li>勾选这是什么类型的修改</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AgIOb5bRAo7UUVxS52AcNZCanad.gif' alt='' width='692' height='auto'></p>
+<ul>
+<li>填写关联的 issue</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VGonbJeFJoc68XxDzkOc7j8Lnjd.gif' alt='' width='470' height='auto'></p>
+<ul>
+<li>若有复杂变更，请说明背景和解决方案</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HYy2bLtuCopGfxxdeKkc2pt0n4e.gif' alt='' width='1000' height='auto'></p>
+<p>相关信息填写完成后，点击 Create pull request 提交。</p>
+<p>管理员会review pr 决定是否通过，如果不通过需要进行修改然后重新提交。</p>
+<h1 id="_4">下一步</h1>
+<p>接下来你可以阅读每一个模块的实现原理及源码详解，也可以加入贡献这些文档。</p>
+<p>请加入VisActor 大家庭，贡献你的力量吧！</p>
+<p>github ：<a href="https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2FVisActor">github.com/VisActor</a></p>
+<p>VisActor 微信订阅号（可以通过订阅号菜单加入微信群）：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ZqQ2bVj6woabSXxeLKOce9rrn9d.gif' alt='' width='258' height='auto'></p>
+<p>VisActor 官网：<a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.io/</a></p>
+<p>飞书群：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/F0GRbKlLOoHUwRx9JBVcKxk0n6g.gif' alt='' width='264' height='auto'></p>
+<p>discord：https://discord.com/invite/3wPyxVyH6m</p>
+</body>
+</html>

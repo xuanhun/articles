@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6.4 Custom Marks</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="introduction">Introduction</h1>
+<p>When we have a large amount of data to display on a chart, we usually need to define a specific type of series (see section 3.2: <code>series</code>) and create marks within the series to represent the data. However, if we only need to display a little extra information, such as an image, a title, or a path, and do not want to create a separate series for it, we can use custom marks (<code>customMark</code>). Custom marks allow users to add custom annotations to the chart, such as adding some text, images, line segments, etc.    </p>
+<h1 id="types-and-examples">Types and Examples</h1>
+<p>Currently, the supported types of custom marks are as follows:    </p>
+<ul>
+<li>
+<p><code>symbol</code>: Point graphic    </p>
+</li>
+<li>
+<p><code>rule</code>: Line segment    </p>
+</li>
+<li>
+<p><code>text</code>: Text    </p>
+</li>
+<li>
+<p><code>rect</code>: Rectangle    </p>
+</li>
+<li>
+<p><code>path</code>: Path    </p>
+</li>
+<li>
+<p><code>arc</code>: Sector    </p>
+</li>
+<li>
+<p><code>polygon</code>: Polygon    </p>
+</li>
+<li>
+<p><code>group</code>: Group, which can contain other marks    </p>
+</li>
+</ul>
+<p>In the following example, in addition to the two data points in the chart (which can be considered a <code>scatter series</code>), three custom marks are added above, namely <code>text</code>, <code>symbol</code>, and <code>rule</code>.    </p>
+<div style="display: flex;"><div style="flex: 50; margin:5px;"><pre><code>xml
+const spec = {
+  type: 'scatter',
+  xField: 'x',
+  yField: 'y',
+  data: [
+    {
+      name: 'data',
+      values: [{y: 10,x: 'point1'},{y: 31,x: 'point2'}]
+    }
+  ],
+  customMark: [
+    { // Custom text mark
+      type: 'text',
+      style: {
+        fontSize: 20,
+        fontWeight: 600,
+        text: "Not a data point:",
+        x: 300,
+        y: 25,
+        fill: 'grey',
+      }
+    },
+    { // Custom symbol mark
+      type: 'symbol',
+      style:{
+        x: 320,
+        y: 18,
+        fill: 'grey',
+        size: 30
+      }
+    },
+    { // Custom rule mark
+      type: 'rule',
+      style:{
+        x: 120,
+        y: 35,
+        x1: 310,
+        y1:35,
+        stroke:'grey'
+      }
+    }
+  ]
+};
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();    
+
+```</div><div style="flex: 50; margin:5px;"><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Xv3cbQQ6NopKS6xmmZZcDrnenjd.gif' alt='' width='543' height='auto' />
+</div></div>
+<h1 id="_1">代码实现</h1>
+<p>自定义图元的代码入口：<code>packages/vchart/src/component/custom-mark</code>    </p>
+<ol>
+<li>
+<p>自定义图元的创建和管理    </p>
+</li>
+<li>
+<p>通过 <code>initMarks</code>方法，根据用户提供的配置<code>spec</code>创建自定义图元。    </p>
+</li>
+<li>
+<p>支持嵌套的图元结构（如<code>group</code>类型的图元可以包含子图元）。    </p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">  protected ***initMarks***() {
+    if (!this._spec) {
+      return;
+    }
+    const series = this._option &amp;&amp; this._option.***getAllSeries***();
+    const hasAnimation = this._option.animation !== false;
+    const depend: IMark[] = [];
+
+    if (series &amp;&amp; series.length) {
+      series.***forEach***(s =&gt; {
+        const marks = s &amp;&amp; s.***getMarksWithoutRoot***();
+
+        if (marks &amp;&amp; marks.length) {
+          marks.***forEach***(mark =&gt; {
+            depend.***push***(mark);
+          });
+        }
+      });
+    }
+    // Set the parent mark of the group mark
+    let parentMark: IGroupMark | null = null;
+    if (this._spec.parent) {
+      const mark = this.***getChart***()
+        .***getAllMarks***()
+        .***find***(m =&gt; m.***getUserId***() === this._spec.parent) as IGroupMark;
+      if (mark.type === *'group'*) {
+        parentMark = mark;
+      }
+    }
+    // Entry point for recursive calls, recursively create each mark
+    this.***_createExtensionMark***(this._spec, parentMark, *`${PREFIX}_series_${this.id}_extensionMark`*, 0, {
+      depend,
+      hasAnimation
+    });
+  }    
+</code></pre>
+
+<ol>
+<li>
+<p>图元的样式和数据绑定    </p>
+</li>
+<li>
+<p>使用 <code>_createExtensionMark</code>方法为每个图元设置样式、动画配置和数据绑定。    </p>
+</li>
+<li>
+<p>支持通过 <code>dataId</code>或 <code>dataIndex</code>绑定数据视图（<code>DataView</code>）。    </p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">  private ***_createExtensionMark***(
+    spec: ICustomMarkSpec&lt;Exclude&lt;EnableMarkType, *'group'*&gt; | ICustomMarkGroupSpec,
+    parentMark: null | IGroupMark,
+    namePrefix: string,
+    index: number = 0,
+    options: { hasAnimation?: boolean; depend?: IMark[] }
+  ) {
+    // Create the mark
+    const mark = this.***_createMark***(
+      {
+        type: spec.type,
+        name: ***isValid***(spec.name) ? *`${spec.name}`* : *`${namePrefix}_${index}`*
+      },
+      {
+        // Avoid double dataflow
+        skipBeforeLayouted: true,
+        attributeContext: this.***_getMarkAttributeContext***(),
+        componentType: spec.componentType,
+        key: spec.dataKey
+      }
+    ) as IGroupMark;
+    if (!mark) {
+      return;
+    }
+    if (***isValid***(spec.id)) {
+      mark.***setUserId***(spec.id);
+    }
+    // Handle animation
+    if (options.hasAnimation &amp;&amp; spec.animation) {
+      const config = ***animationConfig***({}, ***userAnimationConfig***(spec.type, spec as any, this._markAttributeContext));
+      mark.***setAnimationConfig***(config);
+    }
+    // Build the hierarchical structure of group marks
+    if (options.depend &amp;&amp; options.depend.length) {
+      mark.***setDepend***(...options.depend);
+    }
+    if (***isNil***(parentMark)) {
+      this._marks.***addMark***(mark);
+    } else if (parentMark) {
+      parentMark.***addMark***(mark);
+    }
+    // Set style
+    this.***initMarkStyleWithSpec***(mark, spec);
+    // Recursively handle group marks
+    if (spec.type === *'group'*) {
+      namePrefix = *`${namePrefix}_${index}`*;
+      spec.children?.***forEach***((s, i) =&gt; {
+        this.***_createExtensionMark***(s as any, mark, namePrefix, i, options);
+      });
+    }
+    // Handle data binding
+    if (***isValid***(spec.dataId) || ***isValidNumber***(spec.dataIndex)) {
+      const dataview = this.***getChart***().***getSeriesData***(spec.dataId, spec.dataIndex);
+      if (dataview) {
+        dataview.target.***addListener***(*'change'*, () =&gt; {
+          mark.***getData***().***updateData***();
+        });
+        mark.***setDataView***(dataview);
+      }
+    }
+  }    
+</code></pre>
+
+<ol>
+<li>
+<p>图元的上下文管理    </p>
+</li>
+<li>
+<p>提供 <code>getMarkAttributeContext</code>和 <code>_getMarkAttributeContext</code>方法，定义图元的上下文信息（如全局映射、布局边界等）。    </p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-xml">  protected _markAttributeContext: IModelMarkAttributeContext;
+  ***getMarkAttributeContext***() {
+    return this._markAttributeContext;
+  }
+
+  private ***_getMarkAttributeContext***() {
+    return {
+      vchart: this._option.globalInstance,
+      chart: this.***getChart***(),
+      ***globalScale***: (key: string, value: string | number) =&gt; {
+        return this._option.globalScale.***getScale***(key)?.***scale***(value);
+      },
+      ***getLayoutBounds***: () =&gt; {
+        const { x, y } = this.***getLayoutStartPoint***();
+        const { width, height } = this.***getLayoutRect***();
+        return new ***Bounds***().***set***(x, y, x + width, y + height);
+      }
+    };
+  }    
+</code></pre>
+
+<ol>
+<li>
+<p>布局和边界计算    </p>
+</li>
+<li>
+<p>提供 <code>getBoundsInRect</code>和 <code>_getLayoutRect</code>方法，用于计算图元的布局边界和尺寸。    </p>
+</li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">  ***getBoundsInRect***(rect: ILayoutRect) {
+    this.***setLayoutRect***(rect);
+
+    const result = this.***_getLayoutRect***();
+    const { x, y } = this.***getLayoutStartPoint***();
+    return {
+      x1: x,
+      y1: y,
+      x2: x + result.width,
+      y2: y + result.height
+    };
+  }
+
+  private ***_getLayoutRect***() {
+    const bounds = new ***Bounds***();
+
+    this.***getMarks***().***forEach***(mark =&gt; {
+      const product = mark.***getProduct***();
+
+      if (product) {
+        bounds.***union***(product.***getBounds***());
+      }
+    });
+
+    if (bounds.***empty***()) {
+      return {
+        width: 0,
+        height: 0
+      };
+    }
+
+    return {
+      width: bounds.***width***(),
+      height: bounds.***height***()
+    };
+  }    
+</code></pre>
+
+<h1 id="mark">Mark的比较</h1>
+<h3 id="custommark-basemark">CustomMark 与 BaseMark 的区别</h3>
+<h5 id="1">1. 定义的层次</h5>
+<ul>
+<li>
+<p><code>BaseMark</code>：    </p>
+</li>
+<li>
+<p>是一个基础类，直接定义了图元（<code>Mark</code>）的行为和样式。    </p>
+</li>
+<li>
+<p>主要用于处理单个图元的样式、状态、属性计算等逻辑。    </p>
+</li>
+<li>
+<p>继承自 <code>CompilableMark</code>，提供<code>_computeAttribute</code>和 <code>_computeStateAttribute</code>方法，将高层配置转换为底层渲染指令。与底层渲染引擎（如 <code>VGrammar</code>）直接交互。    </p>
+</li>
+<li>
+<p><code>CustomMark</code>：    </p>
+</li>
+<li>
+<p>是一个组件类，负责管理多个图元的创建和行为。    </p>
+</li>
+<li>
+<p>继承自 <code>BaseComponent</code>，用于定义更高层次的自定义图元逻辑。    </p>
+</li>
+<li>
+<p>通过调用 <code>BaseMark</code>或其他图元类的方法，间接与底层渲染引擎交互。    </p>
+</li>
+</ul>
+<h5 id="2">2. 主要职责</h5>
+<ul>
+<li>
+<p><code>BaseMark</code>：    </p>
+</li>
+<li>
+<p>负责单个图元的样式、状态和属性计算。    </p>
+</li>
+<li>
+<p>提供方法如 <code>setStyle</code>、<code>getStyle</code>、<code>setAttribute</code>等，用于操作单个图元的样式和属性。    </p>
+</li>
+<li>
+<p>直接处理图元的渐变色、边框、角度转换等细节。    </p>
+</li>
+<li>
+<p><code>CustomMark</code>：    </p>
+</li>
+<li>
+<p>负责管理多个图元的创建、样式设置和数据绑定。    </p>
+</li>
+<li>
+<p>提供方法如 <code>initMarks</code>和 <code>_createExtensionMark</code>，用于根据配置动态创建图元。    </p>
+</li>
+<li>
+<p>处理图元的上下文信息（如全局映射、布局边界）和与其他组件的依赖关系。    </p>
+</li>
+</ul>
+<h5 id="3">3. 数据绑定</h5>
+<ul>
+<li>
+<p><code>BaseMark</code>：    </p>
+</li>
+<li>
+<p>通过 <code>setAttribute</code>和 <code>_computeAttribute</code>方法，直接绑定数据到单个图元的属性上。    </p>
+</li>
+<li>
+<p>支持通过映射（<code>scale</code>）和字段（<code>field</code>）动态计算属性值。    </p>
+</li>
+<li>
+<p><code>CustomMark</code>：    </p>
+</li>
+<li>
+<p>通过 <code>_createExtensionMark</code>方法，为每个图元绑定数据视图（<code>DataView</code>）。    </p>
+</li>
+<li>
+<p>支持通过 <code>dataId</code>或 <code>dataIndex</code>指定数据源。    </p>
+</li>
+</ul>
+<h5 id="4">4. 样式和动画</h5>
+<ul>
+<li>
+<p><code>BaseMark</code>：    </p>
+</li>
+<li>
+<p>提供 <code>_initStyle</code>和 <code>_initSpecStyle</code>方法，用于初始化单个图元的样式。    </p>
+</li>
+<li>
+<p>支持渐变色、边框、角度转换等样式的动态计算。    </p>
+</li>
+<li>
+<p><code>CustomMark</code>：    </p>
+</li>
+<li>
+<p>在 <code>_createExtensionMark</code>方法中，为每个图元设置样式和动画配置。    </p>
+</li>
+<li>
+<p>默认<strong>不</strong>为自定义图元添加动画，但支持用户通过配置启用动画。    </p>
+</li>
+</ul>
+<h3 id="custommark-extensionmark">CustomMark 与 ExtensionMark 的区别</h3>
+<h5 id="1_1">1. 从定义上看</h5>
+<p><code>CustomMark</code>配置项的接口如下：    </p>
+<pre class="codehilite"><code class="language-Typescript">export interface ICustomMarkSpec&lt;T extends EnableMarkType&gt;
+  extends IModelSpec,
+    IMarkSpec&lt;IBuildinMarkSpec[T]&gt;,
+    IAnimationSpec&lt;string, string&gt; {
+  type: T;
+*  // The name corresponding to the mark, mainly used for event filtering such as: { markName: 'yourName' }*
+  name?: string;
+*  // Associated data index*
+  dataIndex?: number;
+*  // dataKey is used to bind the relationship between data and Mark. If the data is consistent with the series data, it can be left unconfigured, and the configuration in the series will be read by default*
+  dataKey?: string | ((datum: any) =&gt; string);
+*  // Associated data id*
+  dataId?: StringOrNumber;
+*  // Specify component type*
+  componentType?: string;
+*  // Whether to enable animation*
+  animation?: boolean;
+*  // Specify parent Id*
+  parent?: string;
+}    
+</code></pre>
+
+<p><code>ExtensionMark</code>配置项的接口如下：    </p>
+<pre class="codehilite"><code class="language-Typescript">export interface IExtensionMarkSpec&lt;T extends Exclude&lt;EnableMarkType, *'group'*&gt; extends ICustomMarkSpec&lt;T&gt; {
+*  // 关联的数据索引*
+  dataIndex?: number;
+*  // dataKey用于绑定数据与Mark的关系，如果数据和系列数据一致，可以不配置，默认会读取系列中的配置*
+  dataKey?: string | ((datum: any) =&gt; string);
+*  // 关联的数据id*
+  dataId?: StringOrNumber;
+*  // 指定组件类型*
+  componentType?: string;
+}    
+</code></pre>
+
+<p>可以看出：    </p>
+<ul>
+<li><code>ICustomMarkSpec</code>是一个通用的接口，用于定义自定义的 <code>Mark</code>（标记）。它继承了多个接口，包括 <code>IModelSpec</code>、<code>IMarkSpec</code>和 <code>IAnimationSpec</code>，并且支持所有的 <code>EnableMarkType</code>类型。    </li>
+</ul>
+<div style="padding:5px;background-color: rgb(240, 244, 255);border-color: rgb(242, 243, 245);">EnableMarkType一览：    
+`group`, `symbol`, `rule`, `line`, `text`, `rect`, `rect3d`, `image`, `path`, `area`, `arc`, `arc3d`, `polygon`, `pyramid3d`, `boxPlot`, `linkPath`, `ripple`    
+</div>
+<ul>
+<li><code>IExtensionMarkSpec</code>是 <code>ICustomMarkSpec</code>的扩展接口，但它限制了图元的类型，排除了 <code>group</code> 类型。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">export interface IExtensionMarkSpec&lt;T extends Exclude&lt;EnableMarkType, *'group'*&gt;&gt; extends ICustomMarkSpec&lt;T&gt; {...}    
+</code></pre>
+
+<h5 id="2_1">2. 从使用上看</h5>
+<ul>
+<li>
+<p><code>extensionMark</code>是图表支持用户<strong>在图表系列</strong>上补充绘制任意内容的自定义接口。    </p>
+</li>
+<li>
+<p><code>customMark</code>可以让用户<strong>在图表上</strong>添加自定义的标记，比如添加一些文本、图片、线段等。    </p>
+</li>
+</ul>
+<p>更具体的，当图表中包含多个<code>series</code>时，<code>extensionMark</code>的配置应当是放在<code>series</code>的配置当中的，属于对某个<code>series</code>的补充；而<code>customMark</code>是针对整个图表的，对图表信息的补充。二者所针对的对象和所在的层次不同。    </p>
+<p>如下例，我们定义了两个<code>series</code>，并分别为它们添加了一个文本类型的<code>extensionMark</code>（紫色部分），这些<code>extensionMark</code>的配置是属于某个<code>series</code>配置中的；与此同时，我们在<code>series</code>配置之外，添加了一个文本类型的<code>customMark</code>（蓝色部分），它的配置是属于整个图标配置的。    </p>
+<p>```xml
+const spec = {
+  type: 'common',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { x: 'Monday', type: 'Breakfast', y: 15 },
+        { x: 'Monday', type: 'Lunch', y: 25 },
+        { x: 'Tuesday', type: 'Breakfast', y: 12 },
+        { x: 'Tuesday', type: 'Lunch', y: 30 },
+        { x: 'Wednesday', type: 'Breakfast', y: 15 },
+        { x: 'Wednesday', type: 'Lunch', y: 24 }
+      ]
+    },
+    {
+      id: 'id1',
+      values: [
+        { x: 'Monday', type: 'Drink', y: 22 },
+        { x: 'Tuesday', type: 'Drink', y: 43 },
+        { x: 'Wednesday', type: 'Drink', y: 33 }
+      ]
+    }
+  ],
+  series: [
+    {
+      type: 'bar',
+      dataIndex: 0,
+      label: { visible: true },
+      seriesField: 'type',
+      xField: ['x', 'type'],
+      yField: 'y',
+      extensionMark:[{
+        type: 'text',
+        style: {
+          fontSize: 20,
+          fontWeight: 600,
+          text: "extension-mark of series1",
+          x: 450,
+          y: 200,
+          fill: 'blue',
+        }
+      }]
+    },
+    {
+      type: 'line',
+      dataIndex: 1,
+      label: { visible: true },
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      stack: false,
+      extensionMark:[{
+        type: 'text',
+        style: {
+          fontSize: 20,
+          fontWeight: 600,
+          text: "extension-mark of series2",
+          x: 300,
+          y: 25,
+          fill: 'orange',
+        }
+      }]
+    }
+  ],
+  customMark:[{
+    type: 'text',
+    style: {
+      fontSize: 20,
+      fontWeight: 600,
+      text: "custom-mark",
+      x: 800,
+      y: 200,
+      fill: 'grey',
+    }
+  }],
+  axes: [{ orient: 'left' }, { orient: 'bottom', label: { visible: true }, type: 'band' }],
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();    </p>
+</body>
+</html>

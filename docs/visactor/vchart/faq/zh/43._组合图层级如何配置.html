@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>43. 组合图层级如何配置？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>组合图层级如何配置？</br></p>
+<h1 id="_2">问题描述</h1>
+<p>组合图层级如何配置，line 和 area 系列组合时，line 的 point图元 被 area 图元遮住了</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AjNrbADZWoMAPdxPzjtcEkuQnXb.gif' alt='' width='817' height='530'></p>
+<h2 id="_3">解决方案</h2>
+<p>对于组合图中系列的层叠样式，可以通过series的声明顺序来控制，比如：如果line系列需要在area系列之上，那么则需要先声明area系列，然后声明line系列。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HjlvbY3wroBzdnxcLAmcc1MMnAd.gif' alt='' width='3268' height='1060'></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>  const data = [
+    { date: &quot;2023-12-01&quot;, value: &quot;1776&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-01&quot;, value: 1546, series: &quot;left&quot; },
+    { date: &quot;2023-12-01&quot;, value: &quot;3322&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-02&quot;, value: &quot;3555&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-02&quot;, value: 43638, series: &quot;left&quot; },
+    { date: &quot;2023-12-02&quot;, value: &quot;47193&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-03&quot;, value: &quot;52840&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-03&quot;, value: 6864, series: &quot;left&quot; },
+    { date: &quot;2023-12-03&quot;, value: &quot;59704&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-04&quot;, value: &quot;48566&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-04&quot;, value: 41413, series: &quot;left&quot; },
+    { date: &quot;2023-12-04&quot;, value: &quot;89979&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-05&quot;, value: &quot;17711&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-05&quot;, value: 26783, series: &quot;left&quot; },
+    { date: &quot;2023-12-05&quot;, value: &quot;44494&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-06&quot;, value: &quot;4295&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-06&quot;, value: 363, series: &quot;left&quot; },
+    { date: &quot;2023-12-06&quot;, value: &quot;4658&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-07&quot;, value: &quot;16&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-07&quot;, value: 8757, series: &quot;left&quot; },
+    { date: &quot;2023-12-07&quot;, value: &quot;8773&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-08&quot;, value: &quot;29228&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-08&quot;, value: 29999, series: &quot;left&quot; },
+    { date: &quot;2023-12-08&quot;, value: &quot;59227&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-09&quot;, value: &quot;29092&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-09&quot;, value: 15516, series: &quot;left&quot; },
+    { date: &quot;2023-12-09&quot;, value: &quot;44608&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-010&quot;, value: &quot;4098&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-010&quot;, value: 4946, series: &quot;left&quot; },
+    { date: &quot;2023-12-010&quot;, value: &quot;9044&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-011&quot;, value: &quot;11611&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-011&quot;, value: 64795, series: &quot;left&quot; },
+    { date: &quot;2023-12-011&quot;, value: &quot;76406&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-012&quot;, value: &quot;72517&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-012&quot;, value: 11808, series: &quot;left&quot; },
+    { date: &quot;2023-12-012&quot;, value: &quot;84325&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-013&quot;, value: &quot;15421&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-013&quot;, value: 16839, series: &quot;left&quot; },
+    { date: &quot;2023-12-013&quot;, value: &quot;32260&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-014&quot;, value: &quot;5185&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-014&quot;, value: 18225, series: &quot;left&quot; },
+    { date: &quot;2023-12-014&quot;, value: &quot;23410&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-015&quot;, value: &quot;9034&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-015&quot;, value: 35726, series: &quot;left&quot; },
+    { date: &quot;2023-12-015&quot;, value: &quot;44760&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-016&quot;, value: &quot;20138&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-016&quot;, value: 42747, series: &quot;left&quot; },
+    { date: &quot;2023-12-016&quot;, value: &quot;62885&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-017&quot;, value: &quot;1649&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-017&quot;, value: 6281, series: &quot;left&quot; },
+    { date: &quot;2023-12-017&quot;, value: &quot;7930&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-018&quot;, value: &quot;3687&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-018&quot;, value: 5087, series: &quot;left&quot; },
+    { date: &quot;2023-12-018&quot;, value: &quot;8774&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-019&quot;, value: &quot;49861&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-019&quot;, value: 14074, series: &quot;left&quot; },
+    { date: &quot;2023-12-019&quot;, value: &quot;63935&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-020&quot;, value: &quot;4386&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-020&quot;, value: 33871, series: &quot;left&quot; },
+    { date: &quot;2023-12-020&quot;, value: &quot;38257&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-021&quot;, value: &quot;5066&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-021&quot;, value: 34438, series: &quot;left&quot; },
+    { date: &quot;2023-12-021&quot;, value: &quot;39504&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-022&quot;, value: &quot;3070&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-022&quot;, value: 47549, series: &quot;left&quot; },
+    { date: &quot;2023-12-022&quot;, value: &quot;50619&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-023&quot;, value: &quot;7493&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-023&quot;, value: 83660, series: &quot;left&quot; },
+    { date: &quot;2023-12-023&quot;, value: &quot;91153&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-024&quot;, value: &quot;40735&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-024&quot;, value: 8841, series: &quot;left&quot; },
+    { date: &quot;2023-12-024&quot;, value: &quot;49576&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-025&quot;, value: &quot;15730&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-025&quot;, value: 8965, series: &quot;left&quot; },
+    { date: &quot;2023-12-025&quot;, value: &quot;24695&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-026&quot;, value: &quot;64354&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-026&quot;, value: 31912, series: &quot;left&quot; },
+    { date: &quot;2023-12-026&quot;, value: &quot;96266&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-027&quot;, value: &quot;15469&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-027&quot;, value: 28519, series: &quot;left&quot; },
+    { date: &quot;2023-12-027&quot;, value: &quot;43988&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-028&quot;, value: &quot;249&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-028&quot;, value: 7200, series: &quot;left&quot; },
+    { date: &quot;2023-12-028&quot;, value: &quot;7449&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-029&quot;, value: &quot;9296&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-029&quot;, value: 26689, series: &quot;left&quot; },
+    { date: &quot;2023-12-029&quot;, value: &quot;35985&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-030&quot;, value: &quot;4776&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-030&quot;, value: 368, series: &quot;left&quot; },
+    { date: &quot;2023-12-030&quot;, value: &quot;5144&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-031&quot;, value: &quot;50932&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-031&quot;, value: 2237, series: &quot;left&quot; },
+    { date: &quot;2023-12-031&quot;, value: &quot;53169&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-032&quot;, value: &quot;12191&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-032&quot;, value: 45954, series: &quot;left&quot; },
+    { date: &quot;2023-12-032&quot;, value: &quot;58145&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-033&quot;, value: &quot;1615&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-033&quot;, value: 57757, series: &quot;left&quot; },
+    { date: &quot;2023-12-033&quot;, value: &quot;59372&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-034&quot;, value: &quot;16892&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-034&quot;, value: 23399, series: &quot;left&quot; },
+    { date: &quot;2023-12-034&quot;, value: &quot;40291&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-035&quot;, value: &quot;12452&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-035&quot;, value: 2427, series: &quot;left&quot; },
+    { date: &quot;2023-12-035&quot;, value: &quot;14879&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-036&quot;, value: &quot;86059&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-036&quot;, value: 8673, series: &quot;left&quot; },
+    { date: &quot;2023-12-036&quot;, value: &quot;94732&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-037&quot;, value: &quot;1355&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-037&quot;, value: 23182, series: &quot;left&quot; },
+    { date: &quot;2023-12-037&quot;, value: &quot;24537&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-038&quot;, value: &quot;6865&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-038&quot;, value: 26607, series: &quot;left&quot; },
+    { date: &quot;2023-12-038&quot;, value: &quot;33472&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-039&quot;, value: &quot;63665&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-039&quot;, value: 11211, series: &quot;left&quot; },
+    { date: &quot;2023-12-039&quot;, value: &quot;74876&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-040&quot;, value: &quot;14291&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-040&quot;, value: 62592, series: &quot;left&quot; },
+    { date: &quot;2023-12-040&quot;, value: &quot;76883&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-041&quot;, value: &quot;13291&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-041&quot;, value: 27065, series: &quot;left&quot; },
+    { date: &quot;2023-12-041&quot;, value: &quot;40356&quot;, series: &quot;total&quot; },
+    { date: &quot;2023-12-042&quot;, value: &quot;33858&quot;, series: &quot;demand&quot; },
+    { date: &quot;2023-12-042&quot;, value: 11867, series: &quot;left&quot; },
+    { date: &quot;2023-12-042&quot;, value: &quot;45725&quot;, series: &quot;total&quot; },
+  ];
+
+  const spec = {
+    type: &quot;common&quot;,
+    seriesField: &quot;color&quot;,
+    data: [
+      { id: &quot;id0&quot;, values: data.filter((o) =&gt; o.series !== &quot;total&quot;) },
+      { id: &quot;id1&quot;, values: data.filter((o) =&gt; o.series === &quot;total&quot;) },
+    ],
+    series: [
+      {
+        type: &quot;area&quot;,
+        id: &quot;bar&quot;,
+        dataIndex: 0,
+        label: { visible: true },
+        dataIndex: 0,
+        xField: &quot;date&quot;,
+        yField: &quot;value&quot;,
+        seriesField: &quot;series&quot;,
+        area: { zIndex: -1 },
+        line: {
+          style: {
+            lineDash: [2, 2],
+            lineWidth: (data) =&gt; (data.series === &quot;left&quot; ? 0 : 1),
+          },
+        },
+
+        dataZoom: { zIndex: 500 },
+        point: {
+          style: { size: 0 },
+          state: {
+            dimension_hover: {
+              size: (data) =&gt; (data.series === &quot;left&quot; ? 0 : 8),
+            },
+          },
+        },
+        label: { visible: false },
+        area: {
+          style: {
+            fillOpacity: (data) =&gt; (data.series === &quot;left&quot; ? 0.7 : 0.3),
+            textureColor: &quot;#fff&quot;,
+            fill: (data) =&gt; (data.series === &quot;left&quot; ? &quot;#bcc0cd&quot; : &quot;#1AC6FF&quot;),
+            textureSize: 4,
+            texture: (data) =&gt; {
+              if (data.series === &quot;left&quot;) {
+                return &quot;bias-rl&quot;;
+              }
+              return null;
+            },
+          },
+        },
+      },
+      {
+        type: &quot;line&quot;,
+        id: &quot;line&quot;,
+        dataIndex: 1,
+        label: { visible: true },
+        seriesField: &quot;series&quot;,
+        xField: &quot;date&quot;,
+        yField: &quot;value&quot;,
+        stack: false,
+        label: { visible: false },
+        dataZoom: { zIndex: 1000 },
+        line: {
+          style: {
+            lineDash: [2, 2],
+            lineWidth: 1,
+          },
+        },
+        point: {
+          style: { size: 0 },
+          state: {
+            dimension_hover: { size: 8 },
+          },
+        },
+      },
+    ],
+    axes: [
+      { orient: &quot;left&quot;, visible: false },
+      { orient: &quot;right&quot;, visible: false },
+      { orient: &quot;bottom&quot;, label: { visible: true }, type: &quot;band&quot; },
+    ],
+    legends: { visible: true, orient: &quot;bottom&quot; },
+  };
+const vchart = new VChart(spec, { dom: CONTAINER_ID }); vchart.renderAsync(); 
+window['vchart'] = vchart;
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>在线效果参考：hhttps://codesandbox.io/p/sandbox/zindex-4dtk4g?file=%2Fsrc%2Findex.ts%3A4%2C1-217%2C5</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/RI5Lb23DZoTwOexrUXpc1vA8ntb.gif' alt='' width='1436' height='956'></p>
+<h2 id="_6">相关文档</h2>
+<p>组合图demo：https://www.visactor.io/vchart/demo/combination/single-region</br>
+组合图教程：https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Types/Combination</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

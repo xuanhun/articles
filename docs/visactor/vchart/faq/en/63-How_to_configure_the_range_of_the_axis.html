@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>63-How_to_configure_the_range_of_the_axis</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-configure-the-range-of-the-axis">How to configure the range of the axis?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>In my dual-axis chart, the right axis represents the percentage. Can this percentage range be manually configured? I am using vchart and have configured min and max, but it has not taken effect. My configuration:
+<img alt="demo" src="/vchart/faq/18-0.png" /></p>
+<pre class="codehilite"><code class="language-js">{
+  type: 'common',
+  seriesField: 'color',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { x: '2021-10-22', type: 'A', y: 10 },
+        { x: '2021-10-23', type: 'B', y: 22 },
+      ]
+    },
+    {
+      id: 'id1',
+      values: [
+        { x: '2021-10-22', type: 'TA', y: 0.5 },
+        { x: '2021-10-22', type: 'TB', y: 1.1 },
+        { x: '2021-10-23', type: 'TA', y: 1 },
+        { x: '2021-10-23', type: 'TB', y: 1.5 },
+
+      ]
+    }
+  ],
+  series: [
+    {
+      type: 'bar',
+      id: 'bar',
+      dataIndex: 0,
+      label: { visible: true ,position:'inside'},
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      max: 100
+    },
+    {
+      type: 'line',
+      id: 'line',
+      dataIndex: 1,
+      label: { visible: true },
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      min: 0,
+      max: 2,
+      stack: false
+    }
+  ],
+  axes: [
+    { orient: 'left', seriesIndex: [0] },
+    { orient: 'right', seriesId: ['line'], grid: { visible: false }},
+    { orient: 'bottom', label: { visible: true }, type: 'band' }
+  ],
+}
+</code></pre>
+
+<h2 id="solution">Solution</h2>
+<p>The configuration of the axis range is in the <code>axes</code> configuration item, not in the <code>series</code>. You can configure the minimum value (<code>min</code>) and maximum value (<code>max</code>) as your need, for example:</p>
+<pre class="codehilite"><code class="language-js">axes: [
+  { orient: 'left', max: 100 },
+  { orient: 'right', min:0, max:2 },
+],
+</code></pre>
+
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const spec = {
+  type: 'common',
+  seriesField: 'color',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { x: '2021-10-22', type: 'A', y: 10 },
+        { x: '2021-10-23', type: 'B', y: 22 }
+      ]
+    },
+    {
+      id: 'id1',
+      values: [
+        { x: '2021-10-22', type: 'TA', y: 0.5 },
+        { x: '2021-10-22', type: 'TB', y: 1.1 },
+        { x: '2021-10-23', type: 'TA', y: 1 },
+        { x: '2021-10-23', type: 'TB', y: 1.6 }
+      ]
+    }
+  ],
+  series: [
+    {
+      type: 'bar',
+      id: 'bar',
+      dataIndex: 0,
+      label: { visible: true, position: 'inside' },
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y'
+    },
+    {
+      type: 'line',
+      id: 'line',
+      dataIndex: 1,
+      label: { visible: true },
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      stack: false
+    }
+  ],
+  axes: [
+    { orient: 'left', seriesIndex: [0], max: 100 },
+    { orient: 'right', seriesId: ['line'], grid: { visible: false }, min: 0, max: 2 },
+    { orient: 'bottom', label: { visible: true }, type: 'band' }
+  ]
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://visactor.io/vchart/demo/combination/dual-axis">More demos</a></li>
+<li><a href="https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Axes">Axes tutorial</a></li>
+<li><a href="https://visactor.io/vchart/option/lineChart#axes-linear.min">Related API</a></li>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+</ul>
+</body>
+</html>

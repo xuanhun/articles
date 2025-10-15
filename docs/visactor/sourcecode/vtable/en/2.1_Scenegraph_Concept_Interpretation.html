@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2.1 Scenegraph Concept Interpretation</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="understanding-the-concept-of-scenegraph">Understanding the Concept of SceneGraph</h2>
+<p>In the VTable, the configuration manager <code>BaseTable</code> converts the table configuration into a specific rendering scene by creating a Scenegraph instance.    </p>
+<p>And the Scenegraph is the carrier of this transformation. The scene graph is a relatively abstract concept. In my understanding, a scene graph can be understood as <strong>a hierarchical graphical organization structure, a meticulously designed blueprint</strong>, capable of converting abstract configurations into specific interactive, renderable graph node networks. As its name suggests, this tree structure offers higher performance because it does not require recalculating the graphics to be drawn during updates; it only needs to update the properties of the corresponding scene graph nodes.    \r</p>
+<p>In the scene tree, each <strong>node</strong> (Group and various graphic elements such as Rect, Text, Icon) is a "graphic unit", and there are parent-child and hierarchical relationships between nodes. Each node can have its own attributes and behaviors. These nodes are nested and associated with each other, collectively forming a complete and dynamically updatable table system. Changes in the entire tree are immediately reflected in the final rendering result, just like adjustments in an organizational structure affect overall operations.</p>
+<p>The core design concept of the scene tree is that it provides a structured, manageable, and efficient way to organize and render complex graphical interfaces.    \r</p>
+<h2 id="basetable-class-and-scenegraph-class-relationship"><code>BaseTable</code> class and <code>Scenegraph</code> class relationship</h2>
+<p>It can be observed that: the <code>BaseTable</code> base class (the parent class of specific table classes in VTable) is declared in package/vtabvtable/src/core/BaseTable.ts, and in the constructor of the <code>BaseTable</code> base class, there is:</p>
+<pre class="codehilite"><code class="language-xml">//省略其余代码
+class BaseTable {
+  constructor() {
+    // 创建 Scenegraph 实例，并传入 BaseTable 实例
+    this.scenegraph = new Scenegraph(this);
+  }
+
+  release(){
+    // 图标注销时清理场景树
+    this.scenegraph = null;
+  }
+}    
+</code></pre>
+
+<p>Pass the <code>BaseTable</code> instance (<code>this</code>) as a parameter to the <code>Scenegraph</code> constructor to create a <code>Scenegraph</code> instance.    </p>
+<p>In the file package/vtabvtable/src/scenegraph/scenegraph.ts, the constructor of Scenegraph is also registered.    </p>
+<p><code>table: BaseTableAPI</code> instance:    </p>
+<pre class="codehilite"><code class="language-xml">export class Scenegraph {
+  // 表格实例的引用
+  table: BaseTableAPI;
+  // 舞台实例
+  stage: IStage;
+  // 。。。场景树的其他属性
+  constructor(table: BaseTableAPI) {
+    // 将传入的 table 实例保存为类的属性
+    this.table = table;
+    // 。。。其他操作
+    this.initSceneGraph();    // 准备场景树的基本结构
+    // 。。。其他操作
+
+    this.createComponent();   //为表格准备&quot;选择&quot;和&quot;组件&quot;相关的基础设施
+  }
+  // ... 其他方法
+}    
+</code></pre>
+
+<p>It can be seen that <code>Scenegraph</code> is a core component of <code>BaseTable</code>, where <code>scenegraph</code> controls the interaction and rendering of the table, while <code>BaseTable</code> is responsible for controlling the basic configuration management and overall logic of a chart. <code>BaseTable</code> manages the lifecycle of <code>Scenegraph</code>, handling the creation and destruction of the scene tree.</p>
+<p>At the same time, both classes need to access each other's properties or methods: the scene tree needs to obtain the rendering configuration and basic information of <code>table</code> (options, animationManager, theme, and other basic configurations) to build the stage, while <code>BaseTable</code> relies on <code>Scenegraph</code> to provide core methods for rendering and interaction.</p>
+<h2 id="source-code-location">Source Code Location</h2>
+<ul>
+<li>
+<p>package/vtable/src/core/BaseTable.ts: Definition file of the core class for the scene tree    \r</p>
+</li>
+<li>
+<p>scenegraph/group-creater/progress/proxy.ts: The core performance optimization module of VTable to address the challenge of rendering large data volumes.    \r</p>
+</li>
+</ul>
+<h2 id="interpretation-of-internal-concepts-of-data-structures">Interpretation of Internal Concepts of Data Structures</h2>
+<p>As mentioned above, the scene tree is a tree structure, and its main components are group-column-cell-primitive. The general structure is as follows: \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/LwRfbCRVUoSoy3xsFz6cFKUbnFe.gif' alt='' width='1000' height='auto'></p>
+<h3 id="stage">Stage</h3>
+<p>Stage is a concept from the VRender module (https://visactor.com/vrender/guide/asd/Basic_Tutorial/Create_Instance), serving as the top-level container and rendering environment of the scene tree. It can be understood as a virtual "canvas space," responsible for providing the basic environment for rendering, managing the rendering process of the entire scene, and controlling the basic properties of the scene (size, background, pixel ratio), etc.    </p>
+<ul>
+<li>Stage setup:    \r</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">constructor(table: BaseTableAPI) {
+  // Stage 创建
+  this.stage = createStage({
+    canvas: table.canvas,
+    width,
+    height,
+    // 其他配置...
+  });
+}    
+</code></pre>
+
+<p>For VTable, Stage is the foundational container for building the entire table visualization system.    \r</p>
+<ul>
+<li>Render scene sub-nodes to the canvas    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">    this.stage.defaultLayer.add(this.tableGroup);
+    (this.stage as any).table = this.table;    
+</code></pre>
+
+<p>First, add the root node of the table (<code>tableGroup</code>) to the default layer of the Stage, which means that <code>tableGroup</code> and all its child nodes will be rendered onto the canvas, establishing a direct connection between the scene tree and the rendering environment.</p>
+<p>Then mount the table instance onto the stage, establishing a connection with the table configuration.    </p>
+<h3 id="group">Group</h3>
+<p>Group is an important component in the scene tree class. To understand it vividly, a group is a tree node in the tree structure of the scene graph, and it is also a container structure for organizing and managing primitives.</p>
+<p>The complexity of the table determines that the scene tree requires multiple Groups, for example:    \r</p>
+<ul>
+<li>
+<p><code>colHeaderGroup</code>: Manage column headers    </p>
+</li>
+<li>
+<p><code>rowHeaderGroup</code>: Manage row headers    </p>
+</li>
+<li>
+<p><code>cornerHeaderGroup</code>: List header frozen column Group    </p>
+</li>
+<li>
+<p><code>bodyGroup</code>: Manage main content    </p>
+</li>
+<li>
+<p><code>rightFrozenGroup</code>: Manage the right frozen area    </p>
+</li>
+<li>
+<p><code>bottomFrozenGroup</code>: Manage the bottom frozen area    </p>
+</li>
+</ul>
+<h3 id="primitives">Primitives</h3>
+<p>The concept of primitives comes from VRender, which are basic rendering elements that can form the actual table content in VTable (elements such as radio, chart, checkbox, etc.). For example, <code>checkbox</code> can be considered as a combination of <code>Symbol</code> primitives and <code>Text</code> primitives, etc.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/AEmib2cH3ohn9rxT7DRcfuVVnAc.gif' alt='' width='252' height='auto'></p>
+<h3 id="progressproxy">ProgressProxy</h3>
+<p>ProgressProxy is the performance optimization core of VTable, managing node generation, incremental loading, and node position updates during the first screen rendering.\r</p>
+<p>It is the core module for VTable to optimize performance during the first screen and interaction under large data volumes.    \r</p>
+<h2 id="design-philosophy">Design Philosophy</h2>
+<p><code>Scenegraph</code> module is designed with the concept of using a scene tree to manage the creation and updating of table scene nodes. The overall table scene node is a scene tree structure created based on the primitives provided by VRender. It is constructed layer by layer following the organization order of table -&gt; header/content -&gt; column -&gt; cell -&gt; cell content.</p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

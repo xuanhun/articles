@@ -1,0 +1,23 @@
+# Jekyll (但保留 docs/ 用于 GitHub Pages)
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+
+# Bundler
+.bundle/
+vendor/
+
+# macOS
+.DS_Store
+
+# Ruby
+*.gem
+.ruby-version
+.ruby-gemset
+
+# Logs
+*.log
+
+# 注意: docs/ 目录不被忽略，用于 GitHub Pages 部署
+

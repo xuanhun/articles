@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>13. How to customize radar chart axis labels to richtext in VChart?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="title">Title</h2>
+<p>How to customize radar chart axis labels to richtext in VChart?</br></p>
+<h2 id="description">Description</h2>
+<p>Expect to support custom icons and different text styles in labels, similar to:</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/RBVmbeYoUoxHmnxPjlzc28VYnhd.gif' alt='' width='630' height='590'></p>
+<h2 id="solution">Solution</h2>
+<p>First, let's analyze the requirements. The label of the <strong>angle axis </strong>in polar coordinates is shown in the figure.</br>
+1. <strong>Add shaft configuration</strong></br>
+In VChart, you can configure the axis through the <code>axes</code>property. <code>Axes</code>receives an array, adds an item, and sets the axis type of <code>axes [0].type: 'angle'</code>to angle axis;</br>
+1. <strong>Configuration axis label</strong></br>
+Configure <code>axes [0].label</code>to rich text by formatting function <code>formatMethod</code>.</br>
+<code>formatMethod</code>returns a configuration object with rich text content</br>
+1. <code>Type: 'rich'</code>: defines the return text type as rich text</br>
+1. <code>Text</code>: Detailed configuration of rich text. Supports two types of text and image. Detailed configuration can refer to the <a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Foption%2FbarChart%23title.textStyle.character">configuration item document </a>.</br></p>
+<pre class="codehilite"><code>formatMethod: (value, data, c, d) =&gt; {
+  return {
+    type: &quot;rich&quot;,
+    text: [
+      {
+        image:
+          '&lt;svg t=&quot;1714116158819&quot; class=&quot;icon&quot; viewBox=&quot;0 0 1228 1024&quot; version=&quot;1.1&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; p-id=&quot;19433&quot; width=&quot;200&quot; height=&quot;200&quot;&gt;&lt;path d=&quot;M1152 76.8v870.4h-1075.2v-870.4h1075.2M1228.8 0H0v1024h1228.8V0z&quot; fill=&quot;#0686E5&quot; p-id=&quot;19434&quot;&gt;&lt;/path&gt;&lt;path d=&quot;M0 0h1228.8v1024H0z&quot; fill=&quot;#0686E5&quot; p-id=&quot;19435&quot;&gt;&lt;/path&gt;&lt;/svg&gt;',
+        width: 2,
+        height: 10,
+      },
+      {
+        text: ` ${value} `,
+        fontSize: 16,
+        fill: &quot;black&quot;,
+        fontWeight: &quot;bold&quot;,
+      },
+      {
+        text: ` ${values.find((v) =&gt; v.key === value)?.value} `,
+        fontSize: 16,
+        fill: &quot;rgb(22,100,255)&quot;,
+        fontWeight: &quot;bold&quot;,
+      },
+    ],
+  };
+},&lt;/br&gt;
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/UBptbKji6oouWRxSPUxcBATTnlb.gif' alt='' width='1470' height='1044'></p>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code>const values = [
+        {
+          key: 'Strength',
+          value: 5
+        },
+        {
+          key: 'Speed',
+          value: 5
+        },
+        {
+          key: 'Shooting',
+          value: 3
+        },
+        {
+          key: 'Endurance',
+          value: 5
+        },
+        {
+          key: 'Precision',
+          value: 5
+        },
+        {
+          key: 'Growth',
+          value: 5
+        }
+      ];
+
+const spec = {
+  type: 'radar',
+  data: [
+    {
+      id: 'radarData',
+      values
+    }
+  ],
+  categoryField: 'key',
+  valueField: 'value',
+  point: {
+    visible: false // disable point
+  },
+  area: {
+    visible: true, // display area
+    state: {
+      // The style in the hover state of the area
+      hover: {
+        fillOpacity: 0.5
+      }
+    }
+  },
+  line: {
+    style: {
+      lineWidth: 4
+    }
+  },
+  axes: [
+    {
+      orient: 'radius', // radius axis
+      zIndex: 100,
+      min: 0,
+      max: 8,
+      domainLine: {
+        visible: false
+      },
+      label: {
+        visible: true,
+        space: 0,
+        style: {
+          textAlign: 'center',
+          stroke: '#fff',
+          lineWidth: 4
+        }
+      },
+      grid: {
+        smooth: false,
+        style: {
+          lineDash: [0]
+        }
+      }
+    },
+    {
+      orient: 'angle', // angle axis
+      zIndex: 50,
+      tick: {
+        visible: false
+      },
+      domainLine: {
+        visible: false
+      },
+      label: {
+        space: 20,
+         formatMethod: (value, data,c,d) =&gt; {
+          console.log(value,data,c,d)
+      return {
+        type: 'rich',
+        text: [
+          {
+            image: '&lt;svg t=&quot;1714116158819&quot; class=&quot;icon&quot; viewBox=&quot;0 0 1228 1024&quot; version=&quot;1.1&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; p-id=&quot;19433&quot; width=&quot;200&quot; height=&quot;200&quot;&gt;&lt;path d=&quot;M1152 76.8v870.4h-1075.2v-870.4h1075.2M1228.8 0H0v1024h1228.8V0z&quot; fill=&quot;#0686E5&quot; p-id=&quot;19434&quot;&gt;&lt;/path&gt;&lt;path d=&quot;M0 0h1228.8v1024H0z&quot; fill=&quot;#0686E5&quot; p-id=&quot;19435&quot;&gt;&lt;/path&gt;&lt;/svg&gt;',
+            width: 2,
+            height: 10
+          },
+          {
+            text: ` ${value} `,
+            fontSize: 16,
+            fill: 'black',
+            fontWeight: 'bold'
+          },
+           {
+            text: ` ${values.find(v =&gt; v.key === value)?.value} `,
+            fontSize: 16,
+            fill: 'rgb(22,100,255)',
+            fontWeight: 'bold'
+          }
+        ]
+      };
+    }
+      },
+      grid: {
+        style: {
+          lineDash: [0]
+        }
+      }
+    }
+  ]
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="related-documentation">Related Documentation</h2>
+<p>richtext demo：https://visactor.io/vchart/demo/label/richtext-label</br>
+Related api：https://visactor.io/vchart/option/radarChart-axes-band#label.formatMethod</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

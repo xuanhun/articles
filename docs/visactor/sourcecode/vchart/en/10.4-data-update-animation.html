@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10.4 Data Update Animation</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="104-data-update-animation">10.4 Data Update Animation</h2>
+<p>Score: 8    </p>
+<ol>
+<li>
+<p>Update Animation:    </p>
+</li>
+<li>
+<p>Code Entry: <code>packages/vchart/src/animation/</code>    </p>
+</li>
+<li>
+<p>Key Points:    </p>
+</li>
+<li>
+<p>Implementation of Update Animation    </p>
+</li>
+<li>
+<p>Other Reference Documents:    </p>
+</li>
+</ol>
+<p>https://www.visactor.io/vchart/guide/tutorial_docs/Animation/Animation_Types    </p>
+<p>https://www.visactor.io/vrender/guide/asd/Basic_Tutorial/Animate    </p>
+<p>https://visactor.io/vgrammar/guide/guides/animation    </p>
+<p><a href="https://juejin.cn/post/7275270809777520651">Magic Frame (Part 1): The Principle of Animation Implementation in Front-end Chart Libraries - A vivid visualization work often involves animation. Whether it's various charts or narrative works, organizing the week - Juejin</a>    </p>
+<p>After understanding how to add change animation effects when specific chart element data changes, we can configure data update animations for series elements in a specific type of chart to meet animation effects in specific scenarios.    </p>
+<h3 id="interpretation-of-data-update-animation-implementation">Interpretation of Data Update Animation Implementation</h3>
+<p>Data update animation refers to the animation effect executed by chart elements based on the new data state when the chart data changes. In VChart, this animation is designed to be very flexible and can be applied to three scenarios: new data entry (<code>enter</code>), existing data update (<code>update</code>), and old data removal (<code>exit</code>). Below is a detailed interpretation of the implementation.    </p>
+<h4 id="1-animation-configuration-structure">1. Animation Configuration Structure</h4>
+<p><strong>IAnimationSpec Interface</strong>    </p>
+<p>The <code>IAnimationSpec</code> interface defines the basic structure of animation configuration, which includes animation settings for different states. For data update animations, it mainly involves the following three properties:    </p>
+<ul>
+<li>
+<p><code>animationEnter</code>: Describes the animation effect when new data is added.    </p>
+</li>
+<li>
+<p><code>animationUpdate</code>: Describes the animation effect when existing data is updated.    </p>
+</li>
+<li>
+<p><code>animationExit</code>: Describes the animation effect when old data is removed.    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">interface IAnimationSpec&lt;MarkName extends string, Preset extends string&gt; {
+  animationEnter?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+  animationUpdate?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+  animationExit?: boolean | ICommonStateAnimateSpec | IMarkAnimateSpec&lt;MarkName&gt;;
+}    
+</code></pre>
+
+<p>Each attribute can accept a boolean value (enable/disable), a preset configuration object, or a custom configuration object as a parameter, providing developers with a high degree of customization possibilities.</p>
+<h4 id="2-animation-manager">2. Animation Manager</h4>
+<p><strong>AnimateManager Class</strong></p>
+<p>The <code>AnimateManager</code> class is responsible for managing and coordinating the state of all animations. It implements the <code>IAnimate</code> interface and provides methods to update and retrieve animation states. For data update animations, the <code>AnimateManager</code> ensures that these animations are automatically triggered when data changes and can be paused or resumed as needed.</p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.update) {
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; element.diffState
+          }
+        },
+        noRender
+      );
+    } else if (state === AnimationStateEnum.appear) {
+      // 出现状态下的动画逻辑
+    } else if (state === AnimationStateEnum.exit) {
+      // 退出状态下的动画逻辑
+    }
+  }
+}    
+</code></pre>
+
+<p>When chart elements enter the <code>update</code>, <code>appear</code>, or <code>exit</code> states, the <code>updateAnimateState</code> method is called and passes the state to the internal state management logic. This allows all eligible elements to perform the corresponding animations.    </p>
+<h4 id="3-animation-configuration-generation">3. Animation Configuration Generation</h4>
+<p><strong>animationConfig Function</strong>    </p>
+<p>To simplify the merging process between user configurations and default configurations, VChart provides a helper function called <code>animationConfig</code>. This function iterates over all possible animation states and constructs the final animation configuration object based on the user-provided configuration or the default configuration.    </p>
+<pre class="codehilite"><code class="language-xml">function animationConfig&lt;Preset extends string&gt;(
+  defaultConfig: MarkAnimationSpec = {},
+  userConfig?: Partial&lt;Record&lt;IAnimationState, boolean | IStateAnimateSpec&lt;Preset&gt; | IAnimationConfig | IAnimationConfig[]&gt;&gt;,
+  params?: { dataIndex: (datum: any, params: any) =&gt; number; dataCount: () =&gt; number; }
+): MarkAnimationSpec {
+  const config = {} as MarkAnimationSpec;
+
+  for (let i = 0; i &lt; AnimationStates.length; i++) {
+    const state = AnimationStates[i];
+    const userStateConfig = userConfig ? userConfig[state] : undefined;
+
+    if (userStateConfig === false) continue;
+
+    if (state === 'enter' || state === 'update' || state === 'exit') {
+      let defaultStateConfig: IAnimationConfig[];
+      if (isArray(defaultConfig[state])) {
+        defaultStateConfig = defaultConfig[state] as IAnimationConfig[];
+      } else {
+        defaultStateConfig = [{ ...DEFAULT_ANIMATION_CONFIG[state], ...defaultConfig[state] } as any];
+      }
+
+      config[state] = defaultStateConfig;
+    }
+  }
+
+  return config;
+}    
+</code></pre>
+
+<p>This function handles the merging of animation configurations in <code>enter</code>, <code>update</code>, and <code>exit</code> states, ensuring that the configurations provided by the user are correctly applied to specific graphical elements. If the user does not provide custom animation configurations, the default configurations are used.</p>
+<h4 id="4-specific-implementation-of-data-update-animation">4. Specific Implementation of Data Update Animation</h4>
+<p>Taking a bar chart as an example, suppose we want to add a fade-in effect for newly added data points, a scaling effect for updated data points, and a fade-out effect for removed data points. Here are the detailed implementation steps:</p>
+<ul>
+<li><strong>Define Animation Configuration</strong>: First, specify the <code>animationEnter</code>, <code>animationUpdate</code>, and <code>animationExit</code> configurations for the bar chart series in the chart configuration. Here, we can choose built-in animation types and adjust their duration and easing functions.</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 初始数据数组 */],
+      animationEnter: {
+        type: 'fadeIn', // 新数据点淡入
+        duration: 800,
+        easing: 'easeInOutQuad'
+      },
+      animationUpdate: {
+        type: 'scaleIn', // 更新数据点缩放
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut', // 移除数据点淡出
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<ul>
+<li><strong>Register Animation</strong>: Next, we need to ensure that the required animations have been correctly registered in the system. This step is usually completed at project startup or explicitly called where needed.    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { Appear_FadeIn, ScaleInOutAnimation, Appear_FadeOut } from './series/bar/animation';
+
+// 注册淡入动画
+Factory.registerAnimation('fadeIn', Appear_FadeIn);
+
+// 注册缩放动画
+Factory.registerAnimation('scaleIn', ScaleInOutAnimation);
+
+// 注册淡出动画
+Factory.registerAnimation('fadeOut', Appear_FadeOut);    
+</code></pre>
+
+<p>The <code>Appear_FadeIn</code>, <code>ScaleInOutAnimation</code>, and <code>Appear_FadeOut</code> functions here define the specific logic for fade-in, scale, and fade-out animations, such as how to change the transparency or size of graphic elements.    </p>
+<ul>
+<li><strong>Initialize the chart instance</strong>: With the above configuration, we can initialize a <code>VChart</code> instance and pass the configuration to it. This will trigger the rendering process of the chart and apply the corresponding animation effects.    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/vchart';
+
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});    
+</code></pre>
+
+<ul>
+<li><strong>Trigger Animation</strong>: Once the chart is rendered, any change in data will automatically trigger animation. For example, when new data is added, the <code>animationEnter</code> configuration takes effect; when data is updated, the <code>animationUpdate</code> configuration is effective; and when data is removed, the <code>animationExit</code> configuration is applied.    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// 假设一段时间后需要更新数据
+setTimeout(() =&gt; {
+  const newData = [/* 新的数据数组 */];
+  chart.updateSeriesData(newData);
+}, 5000);    
+</code></pre>
+
+<h4 id="5-execution-of-animation-tasks">5. Execution of Animation Tasks</h4>
+<p><strong>IAnimationTask Interface</strong>    </p>
+<p>For complex animation sequences, VChart introduces the <code>IAnimationTask</code> interface to describe the data structure of animation tasks. Each task includes a time offset, an action queue, and a list of successor tasks, forming a chain-like animation execution mechanism.    </p>
+<pre class="codehilite"><code class="language-xml">interface IAnimationTask {
+  timeOffset: number;
+  actionList: Action[];
+  nextTaskList: IAnimationTask[];
+}    
+</code></pre>
+
+<p>This design allows multiple animation tasks to be executed sequentially or concurrently, enabling more complex and delicate animation effects. For data update animations, it can be part of an independent task chain, working in conjunction with other animation tasks.</p>
+<h4 id="6-example-creating-a-bar-chart-with-data-update-animation">6. Example: Creating a Bar Chart with Data Update Animation</h4>
+<p>Below is an example of creating a bar chart with data update animation, illustrating how to use VChart's data update animation system to implement the basic process.</p>
+<h5 id="step-1-define-animation-configuration">Step 1: Define Animation Configuration</h5>
+<p>First, we need to define the basic configuration of the bar chart, including the data source and other visual attributes. At the same time, we will also specify the <code>animationEnter</code>, <code>animationUpdate</code>, and <code>animationExit</code> configurations here to ensure that the corresponding animation effects can be triggered when the data changes.</p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [
+        { value: 10 },
+        { value: 20 },
+        { value: 30 }
+      ],
+      animationEnter: {
+        type: 'fadeIn',
+        duration: 800,
+        easing: 'easeInOutQuad'
+      },
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<h5 id="step-2-register-animation">Step 2: Register Animation</h5>
+<p>Ensure that the required animations have been correctly registered in the system. This step is usually completed at project startup or explicitly called where needed.    </p>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { Appear_FadeIn, ScaleInOutAnimation, Appear_FadeOut } from './series/bar/animation';
+
+Factory.registerAnimation('fadeIn', Appear_FadeIn);
+Factory.registerAnimation('scaleIn', ScaleInOutAnimation);
+Factory.registerAnimation('fadeOut', Appear_FadeOut);    
+</code></pre>
+
+<h5 id="step-3-initialize-the-chart-instance">Step 3: Initialize the Chart Instance</h5>
+<p>With the above configuration, we can initialize a <code>VChart</code> instance and pass the configuration to it. This step will trigger the chart rendering process and apply the corresponding animation effects.    </p>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/vchart';
+
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});    
+</code></pre>
+
+<h5 id="step-4-trigger-data-update-animation">Step 4: Trigger Data Update Animation</h5>
+<p>Once the chart is rendered, any changes in the data will automatically trigger animations. For example, when new data is added, the <code>animationEnter</code> configuration will take effect; when data is updated, the <code>animationUpdate</code> configuration is effective; and when data is removed, the <code>animationExit</code> configuration is applied.</p>
+<pre class="codehilite"><code class="language-xml">// 模拟数据更新
+setTimeout(() =&gt; {
+  const updatedData = [
+    { value: 15 }, // 更新第一个数据点
+    { value: 25 }, // 更新第二个数据点
+    { value: 35 }, // 更新第三个数据点
+    { value: 45 }  // 添加一个新的数据点
+  ];
+
+  // 更新图表数据并触发动画
+  chart.updateSeriesData(updatedData);
+}, 5000);    
+</code></pre>
+
+<p>In this example, the <code>updateSeriesData</code> method triggers a series of animations:</p>
+<ul>
+<li>
+<p>For newly added data points (the fourth data point), the <code>animationEnter</code> configuration makes it gradually appear with a fade-in effect.</p>
+</li>
+<li>
+<p>For existing data points (the first three data points), the <code>animationUpdate</code> configuration adjusts their size based on the new data values and transitions them with a scaling effect.</p>
+</li>
+<li>
+<p>If any data points are removed, the <code>animationExit</code> configuration makes them disappear with a fade-out effect.</p>
+</li>
+</ul>
+<h5 id="step-5-dynamically-control-animations">Step 5: Dynamically Control Animations</h5>
+<p>In some cases, you may want to dynamically control the behavior of data update animations, such as changing the speed or style of the animation. VChart provides flexible methods to achieve this.</p>
+<pre class="codehilite"><code class="language-xml">// 更新某个系列的数据更新动画配置
+chart.updateSeriesOptions(0, {
+  animationEnter: {
+    duration: 1000, // 更改淡入动画的持续时间
+    easing: 'linear' // 更改缓动函数
+  },
+  animationUpdate: {
+    duration: 700, // 更改缩放动画的持续时间
+    easing: 'easeInOutCubic' // 更改缓动函数
+  },
+  animationExit: {
+    duration: 900, // 更改淡出动画的持续时间
+    easing: 'easeInOutCubic' // 更改缓动函数
+  }
+});
+
+// 重新应用新的动画配置
+chart.render();    
+</code></pre>
+
+<h4 id="7-animation-lifecycle-management">7. Animation Lifecycle Management</h4>
+<p><strong>Event Listeners and Hooks</strong>    </p>
+<p>To better manage the lifecycle of animations, VChart provides a series of event listeners and hook functions. For example, the <code>VGRAMMAR_HOOK_EVENT.AFTER_DO_RENDER</code> event can be triggered after the chart is initially rendered, while <code>VGRAMMAR_HOOK_EVENT.ANIMATION_END</code> will be triggered at the end of the animation.    </p>
+<pre class="codehilite"><code class="language-xml">this._event.on(VGRAMMAR_HOOK_EVENT.AFTER_DO_RENDER, () =&gt; {
+  // 图表首次渲染完成后的逻辑
+});
+
+this._event.on(VGRAMMAR_HOOK_EVENT.ANIMATION_END, ({ event }) =&gt; {
+  if (event.animationState === AnimationStateEnum.enter) {
+    // enter 动画结束后的逻辑
+  } else if (event.animationState === AnimationStateEnum.update) {
+    // update 动画结束后的逻辑
+  } else if (event.animationState === AnimationStateEnum.exit) {
+    // exit 动画结束后的逻辑
+  }
+});    
+</code></pre>
+
+<p>This code demonstrates how to execute specific logic at different animation stages to ensure smooth transitions between animations and enhance user experience.</p>
+<h4 id="8-difference-detection-and-animation-trigger">8. Difference Detection and Animation Trigger</h4>
+<p><strong>Difference Detection</strong></p>
+<p>During the data update process, VChart automatically performs difference detection to identify which data points are new, updated, or removed. Based on this information, <code>AnimateManager</code> triggers the corresponding animations.</p>
+<pre class="codehilite"><code class="language-xml">if (state === AnimationStateEnum.update) {
+  this.updateState(
+    {
+      animationState: {
+        callback: (datum: any, element: IElement) =&gt; element.diffState
+      }
+    },
+    noRender
+  );
+}    
+</code></pre>
+
+<p>The <code>diffState</code> attribute here indicates the type of state change for the element, such as <code>enter</code>, <code>update</code>, or <code>exit</code>. The <code>AnimateManager</code> will decide which type of animation to apply based on this attribute.    </p>
+<h4 id="9-specific-implementation-of-animation">9. Specific Implementation of Animation</h4>
+<p><strong>Specific Animation Functions</strong>    </p>
+<p>Each specific animation function (such as <code>Appear_FadeIn</code>, <code>ScaleInOutAnimation</code>, and <code>Appear_FadeOut</code>) defines the specific behavior of the animation. For example, the <code>Appear_FadeIn</code> function might look like this:    </p>
+<pre class="codehilite"><code class="language-xml">export const Appear_FadeIn: IAnimationTypeConfig = {
+  type: 'fadeIn',
+  duration: 800,
+  easing: 'easeInOutQuad',
+  channel: {
+    opacity: { from: 0, to: 1 }
+  }
+};    
+</code></pre>
+
+<p>This code defines a fade-in animation by adjusting the <code>opacity</code> attribute of a graphic element from 0 to 1 to achieve a visual fade-in effect.    </p>
+<h4 id="10-animation-state-management">10. Animation State Management</h4>
+<p><strong>State Transition and Update</strong>    </p>
+<p><code>AnimateManager</code> not only manages <code>normal</code> animations but also handles animation transitions in other states. For example, when new data is added, the animation in the <code>enter</code> state is triggered; when data is updated, the animation in the <code>update</code> state takes effect; and when data is removed, the animation in the <code>exit</code> state comes into play.    </p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.update) {
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; element.diffState
+          }
+        },
+        noRender
+      );
+    } else if (state === AnimationStateEnum.appear) {
+      // appear 状态下的动画逻辑
+    } else if (state === AnimationStateEnum.exit) {
+      // exit 状态下的动画逻辑
+    }
+  }
+}    
+</code></pre>
+
+<p>When chart elements enter the <code>update</code>, <code>appear</code>, or <code>exit</code> states, the <code>updateAnimateState</code> method is called and passes the state to the internal state management logic. This allows all eligible elements to perform the corresponding animations.</p>
+<h3 id="summary">Summary</h3>
+<p>Through the above steps, we have detailed the implementation principles of data update animations in VChart. The data update animation system of VChart cleverly combines the factory pattern, state manager pattern, and modular animation configuration, providing not only a rich set of built-in animation effects but also supporting highly customizable needs. Developers can flexibly configure and combine different animations according to actual application scenarios to create visual effects that are both beautiful and practical. Specifically:</p>
+<ul>
+<li>
+<p><code>**animationEnter**</code>: Suitable for entry animations of new data points, such as fade-in, growth, etc.</p>
+</li>
+<li>
+<p><code>**animationUpdate**</code>: Suitable for update animations of existing data points, such as scaling, color gradient, etc.</p>
+</li>
+<li>
+<p><code>**animationExit**</code>: Suitable for exit animations of old data points, such as fade-out, shrink, etc.</p>
+</li>
+</ul>
+<p>This design ensures that when data changes, the chart can be presented to users in a smooth and intuitive manner, enhancing the interactive experience and visual appeal.</p>
+<p># This document was revised and organized by the following personnel 
+ <a href="https://github.com/xuanhun">Xuanhun</a></p>
+</body>
+</html>

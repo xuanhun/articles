@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9.1 VChart 布局基本概念</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>VChart 作为一个功能强大的图表库，布局能力也十分强大，内置了紧凑布局模式、grid布局并且支持自定义布局能力。    </p>
+<h1 id="_1">布局元素</h1>
+<p>在 VChart 中，并不是所有的图表组成部分都会参与布局，比如<code>tooltip</code>，<code>crosshairs</code>这样的组件就不参与布局。目前 VChart 中参与布局的部分呢有：<code>titie</code>，<code>legned</code>，<code>axes</code>，<code>region</code>，<code>datazoom</code>，<code>scrollBar</code>    </p>
+<p>但是在 VChart 中布局逻辑却不是按照模块类型来实现的。VChart 有完善的扩展机制，所以可能存在丰富的扩展组件，而这些组件可能也需要参与布局。所以布局能力在设计时使用了布局元素的概念。    </p>
+<h2 id="_2">基本概念</h2>
+<p>布局元素不等于图表的模块，它是布局系统使用的一种独立抽象元素。图表的布局模块只针对布局元素进行布局，忽略图表的实际组成组件是什么。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DQjJwIIQdhNnJobra2fchWIJn5b.gif' alt='' width='818' height='auto' /></p>
+<p>图表模块通过持有一个布局元素，与布局元素通信来参与布局    </p>
+<h2 id="_3">布局元素属性</h2>
+<p>布局元素有几个重要属性：    </p>
+<ul>
+<li>布局类型：内置的占位布局通过布局类型给元素不同的布局逻辑    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">export type ILayoutType =
+  | 'region-relative' // 轴，datazoom这样需要与region贴合，有布局关联的元素, 独立占位，不重合
+  | 'region-relative-overlap' // 与上面的布局逻辑一致，但是同位置的元素会重叠在一起
+  | 'region' // 一般只给region元素使用
+  | 'normal' // 普通布局元素，比如标题。
+  | 'absolute' // 想要多个元素在同一行布局，比如想并排布局多个图例
+  | 'normal-inline'; // 绝对定位元素，使用空间信息配置，基于画布左上角进行定位布局    
+</code></pre>
+
+<ul>
+<li>空间信息：支持 <code>x，y，lef，top，right，bottom，width，height</code>等属性配置，但是在不同的布局逻辑中，只有部分属性会生效，比如grid布局中，单元格内的元素<code>x，y</code>不会受配置的<code>x，y</code>影响    </li>
+</ul>
+<h1 id="_4">布局逻辑</h1>
+<p>VChart内置了2个布局逻辑，并且支持自定义布局    </p>
+<h2 id="_5">占位布局</h2>
+<p>这是最常用的布局逻辑。如下图所示    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YyF1bKOqdosZx2xW8DBccEvBnUf.gif' alt='' width='786' height='auto' /></p>
+<p>通过逐个将元素放入画布占位，最终形成一个紧凑布局    </p>
+<h2 id="_6">网格布局</h2>
+<p>网格布局是将画布按照行列信息划分为一个 <code>n行m列</code> 的网格，然后将图表的元素放到单元格内。    </p>
+<p>比如官网中下面这个例子，是一个 <code>2列，4行</code> 的网格布局。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/IXkdbo95roonpnxcv5AcgXTWnjf.gif' alt='' width='891' height='auto' /></p>
+<p>网格布局的参数定义    </p>
+<pre class="codehilite"><code class="language-Typescript">// 网格布局的类型定义
+export interface IGridLayoutSpec extends ILayoutSpecBase {
+  /**
+   * 设置布局类型为grid布局
+   */
+  type: 'grid';
+  /**
+   * grid布局的总列数
+   */
+  col: number;
+  /**
+   * grid布局的总行数
+   */
+  row: number;
+  /**
+   * 可选配置，指定某几列的宽度
+   */
+  colWidth?: {
+    /**
+     * 指定列数，序号从 0 开始
+     */
+    index: number;
+    /**
+     * 设置指定列的宽度，单位为像素
+     */
+    size: number | ((maxSize: number) =&gt; number);
+  }[];
+  /**
+   * 可选配置，指定某几行的高度
+   */
+  rowHeight?: {
+    /**
+     * 指定行数，序号从 0 开始
+     */
+    index: number;
+    /**
+     * 设置指定行的高度，单位为像素
+     */
+    size: number | ((maxSize: number) =&gt; number);
+  }[];
+  /**
+   *
+   * 指定所有图表元素所在位置，图表元素的位置起点和占几行几列，可以占多行多列
+   * 图表元素位置允许配置重叠。
+   */
+  elements: ElementSpec[];
+}
+
+网格单元格内模块位置设置
+export type ElementSpec = (
+  | {
+      /**
+       * 组件对应的spec key，如'legends'表示图例
+       */
+      modelKey: string;
+      /**
+       * 组件对应的序号
+       */
+      modelIndex: number;
+    }
+  | {
+      /**
+       * 组件对应的id
+       */
+      modelId: string;
+    }
+) &amp; {
+  /**
+   * 组件在grid布局中所在的列。从左向右，从 0 开始计数
+   */
+  col: number;
+  /**
+   * 组件在grid布局中所在的列跨度，即占了几列，默认值为1
+   */
+  colSpan?: number;
+  /**
+   * 组件在grid布局中所在的行。从上向下，从 0 开始计数。
+   */
+  row: number;
+  /**
+   * 组件在grid布局中所在的行跨度，即占了几行，默认值为1
+   */
+  rowSpan?: number;
+};    
+</code></pre>
+
+<h2 id="_7">自定义布局</h2>
+<p>VChart 还提供了自定义布局能力，用户可以任意的对所有布局元素进行空间属性设置。    </p>
+<p>比如官网的这个<a href="https://www.visactor.io/vchart/demo/layout/custom-layout">例子</a>    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Tttobk3wpoGLekxa8TkctclHnlg.gif' alt='' width='1000' height='auto' /></p>
+<p>将12个饼绘制到时钟的十二个方位。不需要给这些饼图任何额外属性配置，布局逻辑也只有10行左右    </p>
+<pre class="codehilite"><code class="language-Typescript">const vchart = new VChart(spec, {
+  dom: CONTAINER_ID,
+  // 通过 option 传入自定义布局
+  layout: (chart, item, chartLayoutRect, chartViewBox) =&gt; {
+    /**
+     * chart 是图表对象
+     * item 是参与布局的图表模块
+     * chartLayoutRect 是图表减去padding后的可用布局空间
+     * chartViewBox 是图表在画布中的位置，包含图表的padding。
+     */
+    const radius = Math.min(chartLayoutRect.width / 2, chartLayoutRect.height / 2);
+    const center = { x: chartLayoutRect.width / 2, y: chartLayoutRect.height / 2 };
+    const regionSize = radius * 0.2;
+    const regionPosRadius = radius - regionSize * 0.5 * 1.415;
+    // 使用布局元素的属性和提供的方法完成布局
+    item.forEach((i, index) =&gt; {
+      const angle = (index / 12) * Math.PI * 2;
+      // 请在布局完成后务必调用
+      i.setLayoutStartPosition({
+        x: center.x + Math.sin(angle) * regionPosRadius - regionSize * 0.5,
+        y: center.y + Math.cos(angle) * regionPosRadius - regionSize * 0.5
+      });
+      i.setLayoutRect({ width: regionSize, height: regionSize });
+      i.updateLayoutAttribute &amp;&amp; i.updateLayoutAttribute();
+    });
+  }
+});    
+</code></pre>
+
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

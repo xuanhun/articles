@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What are the methods of data sampling in VChart charts?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="title">Title</h2>
+<p>What are the methods for data sampling in VChart charts?</br></p>
+<h2 id="problem-description">Problem Description</h2>
+<p>May I ask if there are any data sampling configurations in vchart to improve performance when the amount of data in the line chart is large?</br></p>
+<h2 id="solution">Solution</h2>
+<p>VChart line chart, since the <code>1.6.0</code>version supports data sampling method configuration.</br>
+The downsampling strategy for line charts when the data volume is much larger than the pixel points can effectively optimize the drawing efficiency of the chart when turned on. It is turned off by default, that is, all drawings without filtering Data Points. Optional values for <code>sampling</code>configuration:</br>
+*  <code>'Lttb'</code>: Using Largest-Triangle-Three-Bucket algorithm, it can maximize the trend, shape and extreme value of the sampled line.</br>
+*  <code>'Min'</code>: Take the minimum value of the filter point</br>
+*  <code>'Max'</code>: take the maximum value of the filter point</br>
+*  <code>'Sum'</code>: take the sum of the filter points</br>
+*  <code>'Average'</code>: Take the average of the filter points</br>
+The sampling effect can be adjusted through the <code>samplingFactor</code> configuration.</br></p>
+<pre class="codehilite"><code>sampling: 'lttb',
+samplingFactor: 0.1,&lt;/br&gt;
+</code></pre>
+
+<h2 id="code-example">Code Example</h2>
+<p>https://visactor.io/vchart/demo/line-chart/line-sampling</br></p>
+<h2 id="results">Results</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/J07SbzPvJojZBFxcENtcJj13nCN.gif' alt='' width='1280' height='899'></p>
+<h2 id="quote">Quote</h2>
+<ul>
+<li>github：https://github.com/VisActor/VChart</br></li>
+<li>Sampling option:  https://visactor.io/vchart/option/lineChart#sampling</br></li>
+</ul>
+</body>
+</html>

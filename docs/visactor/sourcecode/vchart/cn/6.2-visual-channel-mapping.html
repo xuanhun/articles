@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6.2 视觉通道映射</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">简介</h1>
+<p><strong>视觉映射</strong>是数据与图像之间的桥梁，它将“数据模型”映射到“图像模型”，为不同类型的数据选择适合它的视觉变量。例如，我们使用柱状图表示一个班级中男生和女生的平均成绩，那么可以将数据中的性别属性映射到图像中的颜色属性，将数据中的成绩属性映射到图像中柱状图的高度（Y轴坐标）属性。下面我们通过一个简单的用例，分析数据是如何被映射到最终所看到的图像的。    </p>
+<h1 id="_2">图元的映射流程</h1>
+<h3 id="_3">使用示例</h3>
+<pre class="codehilite"><code class="language-xml">const spec = {
+  type: 'line',
+  data: [
+    {
+      id: 'lineData',
+      values: [
+        { date: 'Monday', class: 'class No.1', score: 20 },
+        { date: 'Monday', class: 'class No.2', score: 30 },
+
+        { date: 'Tuesday', class: 'class No.1', score: 25 },
+        { date: 'Tuesday', class: 'class No.2', score: 28 }
+      ]
+    }
+  ],
+  seriesField: 'class',
+  xField: 'date',
+  yField: 'score',
+  point: {
+    style: {
+      fill: 'blue'
+    }
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();    
+</code></pre>
+
+<p>该示例创建了一个line类型的图元系列来展示4条数据，其中<code>class</code>属性相同的点将被连成一条折线，<code>date</code>属性被映射到X轴坐标，<code>score</code>属性被映射到Y轴坐标，效果如下：    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/D03sbfO7ZoVYJexhYNBcTEKFn5O.gif' alt='' width='1000' height='auto' /></p>
+<h3 id="_4">图元的创建</h3>
+<p>下面我们通过代码，分析<code>renderSync()</code>中是如何解析配置<code>spec</code>，并生成图上的各种图元的。总体来说，<code>renderSync()</code>中包含以下三个阶段，渲染前、渲染、渲染后。    </p>
+<pre class="codehilite"><code class="language-Typescript">  // packages/vchart/src/core/vchart.ts
+  protected ***_renderSync*** = (option: IVChartRenderOption = {}) =&gt; {
+    const self = this as unknown as IVChart;
+    if (!this.***_beforeRender***(option)) {
+      return self;
+    }
+    this._compiler?.***render***(option.morphConfig);
+    this.***_afterRender***();
+    return self;
+  };    
+</code></pre>
+
+<p>其中渲染过程属于<code>VGrammar</code>的范畴，而渲染后主要进行动画状态的更新，我们主要关注与图元有关的<strong>渲染前准备</strong>，包括初始化图表配置、实例化图表、编译渲染指令。    </p>
+<h5 id="1">1. 初始化图表配置</h5>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ERfmbtkInownmyxZQQnc5guYnWe.gif' alt='' width='1000' height='auto' /></p>
+<pre class="codehilite"><code class="language-Typescript">  // packages/vchart/src/core/vchart.ts
+  private ***_initChartSpec***(spec: any, actionSource: VChartRenderActionSource) {
+    // 如果用户注册了函数，在配置中替换相应函数名为函数内容
+    if (VChart.***getFunctionList***() &amp;&amp; VChart.***getFunctionList***().length) {
+      spec = ***functionTransform***(spec, VChart);
+    }
+    this._spec = spec;
+    // 创建图表配置转换器，并转换为common chart的配置
+    if (!this._chartSpecTransformer) {
+      this._chartSpecTransformer = Factory.***createChartSpecTransformer***(
+        this._spec.type,
+        this.***_getChartOption***(this._spec.type)
+      );
+    }
+    this._chartSpecTransformer?.***transformSpec***(this._spec);
+    // 转换模型配置
+    this._specInfo = this._chartSpecTransformer?.***transformModelSpec***(this._spec);
+  }    
+</code></pre>
+
+<p>首先第一步，将用户注册的函数名替换为相应的函数实体。之后，根据图表类型，创建相应的图表配置转换器，将该类型图表的配置转换为<code>common</code>类型图表的配置。这其中包括，根据图表类型创建默认<code>series</code>，补全用户定义的<code>series</code>配置：    </p>
+<pre class="codehilite"><code class="language-xml">    // packages/vchart/src/chart/cartesian/cartesian-transformer.ts
+    const defaultSeriesSpec = this.***_getDefaultSeriesSpec***(spec);
+    if (!spec.series || spec.series.length === 0) { // 没有用户定义的系列 采用默认
+      spec.series = [defaultSeriesSpec];
+    } else {
+      spec.series.***forEach***((s: ISeriesSpec) =&gt; {
+        if (!this.***_isValidSeries***(s.type)) { // 判断用户定义系列是否有效
+          return;
+        }
+        Object.***keys***(defaultSeriesSpec).***forEach***(k =&gt; { // 补全配置
+          if (!(k in s)) {
+            s[k] = defaultSeriesSpec[k];
+          }
+        });
+      });
+    }    
+</code></pre>
+
+<h5 id="2">2. 实例化图表</h5>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ReF1bJdAboNSp9xF7MzckFuqnfe.gif' alt='' width='1000' height='auto' /></p>
+<p>接下来就是创建一个相应类型的图表对象。这里的图表对象并非指如下创建的<code>VChart</code>对象。<code>VChart</code>对图表进行了一次封装，是用户操作的入口，负责图表的全局管理和对外接口；    </p>
+<pre class="codehilite"><code class="language-xml">const vchart = new VChart(spec, { dom: CONTAINER_ID });    
+</code></pre>
+
+<p>而这里实例化的chart图表负责具体的图表构建（如创建和管理系列、组件）和内部逻辑处理（管理数据流、全局映射、图元状态等）。    </p>
+<pre class="codehilite"><code class="language-Typescript">  // packages/vchart/src/core/vchart.ts
+  private ***_initChart***(spec: any) {
+    // 创建真正的图表对象
+    const chart = Factory.***createChart***(spec.type, spec, this.***_getChartOption***(spec.type));
+    this._chart = chart;
+    // 进行图表初始化
+    this._chart.***setCanvasRect***(this._currentSize.width, this._currentSize.height);
+    this._chart.***created***();
+    this._chart.***init***();
+    this._event.***emit***(ChartEvent.initialized, {
+      chart,
+      vchart: this
+    });
+  }    
+</code></pre>
+
+<p>其中最核心的步骤是<code>created</code>和<code>init</code>，前者根据<code>spec</code>创建各项元素，如区域<code>region</code>, 系列<code>series</code>, 组件<code>components</code>，后者对各个元素进行初始化。我们重点关注创建<code>series</code>当中的图元部分。    </p>
+<pre class="codehilite"><code class="language-xml">  // packages/vchart/src/series/base/base-series.ts
+  ***created***(): void {
+    ...
+    this.***initMark***();
+    ...
+  }    
+</code></pre>
+
+<p>由于我们图表的类型是<code>line</code>，默认有一个<code>line</code>系列，我们到<code>line-series</code>中查看其<code>initMark</code>的实现：    </p>
+<pre class="codehilite"><code class="language-xml">  // packages/vchart/src/series/line/line.ts
+  ***initMark***(): void {
+    ...
+    const seriesMark = this._spec.seriesMark ?? *'line'*;
+    this.***initLineMark***(progressive, seriesMark === *'line'*);
+    this.***initSymbolMark***(progressive, seriesMark === *'point'*);
+  }    
+</code></pre>
+
+<p>发现其中确实继续创建了<code>line</code>图元和<code>symbol</code>图元：    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Gatvbh3ZjoiplrxHsmxcIRiqn0P.gif' alt='' width='878' height='auto' /></p>
+<p>经过一系列的函数调用（<code>LineLikeSeriesMixin.initLineMark</code> -&gt; <code>BaseSeries._createMark</code> -&gt; <code>BaseModel._createMark</code> -&gt; <code>Factory.createMark</code>），最终到了相应图元的构造函数，即我们在中提到的“具体图元的实现”。    </p>
+<h5 id="3"><strong>3. 编译渲染指令</strong></h5>
+<p>将各种<code>VChart</code>模型（<code>region</code>, <code>series</code>, <code>component</code>）编译为可渲染的<code>VGrammar</code>语法元素，涉及到<code>VGrammar</code>语法层的内容，不做详细分析。    </p>
+<h3 id="_5">图元视觉配置的映射</h3>
+<p>在 <code>BaseMark</code>类中，图元通过一系列方法和逻辑实现了数据到视觉通道的映射。这大致可分为两个过程，属性的存储和属性值的计算。前者只是将用户定义的<code>spec</code>解析并存储到图元各个状态的样式表中，这期间会做一些简单的转换；后者是图元的使用者真正布局图元时获取和计算具体属性值。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TY20bP0vooVKUExiYCrc19uVnRT.gif' alt='' width='638' height='auto' /></p>
+<h4 id="step1">Step1 存储样式</h4>
+<h5 id="1_1">1. 初始化样式</h5>
+<p>初始化图元的默认样式，调用 <code>setStyle</code>方法为 <code>normal</code>状态设置默认值：    </p>
+<pre class="codehilite"><code class="language-xml">private ***_initStyle***(): void {
+  const defaultStyle = this.***_getDefaultStyle***();
+  this.***setStyle***(defaultStyle, *'normal'*, 0);
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>默认样式包括 <code>visible</code>: true、<code>x</code>: 0、<code>y</code>: 0 等。    </p>
+</li>
+<li>
+<p>这些默认值确保图元在没有用户定义样式时仍能正常渲染。    </p>
+</li>
+</ul>
+<p><code>initStyleWithSpec</code>方法根据用户传入的<code>spec</code>初始化样式：    </p>
+<pre class="codehilite"><code class="language-Typescript">initStyleWithSpec(spec: IMarkSpec&lt;T&gt;, key?: string) {
+  if (!spec) return;
+
+  if (isValid(spec.id)) this._userId = spec.id;
+  if (isBoolean(spec.interactive)) this._markConfig.interactive = spec.interactive;
+  if (isValid(spec.zIndex)) this._markConfig.zIndex = spec.zIndex;
+  if (isBoolean(spec.visible)) this.setVisible(spec.visible);
+
+  this._initSpecStyle(spec, this.stateStyle, key);
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>解析用户定义的 <code>interactive</code>、<code>zIndex</code>、<code>visible</code>等属性。    </p>
+</li>
+<li>
+<p>调用 <code>_initSpecStyle</code>方法处理 <code>style</code>和 <code>state</code>。这一部分主要是通过调用<code>setStyle</code>，为每种状态（包括最开始的<code>normal</code>状态）设置对应的样式，并构成状态信息存储到状态管理器当中。关于状态，我们在中详细说明。    </p>
+</li>
+</ul>
+<p>以上方法都调用了<code>setStyle</code>这个核心函数，该函数用于给指定的状态设置样式：    </p>
+<pre class="codehilite"><code class="language-Typescript">  ***setStyle***&lt;U extends keyof T&gt;(
+    style: Partial&lt;IMarkStyle&lt;T&gt;&gt;, // 样式
+    state: StateValueType = *'normal'*, // 状态
+    level: number = 0, // 状态层级 当处于不同状态产生冲突时 根据层级设置样式
+    stateStyle = this.stateStyle // 存储状态样式
+  ): void {
+    if (***isNil***(style)) {
+      return;
+    }
+    if (stateStyle[state] === undefined) {
+      stateStyle[state] = {};
+    }
+    const isUserLevel = this.***isUserLevel***(level);
+    Object.***keys***(style).***forEach***((attr: string) =&gt; {
+      let attrStyle = style[attr] as MarkInputStyle&lt;T[U]&gt;;
+      if (***isNil***(attrStyle)) {
+        return;
+      }
+      // 过滤和转化样式
+      attrStyle = this.***_filterAttribute***(attr as any, attrStyle, state, level, isUserLevel, stateStyle);
+      // 设置样式
+      this.***setAttribute***(attr as any, attrStyle, state, level, stateStyle);
+      /*  在setAttribute中设置属性计算方式/样式
+          stateStyle[state][attr] = {
+            level,
+            style,
+            referer: undefined
+          };
+      */
+    });
+  }    
+</code></pre>
+
+<h5 id="2_1">2. 过滤和转换样式</h5>
+<p>在<code>setStyle</code>中调用的<code>_filterAttribute</code>是对单个样式属性进行过滤和转换，确保样式属性符合内部的使用规范。这些转换都较为简单，见注释。    </p>
+<pre class="codehilite"><code class="language-Typescript">  protected ***_filterAttribute***&lt;U extends keyof T&gt;(
+    attr: U,
+    style: MarkInputStyle&lt;T[U]&gt;,
+    state: StateValueType,
+    level: number,
+    isUserLevel: boolean,
+    stateStyle = this.stateStyle
+  ): StyleConvert&lt;T[U]&gt; {
+    // *** **将visual spec转换为 scale 类型的 mark style** ***
+    // 用于后续计算属性值
+    let newStyle = this.***_styleConvert***(style);
+
+    if (isUserLevel) {
+      switch (attr) {
+        case *'angle'*:
+          // 角度值转弧度值
+          newStyle = this.***convertAngleToRadian***(newStyle);
+          break;
+        case *'innerPadding'*:
+        case *'outerPadding'*:
+          // VRender 的 padding 定义基于 centent-box 盒模型，默认正方向是向外扩，与 VChart 不一致。这里将 padding 符号取反
+          newStyle = this.***_transformStyleValue***(newStyle, (value: number) =&gt; -value);
+          break;
+        case *'curveType'*:
+          // 根据direction返回'*monotoneY*'(*Direction.horizontal*)或'*monotoneX*'
+          newStyle = this.***_transformStyleValue***(newStyle, (value: string) =&gt;
+            ***curveTypeTransform***(value, (this._option.model as any).direction)
+          );
+          break;
+      }
+    }
+    return newStyle;
+  }    
+</code></pre>
+
+<p>需要特别注意的是<code>_styleConvert</code>中将一些需要转化成<code>scale</code>类型的样式进行转化，用于后续属性值的计算，例如，将<code>yField: 'score'</code>转化为：    </p>
+<pre class="codehilite"><code class="language-xml">{
+  scale, // 映射对象，用于数据到视觉通道的映射，可以理解为一个函数，输入数据对应的值，输出视觉通道的值
+  field: 'score', // 数据字段名，表示映射的输入字段。
+  changeDomain: true // 布尔值，表示是否允许动态更新比例尺的定义域（domain）
+};    
+</code></pre>
+
+<p>这即是一个<code>scale</code>类型的样式，其中第一个域<code>scale</code>将数据对应字段的值<code>datum['score']</code>计算为图元的<code>y</code>坐标。    </p>
+<h4 id="step2">Step2 计算属性值</h4>
+<p><code>BaseMark</code>向外提供了接口<code>getAttribute</code>，供其使用者根据实际的数据计算和获取属性值。    </p>
+<pre class="codehilite"><code class="language-xml">  ***getAttribute***&lt;U extends keyof T&gt;(key: U, datum: Datum, state: StateValueType = *'normal'*, opt?: IAttributeOpt) {
+    return this.***_computeAttribute***(key, state)(datum, opt);
+  }    
+</code></pre>
+
+<p>这里的<code>_compteAttribute(key, state)</code>返回的是一个属性计算的函数，<code>key</code>是属性名，<code>state</code>是所处的状态；<code>(datum, opt)</code>作为这个函数的参数，返回计算结果，与我们上面<strong>“存储属性的计算方式”</strong>的描述一致。    </p>
+<pre class="codehilite"><code class="language-Typescript">  protected ***_computeAttribute***&lt;U extends keyof T&gt;(key: U, state: StateValueType) {
+    let stateStyle = this.stateStyle[state]?.[key];
+    if (!stateStyle) {
+      stateStyle = this.stateStyle.normal[key];
+    }
+    const baseValueFunctor = this.***_computeStateAttribute***(stateStyle, key, state);
+    const hasPostProcess = ***isFunction***(stateStyle?.***postProcess***);
+    const hasExCompute = key in this._computeExChannel;
+    // ... 
+    // 叠加后处理函数和额外计算函数
+    // ...
+    return baseValueFunctor;
+  }    
+</code></pre>
+
+<p>继续深入<code>_computeStateAttribute</code>，会发现在这里构造了属性计算函数，这个函数的输入是<code>(datum, opt)</code>， 输出是计算的得到属性值。如果是属性值是常量（与数据无关的，固定在<code>spec</code>上的），则这个构造的函数直接返回<code>style</code>；而真正需要计算的是一些复杂的样式和数据到视觉的映射~~（回收主题）~~。    </p>
+<pre class="codehilite"><code class="language-Typescript">  protected ***_computeStateAttribute***&lt;U extends keyof T&gt;(stateStyle: any, key: U, state: StateValueType) {
+    if (!stateStyle) { // 处理空样式
+      return (datum: Datum, opt: IAttributeOpt) =&gt; undefined as any;
+    }
+    if (stateStyle.referer) { // 处理引用样式
+      return stateStyle.referer.***_computeAttribute***(key, state);
+    }
+    if (!stateStyle.style) { // 处理空样式
+      return (datum: Datum, opt: IAttributeOpt) =&gt; stateStyle.style;
+    }
+    // =====================================================================
+    // **处理函数样式**：如果 stateStyle.style 是函数，调用该函数计算属性值。
+    if (typeof stateStyle.style === *'function'*) {
+      return (datum: Datum, opt: IAttributeOpt) =&gt;
+        stateStyle.***style***(datum, this._attributeContext, opt, this.***getDataView***());
+    }
+    // **渐变色处理**，支持各个属性回调
+    if (GradientType.***includes***(stateStyle.style.gradient)) {
+      return this.***_computeGradientAttr***(stateStyle.style);
+    }
+    // **内外描边处理**，支持各个属性回调
+    if ([*'outerBorder'*, *'innerBorder'*].***includes***(key as string)) {
+      return this.***_computeBorderAttr***(stateStyle.style);
+    }
+    // **处理映射样式**：如果 stateStyle.style 包含映射关系（scale），根据数据字段映射值。
+    if (***isValidScaleType***(stateStyle.style.scale?.type)) {
+      return (datum: Datum, opt: IAttributeOpt) =&gt; {
+        let data = datum;
+        if (this.model.modelType === *'series'* &amp;&amp; (this.model as ISeries).***getMarkData***) {
+          data = (this.model as ISeries).***getMarkData***(datum);
+        }
+        return stateStyle.style.scale.***scale***(data[stateStyle.style.field]);
+      };
+    }
+    // =====================================================================
+    // **处理常量样式**：如果 stateStyle.style 是常量值，直接返回该值。
+    return (datum: Datum, opt: IAttributeOpt) =&gt; {
+      return stateStyle.style;
+    };
+  }    
+</code></pre>
+
+<p>重点说明一下<code>scale</code>样式，也就是包含数据到视觉映射的部分。继续上面的例子，我们已经构造了一个<code>scale</code>的样式：    </p>
+<pre class="codehilite"><code class="language-xml">style: {
+  scale, 
+  field: 'score',
+  changeDomain: true,
+}    
+</code></pre>
+
+<p>如果我们需要计算图元的<code>y</code>坐标，首先获取到图元绑定的数据（见第五章 VChart数据处理），然后通过<code>scale</code>映射对象，输入<code>data['score']</code>获取对应的<code>y</code>值。更多关于<code>scale</code>的说明见第七章 VChart Scale。    </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

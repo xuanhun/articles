@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10.5 Animation Arrangement</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="105-animation-arrangement">10.5 Animation Arrangement</h2>
+<p>Score: 4    </p>
+<ol>
+<li>
+<p>Global Animation:    </p>
+</li>
+<li>
+<p>Code Entry: <code>packages/vchart/src/animation/</code>    </p>
+</li>
+<li>
+<p>Key Points Interpretation:    </p>
+</li>
+<li>
+<p>Implementation of Animation Arrangement    </p>
+</li>
+<li>
+<p>Other Reference Documents:    </p>
+</li>
+</ol>
+<p>https://www.visactor.io/vchart/guide/tutorial_docs/Animation/Animation_Types    </p>
+<p>https://www.visactor.io/vrender/guide/asd/Basic_Tutorial/Animate    </p>
+<p>https://visactor.io/vgrammar/guide/guides/animation    </p>
+<p><a href="https://juejin.cn/post/7275270809777520651">Magic Frame (Part 1): The Principle of Front-end Chart Library Animation Implementation A vivid visualization work often involves animation. Whether it's various charts or narrative works, organizing the week - Juejin</a>    </p>
+<p>The animation arrangement in VChart's source code mainly revolves around generating and configuring animations to achieve animation effects in different states. Below, we interpret its implementation from several key functions and type definitions:    </p>
+<ol>
+<li>Type Definitions and Constants    </li>
+</ol>
+<p>utils.ts    </p>
+<p>Apply    </p>
+<ul>
+<li>
+<p>// Import various types and constants
+import type { IAnimationConfig } from '@visactor/vgrammar-core';
+// ... other imports ...
+/*<em>
+Define an array of animation states, including all keys in the default animation configuration and 'normal'
+ </em>/
+export const AnimationStates = [...Object.keys(DEFAULT_ANIMATION_CONFIG), 'normal'];    </p>
+</li>
+<li>
+<p>Type Imports: Various types are imported from different modules, such as <code>IAnimationConfig</code>, <code>IElement</code>, etc., which are used to define animation configurations, elements, etc., ensuring type safety in the code.    </p>
+</li>
+<li>
+<p><code>AnimationStates</code> Constant: Contains all possible animation states, including states in the default animation configuration and the 'normal' state, used for subsequent traversal and processing of animation configurations in different states.    </p>
+</li>
+<li>
+<p>Generate Animation Configuration    </p>
+</li>
+</ul>
+<p>utils.ts    </p>
+<pre class="codehilite"><code class="language-xml">export function animationConfig&lt;Preset extends string&gt;(
+  defaultConfig: MarkAnimationSpec = {},
+  userConfig?: Partial&lt;
+    Record&lt;IAnimationState, boolean | IStateAnimateSpec&lt;Preset&gt; | IAnimationConfig | IAnimationConfig[]&gt;
+  &gt;,
+  params?: {
+    dataIndex: (datum: any, params: any) =&gt; number;
+    dataCount: () =&gt; number;
+  }
+) {
+  // ... 函数实现 ...
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>Parameters:    </p>
+</li>
+<li>
+<p><code>defaultConfig</code>: Default animation configuration.    </p>
+</li>
+<li>
+<p><code>userConfig</code>: User-defined animation configuration, possibly for partial states.    </p>
+</li>
+<li>
+<p><code>params</code>: Parameters containing data index and data count functions.    </p>
+</li>
+<li>
+<p>Implementation logic:    </p>
+</li>
+<li>
+<p>Create an empty object <code>config</code> to store the final animation configuration.    </p>
+</li>
+<li>
+<p>Iterate over the <code>AnimationStates</code> array to process the configuration of each animation state.    </p>
+</li>
+<li>
+<p>Merge or override the animation configuration of the corresponding state based on user configuration and default configuration.    </p>
+</li>
+<li>
+<p>For the <code>exit</code> state, set the control option <code>stopWhenStateChange: true</code>.    </p>
+</li>
+<li>
+<p>Handle the <code>oneByOne</code> option in the user configuration to generate an animation configuration that executes one by one.    </p>
+</li>
+<li>
+<p>Return the final animation configuration.    </p>
+</li>
+<li>
+<p>Generate user animation configuration    </p>
+</li>
+</ul>
+<p>utils.ts    </p>
+<pre class="codehilite"><code class="language-xml">export function userAnimationConfig&lt;M extends string, Preset extends string&gt;(
+  markName: SeriesMarkNameEnum | string,
+  spec: IAnimationSpec&lt;M, Preset&gt;,
+  ctx: IModelMarkAttributeContext
+) {
+  // ... 函数实现 ...
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>Parameters:    </p>
+</li>
+<li>
+<p><code>markName</code>: Mark name.    </p>
+</li>
+<li>
+<p><code>spec</code>: Animation specification.    </p>
+</li>
+<li>
+<p><code>ctx</code>: Model mark attribute context.    </p>
+</li>
+<li>
+<p>Implementation logic:    </p>
+</li>
+<li>
+<p>Create an empty object <code>userConfig</code> to store user animation configurations.    </p>
+</li>
+<li>
+<p>Assign the corresponding configuration to <code>userConfig</code> based on different animation configurations in <code>spec</code> (such as <code>animationAppear</code>, <code>animationDisappear</code>, etc.).    </p>
+</li>
+<li>
+<p>Call the <code>uniformAnimationConfig</code> function to unify animation configurations.    </p>
+</li>
+<li>
+<p>Return the generated user animation configuration.    </p>
+</li>
+<li>
+<p>Execute animation configurations one by one    </p>
+</li>
+</ul>
+<p>utils.ts    </p>
+<pre class="codehilite"><code class="language-xml">function produceOneByOne(
+  stateConfig: IAnimationTypeConfig,
+  dataIndex: (datum: any, params: any) =&gt; number,
+  dataCount?: () =&gt; number
+) {
+  // ... 函数实现 ...
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>Parameters:    </p>
+</li>
+<li>
+<p><code>stateConfig</code>: Configuration object for the animation type.    </p>
+</li>
+<li>
+<p><code>dataIndex</code>: Function that returns the index of the data item in the animation sequence.    </p>
+</li>
+<li>
+<p><code>dataCount</code>: Optional function that returns the total number of data items.    </p>
+</li>
+<li>
+<p>Implementation logic:    </p>
+</li>
+<li>
+<p>Destructure <code>oneByOne</code>, <code>duration</code>, <code>delay</code>, and <code>delayAfter</code> configurations from <code>stateConfig</code>.    </p>
+</li>
+<li>
+<p>Configure the delay time <code>delay</code> before the element appears, calculate the delay time based on the data item index and animation parameters.    </p>
+</li>
+<li>
+<p>Configure the delay time <code>delayAfter</code> after the element appears, also calculate the delay time based on the data item index and animation parameters.    </p>
+</li>
+<li>
+<p>Remove the no longer needed <code>oneByOne</code> parameter.    </p>
+</li>
+<li>
+<p>Return the updated animation configuration object.    </p>
+</li>
+<li>
+<p>Other auxiliary functions    </p>
+</li>
+<li>
+<p><code>defaultDataIndex</code>: Get the default data index based on the data item or animation parameters.    </p>
+</li>
+<li>
+<p><code>shouldMarkDoMorph</code>: Determine whether the specified mark should perform morphing animation.    </p>
+</li>
+<li>
+<p><code>isTimeLineAnimation</code> and <code>isChannelAnimation</code>: Determine whether the animation configuration is a timeline animation or a channel animation.    </p>
+</li>
+<li>
+<p><code>uniformAnimationConfig</code>: Unify the animation configuration, process and convert functions in the configuration.    </p>
+</li>
+<li>
+<p><code>traverseSpec</code>: Traverse and transform the given object or array, applying the provided transformation function.    </p>
+</li>
+<li>
+<p><code>isAnimationEnabledForSeries</code>: Determine whether the series has animation enabled, check based on series specifications, area animation properties, and data volume.    </p>
+</li>
+</ul>
+<h3 id="summary">Summary</h3>
+<p>The animation orchestration implementation of VChart mainly merges and processes default configurations and user configurations through a series of functions and type definitions to generate the final animation configuration. At the same time, it provides functions such as executing animations one by one, morphing animations, and logic to determine whether animations are enabled, ensuring flexibility and configurability of animations in different scenarios.    </p>
+<h3 id="interpretation-of-animation-orchestration-implementation">Interpretation of Animation Orchestration Implementation</h3>
+<p>Animation orchestration refers to combining multiple animation tasks in a certain order or condition to form a coherent and complex animation sequence. In VChart, the design of animation orchestration allows developers to create multi-stage, multi-element collaborative animation effects, thereby enhancing the visual expressiveness and user experience of the chart. The following is a detailed interpretation of the implementation.    </p>
+<h4 id="1-concept-of-animation-orchestration">1. Concept of Animation Orchestration</h4>
+<p><strong>Animation Orchestration</strong> is to enhance the effect of data visualization through carefully designed animation sequences. It is not just simple animation stacking, but also considers the coordination between animations, timeline management, and state transitions. VChart provides flexible tools to achieve animation orchestration, including but not limited to:    </p>
+<ul>
+<li>
+<p><strong>Chained Animation</strong>: Multiple animations are executed sequentially.    </p>
+</li>
+<li>
+<p><strong>Parallel Animation</strong>: Multiple animations are executed simultaneously.    </p>
+</li>
+<li>
+<p><strong>Conditional Trigger</strong>: Certain animations are triggered based on specific conditions.    </p>
+</li>
+<li>
+<p><strong>Event Driven</strong>: Animations are triggered based on user interactions or other events.    </p>
+</li>
+</ul>
+<h4 id="2-animation-configuration-structure">2. Animation Configuration Structure</h4>
+<p><strong>IAnimationSpec Interface</strong>    </p>
+<p>The <code>IAnimationSpec</code> interface defines the basic structure of animation configuration, which includes animation settings for different states. For animation orchestration, it mainly involves the following properties:    </p>
+<ul>
+<li>
+<p><code>animationState</code>: Used to describe state transition animations, can be used to build complex animation sequences.    </p>
+</li>
+<li>
+<p><code>animationNormal</code>: Used to describe persistent loop animations, can be used as background animations in animation orchestration.    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">interface IAnimationSpec&lt;MarkName extends string, Preset extends string&gt; {
+  animationState?: boolean | IStateAnimationConfig;
+  animationNormal?: IMarkAnimateSpec&lt;MarkName&gt;;
+}    
+</code></pre>
+
+<p>Each attribute can accept a boolean value (enable/disable), a preset configuration object, or a custom configuration object as a parameter, providing developers with a high degree of customization possibilities.</p>
+<h4 id="3-animation-task-interface">3. Animation Task Interface</h4>
+<p><strong>IAnimationTask Interface</strong></p>
+<p>To support complex animation orchestration, VChart introduces the <code>IAnimationTask</code> interface to describe the data structure of animation tasks. Each task includes a time offset, an action queue, and a list of successor tasks, forming a chain-like animation execution mechanism.</p>
+<pre class="codehilite"><code class="language-xml">interface IAnimationTask {
+  timeOffset: number; // 时间偏移量，表示该任务相对于前一个任务的延迟时间
+  actionList: Action[]; // 动作队列，包含一系列动画操作
+  nextTaskList: IAnimationTask[]; // 后继任务列表，表示后续要执行的任务
+}    
+</code></pre>
+
+<p>This design allows multiple animation tasks to be executed sequentially or concurrently, achieving more complex and delicate animation effects.</p>
+<h4 id="4-specific-implementation-of-animation-orchestration">4. Specific Implementation of Animation Orchestration</h4>
+<p>Taking the creation of a bar chart with animation orchestration as an example, suppose we want to achieve the following effects:</p>
+<ul>
+<li>
+<p>When the page loads, all bars grow from the bottom up;</p>
+</li>
+<li>
+<p>After the bars finish growing, a pulse effect is added to the top to attract the user's attention;</p>
+</li>
+<li>
+<p>If new data is added, new bars fade in, and existing bars slightly scale to indicate changes.</p>
+</li>
+</ul>
+<h5 id="step-1-define-animation-configuration">Step 1: Define Animation Configuration</h5>
+<p>First, specify <code>animationAppear</code>, <code>animationEnter</code>, <code>animationUpdate</code>, etc., in the chart configuration for the bar chart series. Here we can choose built-in animation types and adjust their duration and easing functions.</p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 初始数据数组 */],
+      animationAppear: {
+        type: 'growCenterIn', // 柱子从中心向外生长
+        duration: 1000,
+        easing: 'easeInOutQuad'
+      },
+      animationNormal: {
+        type: 'pulse', // 生长完成后顶部添加脉冲效果
+        duration: 800,
+        easing: 'easeInOutQuad'
+      },
+      animationEnter: {
+        type: 'fadeIn', // 新数据点淡入
+        duration: 800,
+        easing: 'easeInOutQuad'
+      },
+      animationUpdate: {
+        type: 'scaleIn', // 更新数据点缩放
+        duration: 500,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<h5 id="step-2-register-animation">Step 2: Register Animation</h5>
+<p>Ensure that the required animations have been correctly registered in the system. This step is usually completed at project startup or explicitly called where needed.</p>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { Appear_Grow, pulseAnimation, Appear_FadeIn, ScaleInOutAnimation } from './series/bar/animation';
+
+// 注册柱子生长动画
+Factory.registerAnimation('growCenterIn', Appear_Grow);
+
+// 注册脉冲动画
+Factory.registerAnimation('pulse', pulseAnimation);
+
+// 注册淡入动画
+Factory.registerAnimation('fadeIn', Appear_FadeIn);
+
+// 注册缩放动画
+Factory.registerAnimation('scaleIn', ScaleInOutAnimation);    
+</code></pre>
+
+<h5 id="step-3-initialize-the-chart-instance">Step 3: Initialize the Chart Instance</h5>
+<p>With the above configuration, we can initialize a <code>VChart</code> instance and pass the configuration to it. This will trigger the chart rendering process and apply the corresponding animation effects.    </p>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/vchart';
+
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});    
+</code></pre>
+
+<h5 id="step-4-build-animation-choreography">Step 4: Build Animation Choreography</h5>
+<p>To achieve animation choreography, we need to construct a task chain that includes multiple animation tasks. Each task can be a single animation or a composite animation (i.e., containing multiple subtasks). Here are the specific implementation steps:</p>
+<ul>
+<li><strong>Define Animation Tasks</strong>: First, define each individual animation task, including their time offsets, action queues, and successor task lists.</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">const appearTask: IAnimationTask = {
+  timeOffset: 0,
+  actionList: [{ type: 'growCenterIn', duration: 1000 }],
+  nextTaskList: [normalTask]
+};
+
+const normalTask: IAnimationTask = {
+  timeOffset: 0,
+  actionList: [{ type: 'pulse', duration: 800, loop: true }],
+  nextTaskList: []
+};
+
+const enterTask: IAnimationTask = {
+  timeOffset: 0,
+  actionList: [{ type: 'fadeIn', duration: 800 }],
+  nextTaskList: []
+};
+
+const updateTask: IAnimationTask = {
+  timeOffset: 0,
+  actionList: [{ type: 'scaleIn', duration: 500 }],
+  nextTaskList: []
+};    
+</code></pre>
+
+<ul>
+<li><strong>Composite Animation Tasks</strong>: Next, combine these tasks into a complete animation choreography. For example, we can create a task chain that includes entrance animations and animations in the normal state.    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">const animationArrangement: IAnimationTask = {
+  timeOffset: 0,
+  actionList: [],
+  nextTaskList: [appearTask, normalTask]
+};    
+</code></pre>
+
+<h5 id="step-5-trigger-data-update-animation">Step 5: Trigger Data Update Animation</h5>
+<p>Once the chart is rendered, any changes in the data will automatically trigger animations. For example, when new data is added, the <code>enter</code> task will be triggered; when data is updated, the <code>update</code> task takes effect; and when data is removed, the <code>exit</code> task comes into play.</p>
+<pre class="codehilite"><code class="language-xml">// 模拟数据更新
+setTimeout(() =&gt; {
+  const updatedData = [
+    { value: 15 }, // 更新第一个数据点
+    { value: 25 }, // 更新第二个数据点
+    { value: 35 }, // 更新第三个数据点
+    { value: 45 }  // 添加一个新的数据点
+  ];
+
+  // 更新图表数据并触发动画
+  chart.updateSeriesData(updatedData);
+}, 5000);    
+</code></pre>
+
+<p>In this example, the <code>updateSeriesData</code> method triggers a series of animations:</p>
+<ul>
+<li>
+<p>For newly added data points (the fourth data point), the <code>enter</code> task will make it gradually appear with a fade-in effect.</p>
+</li>
+<li>
+<p>For existing data points (the first three data points), the <code>update</code> task will adjust their size based on the new data values and transition with a scaling effect.</p>
+</li>
+</ul>
+<h5 id="step-6-dynamically-control-animation-orchestration">Step 6: Dynamically Control Animation Orchestration</h5>
+<p>In some cases, you may want to dynamically control the behavior of animation orchestration, such as changing the speed or style of the animation. VChart provides flexible methods to achieve this.</p>
+<pre class="codehilite"><code class="language-xml">// 更新某个系列的动画编排配置
+chart.updateSeriesOptions(0, {
+  animationAppear: {
+    type: 'growCenterIn',
+    duration: 1200, // 更改持续时间
+    easing: 'linear' // 更改缓动函数
+  },
+  animationNormal: {
+    type: 'pulse',
+    duration: 1000, // 更改持续时间
+    easing: 'easeInOutCubic' // 更改缓动函数
+  }
+});
+
+// 重新应用新的动画配置
+chart.render();    
+</code></pre>
+
+<h4 id="5-internal-implementation-of-animation-orchestration">5. Internal Implementation of Animation Orchestration</h4>
+<p><strong>AnimateManager Class</strong>    </p>
+<p>The <code>AnimateManager</code> class is responsible for managing and coordinating the state of all animations. It implements the <code>IAnimate</code> interface and provides methods to update and retrieve animation states. For animation orchestration, <code>AnimateManager</code> ensures that these animation tasks are executed in a predetermined order or condition.    </p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.appear) {
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; state
+          }
+        },
+        noRender
+      );
+    } else if (state === AnimationStateEnum.normal) {
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; state
+          }
+        },
+        noRender
+      );
+    }
+  }
+
+  // 动画编排逻辑
+  arrangeAnimations(tasks: IAnimationTask[]) {
+    tasks.forEach(task =&gt; {
+      // 执行当前任务的动作队列
+      task.actionList.forEach(action =&gt; {
+        this.executeAction(action);
+      });
+
+      // 如果存在后继任务，则递归执行
+      if (task.nextTaskList &amp;&amp; task.nextTaskList.length &gt; 0) {
+        setTimeout(() =&gt; {
+          this.arrangeAnimations(task.nextTaskList);
+        }, task.timeOffset);
+      }
+    });
+  }
+
+  private executeAction(action: Action) {
+    // 根据action.type获取对应的动画配置
+    const animationConfig = Factory.getAnimationInKey(action.type);
+
+    // 应用动画配置到目标元素
+    this.applyAnimation(animationConfig, action.duration, action.easing);
+  }
+
+  private applyAnimation(config: MarkAnimationSpec, duration: number, easing: string) {
+    // 实际应用动画的逻辑
+  }
+}    
+</code></pre>
+
+<p>This code demonstrates how to execute a set of animation tasks using the <code>arrangeAnimations</code> method. The action queue in each task will be executed one by one, and then subsequent tasks will be recursively processed according to the <code>timeOffset</code> attribute. This allows for the construction of an ordered animation sequence, achieving complex animation orchestration effects.</p>
+<h4 id="6-advanced-features-of-animation-orchestration">6. Advanced Features of Animation Orchestration</h4>
+<p><strong>Conditional Triggering and Event Listening</strong></p>
+<p>To increase the flexibility of animation orchestration, VChart also provides conditional triggering and event listening features. For example, animations can be triggered by listening to user interaction events (such as clicks, hovers), or dynamically adjust animation behavior based on specific conditions (such as data thresholds).</p>
+<pre class="codehilite"><code class="language-xml">// 监听用户交互事件
+chart.on('element:click', (event) =&gt; {
+  const element = event.detail.element;
+  if (element) {
+    // 根据点击事件触发动画
+    this.triggerCustomAnimation(element);
+  }
+});
+
+// 条件触发动画
+if (someCondition) {
+  // 触发特定条件下的动画
+  this.triggerConditionalAnimation();
+}    
+</code></pre>
+
+<p><strong>Parallel Animation</strong>    </p>
+<p>Sometimes, we want multiple animations to occur simultaneously rather than waiting for each to finish in sequence. VChart supports parallel animations, allowing developers to define multiple animation tasks to start executing at the same time.    </p>
+<pre class="codehilite"><code class="language-xml">const parallelTasks: IAnimationTask[] = [
+  {
+    timeOffset: 0,
+    actionList: [{ type: 'growCenterIn', duration: 1000 }],
+    nextTaskList: []
+  },
+  {
+    timeOffset: 0,
+    actionList: [{ type: 'pulse', duration: 800, loop: true }],
+    nextTaskList: []
+  }
+];
+
+this.arrangeAnimations(parallelTasks);    
+</code></pre>
+
+<p><strong>Delay and Interval</strong>    </p>
+<p>By setting the <code>timeOffset</code> property, you can control the delay time between animation tasks. Additionally, you can use <code>setInterval</code> or <code>setTimeout</code> to achieve more complex timing logic.    </p>
+<pre class="codehilite"><code class="language-xml">// 设置延时
+const delayedTask: IAnimationTask = {
+  timeOffset: 500, // 延迟500毫秒后执行
+  actionList: [{ type: 'pulse', duration: 800, loop: true }],
+  nextTaskList: []
+};
+
+this.arrangeAnimations([delayedTask]);
+
+// 使用 setInterval 实现周期性动画
+setInterval(() =&gt; {
+  this.triggerPeriodicAnimation();
+}, 2000); // 每2秒触发一次    
+</code></pre>
+
+<h4 id="7-example-creating-a-bar-chart-with-animation-orchestration">7. Example: Creating a Bar Chart with Animation Orchestration</h4>
+<p>Below is an example of creating a bar chart with animation orchestration, illustrating how to use VChart's animation orchestration system to achieve the basic process.</p>
+<h3 id="example-creating-a-bar-chart-with-animation-orchestration">Example: Creating a Bar Chart with Animation Orchestration</h3>
+<p>In VChart, animation orchestration refers to the combination and sequencing of multiple animation effects to achieve complex and coordinated visual effects. Through proper animation orchestration, the interactivity and user experience of the chart can be significantly enhanced. Below we will demonstrate in detail how to create a bar chart with animation orchestration, including the entrance animation for new data points, the update animation for existing data points, and the exit animation for old data points.</p>
+<h4 id="1-define-animation-configuration">1. Define Animation Configuration</h4>
+<p>First, we need to define the basic configuration of the bar chart and specify specific animation effects for each animation state (<code>enter</code>, <code>update</code>, <code>exit</code>). To achieve complex animation orchestration, we can use chained animation tasks to define the specific animation sequence for each state.</p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [
+        { category: 'A', value: 10 },
+        { category: 'B', value: 20 },
+        { category: 'C', value: 30 }
+      ],
+      animationEnter: {
+        type: 'fadeIn',
+        duration: 800,
+        easing: 'easeInOutQuad',
+        nextTaskList: [
+          {
+            timeOffset: 800,
+            actionList: [
+              { type: 'growCenterIn', duration: 500, easing: 'easeInOutQuad' }
+            ],
+            nextTaskList: [
+              {
+                timeOffset: 500,
+                actionList: [
+                  { type: 'pulse', duration: 300, easing: 'easeInOutQuad' }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<p>In this configuration:</p>
+<ul>
+<li>
+<p><code>**animationEnter**</code>: New data points first fade in (<code>fadeIn</code>), then grow outward from the center (<code>growCenterIn</code>), and finally pulse slightly (<code>pulse</code>).</p>
+</li>
+<li>
+<p><code>**animationUpdate**</code>: Existing data points transition with scaling when updated.</p>
+</li>
+<li>
+<p><code>**animationExit**</code>: Old data points disappear by fading out.</p>
+</li>
+</ul>
+<h4 id="2-register-animation">2. Register Animation</h4>
+<p>Next, we need to ensure that the required animations have been correctly registered in the system. This step is usually completed at project startup or explicitly called where needed.</p>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { Appear_FadeIn, ScaleInOutAnimation, Appear_FadeOut, growCenterIn, pulseAnimation } from './series/bar/animation';
+
+// 注册淡入动画
+Factory.registerAnimation('fadeIn', Appear_FadeIn);
+
+// 注册缩放动画
+Factory.registerAnimation('scaleIn', ScaleInOutAnimation);
+
+// 注册淡出动画
+Factory.registerAnimation('fadeOut', Appear_FadeOut);
+
+// 注册中心生长动画
+Factory.registerAnimation('growCenterIn', growCenterIn);
+
+// 注册脉冲动画
+Factory.registerAnimation('pulse', pulseAnimation);    
+</code></pre>
+
+<p>These animation functions define the specific logic for fade-in, zoom, fade-out, center growth, and pulse animations respectively. For example, the <code>Appear_FadeIn</code> function might look like this:    </p>
+<pre class="codehilite"><code class="language-xml">export const Appear_FadeIn: IAnimationTypeConfig = {
+  type: 'fadeIn',
+  duration: 800,
+  easing: 'easeInOutQuad',
+  channel: {
+    opacity: { from: 0, to: 1 }
+  }
+};
+
+export const growCenterIn: IAnimationTypeConfig = {
+  type: 'growCenterIn',
+  duration: 500,
+  easing: 'easeInOutQuad',
+  channel: {
+    width: { from: 0, to: '100%' },
+    height: { from: 0, to: '100%' }
+  }
+};
+
+export const pulseAnimation: IAnimationTypeConfig = {
+  type: 'pulse',
+  duration: 300,
+  easing: 'easeInOutQuad',
+  channel: {
+    scale: { from: 1, to: 1.1, toBack: 1 }
+  }
+};    
+</code></pre>
+
+<h4 id="3-initialize-chart-instance">3. Initialize Chart Instance</h4>
+<p>With the above configuration, we can initialize a <code>VChart</code> instance and pass the configuration to it. This will trigger the chart rendering process and apply the corresponding animation effects.    </p>
+<pre class="codehilite"><code class="language-xml">import { VChart } from '@visactor/vchart';
+
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});    
+</code></pre>
+
+<h4 id="4-trigger-animation">4. Trigger Animation</h4>
+<p>Once the chart is rendered, any changes in the data will automatically trigger animations. For example, when new data is added, the <code>animationEnter</code> configuration will take effect; when data is updated, the <code>animationUpdate</code> configuration is effective; and when data is removed, the <code>animationExit</code> configuration comes into play.    </p>
+<pre class="codehilite"><code class="language-xml">// 模拟数据更新
+setTimeout(() =&gt; {
+  const updatedData = [
+    { category: 'A', value: 15 }, // 更新第一个数据点
+    { category: 'B', value: 25 }, // 更新第二个数据点
+    { category: 'C', value: 35 }, // 更新第三个数据点
+    { category: 'D', value: 45 }  // 添加一个新的数据点
+  ];
+
+  // 更新图表数据并触发动画
+  chart.updateSeriesData(updatedData);
+}, 5000);    
+</code></pre>
+
+<p>In this example, the <code>updateSeriesData</code> method will trigger a series of animations:</p>
+<ul>
+<li>
+<p><strong>New Data Points (D)</strong>:</p>
+</li>
+<li>
+<p>Fade In (<code>fadeIn</code>): Gradually change from opacity 0 to 1.</p>
+</li>
+<li>
+<p>Grow Center In (<code>growCenterIn</code>): Grow outward from the center, with width and height changing from 0 to the final value.</p>
+</li>
+<li>
+<p>Pulse (<code>pulse</code>): Slightly enlarge and then return to the original state to attract the user's attention.</p>
+</li>
+<li>
+<p><strong>Existing Data Points (A, B, C)</strong>:</p>
+</li>
+<li>
+<p>Scale In (<code>scaleIn</code>): Adjust the height of the columns according to the new data values for a smooth transition.</p>
+</li>
+</ul>
+<h4 id="5-detailed-implementation-of-animation-orchestration">5. Detailed Implementation of Animation Orchestration</h4>
+<p><strong>Chained Animation Tasks</strong></p>
+<p>To achieve complex animation orchestration, we can use the <code>IAnimationTask</code> interface to define a sequence of animation tasks for each state. Each task includes time offset, action queue, and a list of successor tasks, forming a chained animation execution mechanism.</p>
+<pre class="codehilite"><code class="language-xml">interface IAnimationTask {
+  timeOffset: number;
+  actionList: Action[];
+  nextTaskList: IAnimationTask[];
+}    
+</code></pre>
+
+<p><strong>Example: Defining a Chained Animation Task</strong>    </p>
+<p>Suppose we want to define a complex chained animation task for new data points in a bar chart, starting with a fade-in, followed by a center growth, and finally a slight pulse effect.    </p>
+<pre class="codehilite"><code class="language-xml">const enterAnimationTasks: IAnimationTask[] = [
+  {
+    timeOffset: 0,
+    actionList: [
+      { type: 'fadeIn', duration: 800, easing: 'easeInOutQuad' }
+    ],
+    nextTaskList: [
+      {
+        timeOffset: 800,
+        actionList: [
+          { type: 'growCenterIn', duration: 500, easing: 'easeInOutQuad' }
+        ],
+        nextTaskList: [
+          {
+            timeOffset: 500,
+            actionList: [
+              { type: 'pulse', duration: 300, easing: 'easeInOutQuad' }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];    
+</code></pre>
+
+<p><strong>Using Chained Animation Tasks in Chart Configuration</strong>    </p>
+<p>Integrate the defined chained animation tasks into the chart configuration to ensure that new data points execute animations in the expected order and effect.    </p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [
+        { category: 'A', value: 10 },
+        { category: 'B', value: 20 },
+        { category: 'C', value: 30 }
+      ],
+      animationEnter: enterAnimationTasks,
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<h4 id="6-execution-of-animation-tasks">6. Execution of Animation Tasks</h4>
+<p><strong>Parsing and Execution of Animation Tasks</strong>    </p>
+<p>VChart internally parses the animation tasks in <code>animationEnter</code>, <code>animationUpdate</code>, and <code>animationExit</code>, and executes the corresponding animations according to the defined order and time offset. Below is a simplified example showing how to parse and execute chained animation tasks.    </p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.update) {
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; element.diffState
+          }
+        },
+        noRender
+      );
+    } else if (state === AnimationStateEnum.appear) {
+      // 处理新数据点的入场动画
+      this.handleAnimationTasks(element, element.animationConfig.enter);
+    } else if (state === AnimationStateEnum.exit) {
+      // 处理旧数据点的退场动画
+      this.handleAnimationTasks(element, element.animationConfig.exit);
+    }
+  }
+
+  private handleAnimationTasks(element: IElement, tasks: IAnimationTask[]) {
+    tasks.forEach(task =&gt; {
+      setTimeout(() =&gt; {
+        task.actionList.forEach(action =&gt; {
+          element.startAnimation(action.type, action.duration, action.easing);
+        });
+        if (task.nextTaskList) {
+          this.handleAnimationTasks(element, task.nextTaskList);
+        }
+      }, task.timeOffset);
+    });
+  }
+}    
+</code></pre>
+
+<p>In this example, the <code>handleAnimationTasks</code> method recursively parses and executes each animation task, ensuring that the corresponding animations are triggered in the defined order and time offset.</p>
+<h4 id="7-specific-implementation-of-animations">7. Specific Implementation of Animations</h4>
+<p><strong>Definition of Animation Functions</strong></p>
+<p>Each specific animation function (such as <code>Appear_FadeIn</code>, <code>ScaleInOutAnimation</code>, <code>Appear_FadeOut</code>, <code>growCenterIn</code>, and <code>pulseAnimation</code>) defines the specific behavior of the animation. Here are some examples of specific animation functions:</p>
+<pre class="codehilite"><code class="language-xml">// 淡入动画
+export const Appear_FadeIn: IAnimationTypeConfig = {
+  type: 'fadeIn',
+  duration: 800,
+  easing: 'easeInOutQuad',
+  channel: {
+    opacity: { from: 0, to: 1 }
+  }
+};
+
+// 缩放动画
+export const ScaleInOutAnimation: IAnimationTypeConfig = {
+  type: 'scaleIn',
+  duration: 500,
+  easing: 'easeInOutQuad',
+  channel: {
+    scale: { from: 0.8, to: 1 }
+  }
+};
+
+// 淡出动画
+export const Appear_FadeOut: IAnimationTypeConfig = {
+  type: 'fadeOut',
+  duration: 600,
+  easing: 'easeInOutQuad',
+  channel: {
+    opacity: { from: 1, to: 0 }
+  }
+};
+
+// 中心生长动画
+export const growCenterIn: IAnimationTypeConfig = {
+  type: 'growCenterIn',
+  duration: 500,
+  easing: 'easeInOutQuad',
+  channel: {
+    width: { from: 0, to: '100%' },
+    height: { from: 0, to: '100%' }
+  }
+};
+
+// 脉冲动画
+export const pulseAnimation: IAnimationTypeConfig = {
+  type: 'pulse',
+  duration: 300,
+  easing: 'easeInOutQuad',
+  channel: {
+    scale: { from: 1, to: 1.1, toBack: 1 }
+  }
+};    
+</code></pre>
+
+<p><strong>Registration of Animation Functions</strong>    </p>
+<p>Ensure that these animation functions have been correctly registered in the system so that they can be called when needed.    </p>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { Appear_FadeIn, ScaleInOutAnimation, Appear_FadeOut, growCenterIn, pulseAnimation } from './series/bar/animation';
+
+Factory.registerAnimation('fadeIn', Appear_FadeIn);
+Factory.registerAnimation('scaleIn', ScaleInOutAnimation);
+Factory.registerAnimation('fadeOut', Appear_FadeOut);
+Factory.registerAnimation('growCenterIn', growCenterIn);
+Factory.registerAnimation('pulse', pulseAnimation);    
+</code></pre>
+
+<h4 id="8-complete-example-code">8. Complete Example Code</h4>
+<p>Below is a complete example code demonstrating how to create a bar chart with complex animation choreography.</p>
+<pre class="codehilite"><code class="language-xml">// 导入必要的模块
+import { VChart } from '@visactor/vchart';
+import { Factory } from '@visactor/vchart';
+import { IElement, IAnimationTypeConfig } from '@visactor/vgrammar-core';
+
+// 定义动画函数
+export const Appear_FadeIn: IAnimationTypeConfig = {
+  type: 'fadeIn',
+  duration: 800,
+  easing: 'easeInOutQuad',
+  channel: {
+    opacity: { from: 0, to: 1 }
+  }
+};
+
+export const ScaleInOutAnimation: IAnimationTypeConfig = {
+  type: 'scaleIn',
+  duration: 500,
+  easing: 'easeInOutQuad',
+  channel: {
+    scale: { from: 0.8, to: 1 }
+  }
+};
+
+export const Appear_FadeOut: IAnimationTypeConfig = {
+  type: 'fadeOut',
+  duration: 600,
+  easing: 'easeInOutQuad',
+  channel: {
+    opacity: { from: 1, to: 0 }
+  }
+};
+
+export const growCenterIn: IAnimationTypeConfig = {
+  type: 'growCenterIn',
+  duration: 500,
+  easing: 'easeInOutQuad',
+  channel: {
+    width: { from: 0, to: '100%' },
+    height: { from: 0, to: '100%' }
+  }
+};
+
+export const pulseAnimation: IAnimationTypeConfig = {
+  type: 'pulse',
+  duration: 300,
+  easing: 'easeInOutQuad',
+  channel: {
+    scale: { from: 1, to: 1.1, toBack: 1 }
+  }
+};
+
+// 注册动画
+Factory.registerAnimation('fadeIn', Appear_FadeIn);
+Factory.registerAnimation('scaleIn', ScaleInOutAnimation);
+Factory.registerAnimation('fadeOut', Appear_FadeOut);
+Factory.registerAnimation('growCenterIn', growCenterIn);
+Factory.registerAnimation('pulse', pulseAnimation);
+
+// 定义链式动画任务
+const enterAnimationTasks: IAnimationTask[] = [
+  {
+    timeOffset: 0,
+    actionList: [
+      { type: 'fadeIn', duration: 800, easing: 'easeInOutQuad' }
+    ],
+    nextTaskList: [
+      {
+        timeOffset: 800,
+        actionList: [
+          { type: 'growCenterIn', duration: 500, easing: 'easeInOutQuad' }
+        ],
+        nextTaskList: [
+          {
+            timeOffset: 500,
+            actionList: [
+              { type: 'pulse', duration: 300, easing: 'easeInOutQuad' }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];
+
+// 定义图表配置
+const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [
+        { category: 'A', value: 10 },
+        { category: 'B', value: 20 },
+        { category: 'C', value: 30 }
+      ],
+      animationEnter: enterAnimationTasks,
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};
+
+// 初始化图表实例
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});
+
+// 模拟数据更新
+setTimeout(() =&gt; {
+  const updatedData = [
+    { category: 'A', value: 15 }, // 更新第一个数据点
+    { category: 'B', value: 25 }, // 更新第二个数据点
+    { category: 'C', value: 35 }, // 更新第三个数据点
+    { category: 'D', value: 45 }  // 添加一个新的数据点
+  ];
+
+  // 更新图表数据并触发动画
+  chart.updateSeriesData(updatedData);
+}, 5000);    
+</code></pre>
+
+<h4 id="9-advanced-usage-of-animation-orchestration">9. Advanced Usage of Animation Orchestration</h4>
+<p><strong>Conditional Animation Configuration</strong>    </p>
+<p><strong>Conditional Animation Configuration</strong> allows dynamically selecting different animation effects based on specific attributes of data points. For example, when a data value exceeds a certain threshold, a special animation is used; otherwise, the default animation is used. VChart allows you to embed logical judgments in the configuration to achieve such requirements.    </p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [
+        { category: 'A', value: 10 },
+        { category: 'B', value: 60 },
+        { category: 'C', value: 30 }
+      ],
+      animationEnter: (datum: any) =&gt; {
+        if (datum.value &gt; 50) {
+          return {
+            type: 'specialGrowth', // 特殊的生长动画
+            duration: 1000,
+            easing: 'easeInOutQuad'
+          };
+        } else {
+          return {
+            type: 'fadeIn', // 默认的淡入动画
+            duration: 800,
+            easing: 'easeInOutQuad'
+          };
+        }
+      },
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<p>In this example, the <code>animationEnter</code> configuration accepts a function as a parameter, which can return different animation configuration objects based on the specific attributes of the data points. Specifically:</p>
+<ul>
+<li>
+<p><strong>Data point B has a value of 60</strong>, which is greater than the threshold of 50, so the <code>specialGrowth</code> animation is used.</p>
+</li>
+<li>
+<p><strong>Data points A and C have values of 10 and 30 respectively</strong>, which are less than the threshold of 50, so the <code>fadeIn</code> animation is used.</p>
+</li>
+</ul>
+<p><strong>Custom Animation Types</strong></p>
+<p>In addition to using built-in animation types, VChart also supports developers in customizing animation logic. You can create new animation effects by inheriting or extending existing animation classes and register them into the system.</p>
+<pre class="codehilite"><code class="language-xml">// 定义一个新的动画类型
+function specialGrowthAnimation(params: any): IAnimationTypeConfig {
+  return {
+    type: 'specialGrowth',
+    duration: 1000,
+    easing: 'easeInOutQuad',
+    channel: {
+      width: { from: 0, to: params.width },
+      height: { from: 0, to: params.height },
+      opacity: { from: 0, to: 1 }
+    }
+  };
+}
+
+// 注册自定义动画
+Factory.registerAnimation('specialGrowth', specialGrowthAnimation);
+
+// 在图表配置中使用自定义动画
+const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [
+        { category: 'A', value: 10 },
+        { category: 'B', value: 60 },
+        { category: 'C', value: 30 }
+      ],
+      animationEnter: (datum: any) =&gt; {
+        if (datum.value &gt; 50) {
+          return {
+            type: 'specialGrowth',
+            duration: 1000,
+            easing: 'easeInOutQuad'
+          };
+        } else {
+          return {
+            type: 'fadeIn',
+            duration: 800,
+            easing: 'easeInOutQuad'
+          };
+        }
+      },
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<p>In this example, we define a custom animation named <code>specialGrowth</code> and register it into the system. Then, in the <code>animationEnter</code> configuration, we dynamically choose to use either the <code>specialGrowth</code> or <code>fadeIn</code> animation based on the value of the data point.</p>
+<h4 id="10-advanced-usage-of-animation-tasks">10. Advanced Usage of Animation Tasks</h4>
+<p><strong>Nested Animation Tasks</strong></p>
+<p>In addition to simple chained animation tasks, VChart also supports nested animation tasks, making animation orchestration more flexible and complex. Through nested tasks, more precise animation control can be achieved.</p>
+<p><strong>Example: Nested Animation Tasks</strong></p>
+<p>Suppose we want to create a more complex animation sequence for newly added data points, starting with a fade-in, followed by a center growth, then a slight pulse effect, and finally a highlight.</p>
+<pre class="codehilite"><code class="language-xml">const enterAnimationTasks: IAnimationTask[] = [
+  {
+    timeOffset: 0,
+    actionList: [
+      { type: 'fadeIn', duration: 800, easing: 'easeInOutQuad' }
+    ],
+    nextTaskList: [
+      {
+        timeOffset: 800,
+        actionList: [
+          { type: 'growCenterIn', duration: 500, easing: 'easeInOutQuad' }
+        ],
+        nextTaskList: [
+          {
+            timeOffset: 500,
+            actionList: [
+              { type: 'pulse', duration: 300, easing: 'easeInOutQuad' }
+            ],
+            nextTaskList: [
+              {
+                timeOffset: 300,
+                actionList: [
+                  { type: 'highlight', duration: 500, easing: 'easeInOutQuad' }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];    
+</code></pre>
+
+<p>In this nested animation task:</p>
+<ol>
+<li>
+<p><strong>Fade In (</strong><code>**fadeIn**</code><strong>)</strong>: Gradually changes from opacity 0 to 1.</p>
+</li>
+<li>
+<p><strong>Grow Center In (</strong><code>**growCenterIn**</code><strong>)</strong>: Grows outward from the center, with width and height changing from 0 to the final value.</p>
+</li>
+<li>
+<p><strong>Pulse (</strong><code>**pulse**</code><strong>)</strong>: Slightly enlarges and then returns to its original state to attract the user's attention.</p>
+</li>
+<li>
+<p><strong>Highlight (</strong><code>**highlight**</code><strong>)</strong>: Adds a highlight effect to the data point after the animation ends.</p>
+</li>
+</ol>
+<p><strong>Define Highlight Animation</strong></p>
+<p>First, define and register the highlight animation.</p>
+<pre class="codehilite"><code class="language-xml">export const highlightAnimation: IAnimationTypeConfig = {
+  type: 'highlight',
+  duration: 500,
+  easing: 'easeInOutQuad',
+  channel: {
+    fill: { from: 'blue', to: 'red', toBack: 'blue' }
+  }
+};
+
+// 注册高亮显示动画
+Factory.registerAnimation('highlight', highlightAnimation);    
+</code></pre>
+
+<p><strong>Use Nested Animation Tasks in Chart Configuration</strong>    </p>
+<p>Integrate the defined nested animation tasks into the chart configuration.    </p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [
+        { category: 'A', value: 10 },
+        { category: 'B', value: 20 },
+        { category: 'C', value: 30 }
+      ],
+      animationEnter: enterAnimationTasks,
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<h4 id="11-execution-mechanism-of-animation-tasks">11. Execution Mechanism of Animation Tasks</h4>
+<p><strong>Parsing and Execution of Animation Tasks</strong>    </p>
+<p>VChart internally parses the animation tasks in <code>animationEnter</code>, <code>animationUpdate</code>, and <code>animationExit</code>, and executes the corresponding animations according to the defined order and time offset. Below is a simplified example showing how to parse and execute chained animation tasks.    </p>
+<pre class="codehilite"><code class="language-xml">class AnimateManager extends StateManager implements IAnimate {
+  updateAnimateState(state: AnimationStateEnum, noRender?: boolean) {
+    if (state === AnimationStateEnum.update) {
+      this.updateState(
+        {
+          animationState: {
+            callback: (datum: any, element: IElement) =&gt; element.diffState
+          }
+        },
+        noRender
+      );
+    } else if (state === AnimationStateEnum.appear) {
+      // 处理新数据点的入场动画
+      this.handleAnimationTasks(element, element.animationConfig.enter);
+    } else if (state === AnimationStateEnum.exit) {
+      // 处理旧数据点的退场动画
+      this.handleAnimationTasks(element, element.animationConfig.exit);
+    }
+  }
+
+  private handleAnimationTasks(element: IElement, tasks: IAnimationTask[]) {
+    tasks.forEach(task =&gt; {
+      setTimeout(() =&gt; {
+        task.actionList.forEach(action =&gt; {
+          element.startAnimation(action.type, action.duration, action.easing);
+        });
+        if (task.nextTaskList) {
+          this.handleAnimationTasks(element, task.nextTaskList);
+        }
+      }, task.timeOffset);
+    });
+  }
+}    
+</code></pre>
+
+<p>In this example, the <code>handleAnimationTasks</code> method recursively parses and executes each animation task, ensuring that the corresponding animations are triggered in the defined order and time offset.</p>
+<p><strong>Timing of Animation Task Triggering</strong></p>
+<p>To ensure animations are triggered at the appropriate time, VChart provides a series of hook functions, such as <code>VGRAMMAR_HOOK_EVENT.AFTER_DO_RENDER</code> and <code>VGRAMMAR_HOOK_EVENT.ANIMATION_END</code>. These hooks can help us execute specific logic when the chart is first rendered or when the animation ends.</p>
+<pre class="codehilite"><code class="language-xml">this._event.on(VGRAMMAR_HOOK_EVENT.AFTER_DO_RENDER, () =&gt; {
+  // 图表首次渲染完成后的逻辑
+  console.log('图表首次渲染完成');
+});
+
+this._event.on(VGRAMMAR_HOOK_EVENT.ANIMATION_END, ({ event }) =&gt; {
+  if (event.animationState === AnimationStateEnum.enter) {
+    // enter 动画结束后的逻辑
+    console.log('新数据点入场动画结束');
+  } else if (event.animationState === AnimationStateEnum.update) {
+    // update 动画结束后的逻辑
+    console.log('现有数据点更新动画结束');
+  } else if (event.animationState === AnimationStateEnum.exit) {
+    // exit 动画结束后的逻辑
+    console.log('旧数据点退场动画结束');
+  }
+});    
+</code></pre>
+
+<h4 id="12-best-practices-for-animation-coordination">12. Best Practices for Animation Coordination</h4>
+<p><strong>Batch Update Data</strong>    </p>
+<p>To improve performance, it is recommended to minimize frequent data update operations. If you need to update a large amount of data, consider merging these updates into a single batch operation to reduce unnecessary rendering times.    </p>
+<pre class="codehilite"><code class="language-xml">// 不推荐的做法：逐个更新数据点
+data.forEach((item, index) =&gt; {
+  setTimeout(() =&gt; {
+    chart.updateSeriesData([/* 更新后的数据 */]);
+  }, index * 100); // 每隔100毫秒更新一个数据点
+});
+
+// 推荐的做法：一次性批量更新所有数据
+setTimeout(() =&gt; {
+  const updatedData = data.map(item =&gt; /* 更新后的数据 */);
+  chart.updateSeriesData(updatedData);
+}, 1000); // 1秒后一次性更新所有数据    
+</code></pre>
+
+<p><strong>Lazy Load Animation</strong>    </p>
+<p>For scenarios with large charts or a large number of data points, lazy loading can be used to delay loading animations until user interaction or specific conditions are met. This helps improve initial loading speed and overall performance.    </p>
+<pre class="codehilite"><code class="language-xml">// 懒加载动画配置
+const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 大量数据数组 */],
+      animationEnter: {
+        type: 'lazyFadeIn',
+        duration: 800,
+        easing: 'easeInOutQuad',
+        lazyLoad: true // 启用懒加载
+      }
+    }
+  ]
+};
+
+// 当用户滚动到视口内时触发懒加载动画
+window.addEventListener('scroll', () =&gt; {
+  if (isInViewPort(chartContainer)) {
+    chart.startLazyAnimations();
+  }
+});    
+</code></pre>
+
+<p><strong>Cache Animation Results</strong></p>
+<p>For those animation effects with high computational cost, consider caching their results to avoid repeated calculations. For example, for complex path animations, you can pre-calculate the keyframes of the path and reuse these keyframes in subsequent rendering.</p>
+<pre class="codehilite"><code class="language-xml">class PathAnimator {
+  private cachedFrames: KeyFrame[];
+
+  constructor(private pathData: PathData) {
+    this.cachedFrames = this.computeKeyFrames(pathData);
+  }
+
+  private computeKeyFrames(data: PathData): KeyFrame[] {
+    // 计算路径的关键帧并返回
+  }
+
+  public animate(element: IElement): void {
+    // 使用缓存的关键帧进行动画
+    this.applyCachedFrames(element);
+  }
+}    
+</code></pre>
+
+<p><strong>Event Throttling and Debouncing</strong>    </p>
+<p>To avoid performance issues caused by frequent event triggering, you can apply throttling or debouncing techniques to event listeners. For example, when handling mouse hover events, you can limit the frequency of animation triggers.    </p>
+<pre class="codehilite"><code class="language-xml">import throttle from 'lodash/throttle';
+
+// 对鼠标悬停事件应用节流
+chart.on('element:hover', throttle((event) =&gt; {
+  // 触发悬停动画
+}, 200)); // 每200毫秒最多触发一次    
+</code></pre>
+
+<p><strong>Dynamic Control of Animation</strong>    </p>
+<p>In some cases, you may want to dynamically control the behavior of animations, such as changing the speed or style of the animation. VChart provides flexible methods to achieve this.    </p>
+<pre class="codehilite"><code class="language-xml">// 更新某个系列的动画配置
+chart.updateSeriesOptions(0, {
+  animationEnter: {
+    duration: 1000, // 更改淡入动画的持续时间
+    easing: 'linear' // 更改缓动函数
+  },
+  animationUpdate: {
+    duration: 700, // 更改缩放动画的持续时间
+    easing: 'easeInOutCubic' // 更改缓动函数
+  },
+  animationExit: {
+    duration: 900, // 更改淡出动画的持续时间
+    easing: 'easeInOutCubic' // 更改缓动函数
+  }
+});
+
+// 重新应用新的动画配置
+chart.render();    
+</code></pre>
+
+<h4 id="13-complete-example-code">13. Complete Example Code</h4>
+<p>Below is a complete example code demonstrating how to create a bar chart with complex animation choreography, implementing conditional animation configuration and custom animation types.</p>
+<pre class="codehilite"><code class="language-xml">// 导入必要的模块
+import { VChart } from '@visactor/vchart';
+import { Factory } from '@visactor/vchart';
+import { IElement, IAnimationTypeConfig } from '@visactor/vgrammar-core';
+
+// 定义动画函数
+export const Appear_FadeIn: IAnimationTypeConfig = {
+  type: 'fadeIn',
+  duration: 800,
+  easing: 'easeInOutQuad',
+  channel: {
+    opacity: { from: 0, to: 1 }
+  }
+};
+
+export const ScaleInOutAnimation: IAnimationTypeConfig = {
+  type: 'scaleIn',
+  duration: 500,
+  easing: 'easeInOutQuad',
+  channel: {
+    scale: { from: 0.8, to: 1 }
+  }
+};
+
+export const Appear_FadeOut: IAnimationTypeConfig = {
+  type: 'fadeOut',
+  duration: 600,
+  easing: 'easeInOutQuad',
+  channel: {
+    opacity: { from: 1, to: 0 }
+  }
+};
+
+export const growCenterIn: IAnimationTypeConfig = {
+  type: 'growCenterIn',
+  duration: 500,
+  easing: 'easeInOutQuad',
+  channel: {
+    width: { from: 0, to: '100%' },
+    height: { from: 0, to: '100%' }
+  }
+};
+
+export const pulseAnimation: IAnimationTypeConfig = {
+  type: 'pulse',
+  duration: 300,
+  easing: 'easeInOutQuad',
+  channel: {
+    scale: { from: 1, to: 1.1, toBack: 1 }
+  }
+};
+
+export const highlightAnimation: IAnimationTypeConfig = {
+  type: 'highlight',
+  duration: 500,
+  easing: 'easeInOutQuad',
+  channel: {
+    fill: { from: 'blue', to: 'red', toBack: 'blue' }
+  }
+};
+
+// 注册动画
+Factory.registerAnimation('fadeIn', Appear_FadeIn);
+Factory.registerAnimation('scaleIn', ScaleInOutAnimation);
+Factory.registerAnimation('fadeOut', Appear_FadeOut);
+Factory.registerAnimation('growCenterIn', growCenterIn);
+Factory.registerAnimation('pulse', pulseAnimation);
+Factory.registerAnimation('highlight', highlightAnimation);
+
+// 定义链式动画任务
+const enterAnimationTasks: IAnimationTask[] = [
+  {
+    timeOffset: 0,
+    actionList: [
+      { type: 'fadeIn', duration: 800, easing: 'easeInOutQuad' }
+    ],
+    nextTaskList: [
+      {
+        timeOffset: 800,
+        actionList: [
+          { type: 'growCenterIn', duration: 500, easing: 'easeInOutQuad' }
+        ],
+        nextTaskList: [
+          {
+            timeOffset: 500,
+            actionList: [
+              { type: 'pulse', duration: 300, easing: 'easeInOutQuad' }
+            ],
+            nextTaskList: [
+              {
+                timeOffset: 300,
+                actionList: [
+                  { type: 'highlight', duration: 500, easing: 'easeInOutQuad' }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];
+
+// 定义图表配置
+const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [
+        { category: 'A', value: 10 },
+        { category: 'B', value: 20 },
+        { category: 'C', value: 30 }
+      ],
+      animationEnter: enterAnimationTasks,
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};
+
+// 初始化图表实例
+const container = document.getElementById('chart-container');
+const chart = new VChart({
+  el: container,
+  spec: chartSpec,
+  options: {
+    animation: true, // 开启动画
+    theme: 'light'   // 使用浅色主题
+  }
+});
+
+// 模拟数据更新
+setTimeout(() =&gt; {
+  const updatedData = [
+    { category: 'A', value: 15 }, // 更新第一个数据点
+    { category: 'B', value: 25 }, // 更新第二个数据点
+    { category: 'C', value: 35 }, // 更新第三个数据点
+    { category: 'D', value: 65    
+</code></pre>
+
+<p>In this example, the <code>animationEnter</code> configuration accepts a function as a parameter, which can return different values based on the specific attributes of the data points.</p>
+<h3 id="continuing-to-interpret-the-implementation-of-data-update-animation">Continuing to Interpret the Implementation of Data Update Animation</h3>
+<p>In the previous section, we have detailed the basic concepts and implementation methods of data update animation in VChart. Next, we will delve into some more specific details, including how to handle complex animation sequences, advanced usage of animation configuration, and best practices for optimizing performance.</p>
+<h4 id="1-handling-complex-animation-sequences">1. Handling Complex Animation Sequences</h4>
+<p><strong>Chained Animation Tasks</strong></p>
+<p>For complex animation sequences, VChart introduces the <code>IAnimationTask</code> interface to describe the data structure of animation tasks. Each task includes a time offset, an action queue, and a list of successor tasks, forming a chained animation execution mechanism.</p>
+<pre class="codehilite"><code class="language-xml">interface IAnimationTask {
+  timeOffset: number;
+  actionList: Action[];
+  nextTaskList: IAnimationTask[];
+}    
+</code></pre>
+
+<p>This design allows multiple animation tasks to be executed sequentially or concurrently, achieving more complex and subtle animation effects. For example, in a bar chart, we can define a series of consecutive animation tasks, first letting the newly added data points fade in, then gradually grow to the final height, and finally add some decorative animations (such as highlighting).</p>
+<p><strong>Example: Creating Chained Animations</strong></p>
+<p>Suppose we want to create a chained entry animation for new data points in a bar chart, starting with a fade-in, followed by growth, and finally a slight pulse effect to attract the user's attention.</p>
+<pre class="codehilite"><code class="language-xml">const enterAnimationTasks: IAnimationTask[] = [
+  {
+    timeOffset: 0,
+    actionList: [
+      { type: 'fadeIn', duration: 800, easing: 'easeInOutQuad' }
+    ],
+    nextTaskList: [
+      {
+        timeOffset: 800,
+        actionList: [
+          { type: 'growCenterIn', duration: 500, easing: 'easeInOutQuad' }
+        ],
+        nextTaskList: [
+          {
+            timeOffset: 500,
+            actionList: [
+              { type: 'pulse', duration: 300, easing: 'easeInOutQuad' }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];    
+</code></pre>
+
+<p>In this example, we use the <code>enterAnimationTasks</code> array to define a series of animation tasks, each with its own time offset, action queue, and list of successor tasks. In this way, very rich visual effects can be achieved.</p>
+<h4 id="2-advanced-usage-of-animation-configuration">2. Advanced Usage of Animation Configuration</h4>
+<p><strong>Conditional Animation Configuration</strong></p>
+<p>Sometimes, you may want to dynamically choose different animation effects based on certain conditions. For example, when a data value exceeds a certain threshold, use a special animation; otherwise, use the default animation. VChart allows you to embed logical judgments in the configuration to achieve such requirements.</p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 数据数组 */],
+      animationEnter: (datum: any) =&gt; {
+        if (datum.value &gt; 50) {
+          return {
+            type: 'specialGrowth', // 特殊的生长动画
+            duration: 1000,
+            easing: 'easeInOutQuad'
+          };
+        } else {
+          return {
+            type: 'fadeIn', // 默认的淡入动画
+            duration: 800,
+            easing: 'easeInOutQuad'
+          };
+        }
+      },
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<p>In this example, the <code>animationEnter</code> configuration accepts a function as a parameter, which can return different animation configuration objects based on the specific attributes of the data points. This allows the animation behavior to be dynamically adjusted according to the actual data, enhancing the expressiveness of the chart.</p>
+<p><strong>Custom Animation Types</strong></p>
+<p>In addition to using built-in animation types, VChart also supports developers in customizing animation logic. You can create new animation effects by inheriting or extending existing animation classes and registering them into the system.</p>
+<pre class="codehilite"><code class="language-xml">import { Factory } from '@visactor/vchart';
+import { IElement, IAnimationTypeConfig } from '@visactor/vgrammar-core';
+
+// 定义一个新的动画类型
+function customGrowAnimation(params: any): IAnimationTypeConfig {
+  return {
+    type: 'customGrow',
+    duration: 1000,
+    easing: 'easeInOutQuad',
+    channel: {
+      width: { from: 0, to: params.width },
+      height: { from: 0, to: params.height }
+    }
+  };
+}
+
+// 注册自定义动画
+Factory.registerAnimation('customGrow', customGrowAnimation);
+
+// 在图表配置中使用自定义动画
+const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 数据数组 */],
+      animationEnter: {
+        type: 'customGrow',
+        width: 50,
+        height: 100
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<p>This code demonstrates how to define and register a custom animation named <code>customGrow</code>, which adjusts the width and height of graphic elements based on the parameters passed. Then, this custom animation can be directly used in the chart configuration.</p>
+<h4 id="3-performance-optimization-and-best-practices">3. Performance Optimization and Best Practices</h4>
+<p><strong>Batch Update Data</strong></p>
+<p>To improve performance, it is recommended to minimize frequent data update operations. If you need to update a large amount of data, consider merging these updates into a single batch operation to reduce unnecessary rendering times.</p>
+<pre class="codehilite"><code class="language-xml">// 不推荐的做法：逐个更新数据点
+data.forEach((item, index) =&gt; {
+  setTimeout(() =&gt; {
+    chart.updateSeriesData([/* 更新后的数据 */]);
+  }, index * 100); // 每隔100毫秒更新一个数据点
+});
+
+// 推荐的做法：一次性批量更新所有数据
+setTimeout(() =&gt; {
+  const updatedData = data.map(item =&gt; /* 更新后的数据 */);
+  chart.updateSeriesData(updatedData);
+}, 1000); // 1秒后一次性更新所有数据    
+</code></pre>
+
+<p><strong>Lazy Load Animation</strong></p>
+<p>For scenarios with large charts or a large number of data points, lazy loading can be used to delay the animation until user interaction or specific conditions are met. This helps improve initial loading speed and overall performance.</p>
+<pre class="codehilite"><code class="language-xml">// 懒加载动画配置
+const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 大量数据数组 */],
+      animationEnter: {
+        type: 'lazyFadeIn',
+        duration: 800,
+        easing: 'easeInOutQuad',
+        lazyLoad: true // 启用懒加载
+      }
+    }
+  ]
+};
+
+// 当用户滚动到视口内时触发懒加载动画
+window.addEventListener('scroll', () =&gt; {
+  if (isInViewPort(chartContainer)) {
+    chart.startLazyAnimations();
+  }
+});    
+</code></pre>
+
+<p><strong>Cache Animation Results</strong>    </p>
+<p>For those animation effects with high computational cost, consider caching their results to avoid repeated calculations. For example, for complex path animations, you can pre-calculate the keyframes of the path and reuse these keyframes in subsequent renderings.    </p>
+<pre class="codehilite"><code class="language-xml">class PathAnimator {
+  private cachedFrames: KeyFrame[];
+
+  constructor(private pathData: PathData) {
+    this.cachedFrames = this.computeKeyFrames(pathData);
+  }
+
+  private computeKeyFrames(data: PathData): KeyFrame[] {
+    // 计算路径的关键帧并返回
+  }
+
+  public animate(element: IElement): void {
+    // 使用缓存的关键帧进行动画
+    this.applyCachedFrames(element);
+  }
+}    
+</code></pre>
+
+<p><strong>Event Throttling and Debouncing</strong>    </p>
+<p>To avoid performance issues caused by frequent event triggering, you can apply throttling or debouncing techniques to event listeners. For example, when handling mouse hover events, you can limit the frequency of animation triggers.    </p>
+<pre class="codehilite"><code class="language-xml">import throttle from 'lodash/throttle';
+
+// 对鼠标悬停事件应用节流
+chart.on('element:hover', throttle((event) =&gt; {
+  // 触发悬停动画
+}, 200)); // 每200毫秒最多触发一次    
+</code></pre>
+
+<h4 id="4-case-study">4. Case Study</h4>
+<p><strong>Case: Dynamic Bar Chart</strong>    </p>
+<p>Suppose we are developing a dynamic bar chart that updates in real-time, with a new batch of data added to the chart every second. We need to ensure that each time the data is updated, the newly added data points are presented to the user in a smooth and engaging manner, while the existing data points remain stable.    </p>
+<h5 id="step-1-define-basic-configuration">Step 1: Define Basic Configuration</h5>
+<p>First, define the basic configuration of the bar chart, including initial data and other visual attributes. At the same time, specify <code>animationEnter</code>, <code>animationUpdate</code>, and <code>animationExit</code> configurations to ensure animations are triggered when data changes.    </p>
+<pre class="codehilite"><code class="language-xml">const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 初始数据数组 */],
+      animationEnter: {
+        type: 'fadeIn',
+        duration: 800,
+        easing: 'easeInOutQuad'
+      },
+      animationUpdate: {
+        type: 'scaleIn',
+        duration: 500,
+        easing: 'easeInOutQuad'
+      },
+      animationExit: {
+        type: 'fadeOut',
+        duration: 600,
+        easing: 'easeInOutQuad'
+      }
+    }
+  ]
+};    
+</code></pre>
+
+<h5 id="step-2-implement-data-update-logic">Step 2: Implement Data Update Logic</h5>
+<p>Next, implement a timer that adds a batch of new data to the chart every second and triggers the corresponding animation.</p>
+<pre class="codehilite"><code class="language-xml">setInterval(() =&gt; {
+  const newDataBatch = generateNewData(); // 生成新的数据批次
+  const updatedData = [...chart.getData(), ...newDataBatch];
+
+  // 更新图表数据并触发动画
+  chart.updateSeriesData(updatedData);
+}, 1000);    
+</code></pre>
+
+<h5 id="step-3-optimize-performance">Step 3: Optimize Performance</h5>
+<p>Considering that a new batch of data is added every second, it may impact performance. Therefore, we can take the following optimization measures:</p>
+<ul>
+<li>
+<p><strong>Batch update data</strong>: Update all new data to the chart at once, instead of adding them one by one.</p>
+</li>
+<li>
+<p><strong>Lazy load animations</strong>: Enable lazy load animations for newly added data points, so that animations only start playing when they enter the viewport.</p>
+</li>
+<li>
+<p><strong>Event throttling</strong>: Apply throttling techniques to interaction events such as mouse hover to prevent unnecessary animations from being triggered frequently.</p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// 批量更新数据
+setTimeout(() =&gt; {
+  const updatedData = generateAllNewData(); // 生成所有新的数据
+  chart.updateSeriesData(updatedData);
+}, 1000);
+
+// 懒加载动画配置
+const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 数据数组 */],
+      animationEnter: {
+        type: 'lazyFadeIn',
+        duration: 800,
+        easing: 'easeInOutQuad',
+        lazyLoad: true
+      }
+    }
+  ]
+};
+
+// 对鼠标悬停事件应用节流
+chart.on('element:hover', throttle((event) =&gt; {
+  // 触发悬停动画
+}, 200));    
+</code></pre>
+
+<h5 id="step-4-enhance-user-experience">Step 4: Enhance User Experience</h5>
+<p>To make the charts more vivid and interesting, you can add additional decorative animations to the newly added data points, such as highlighting or tooltip labels. This not only enhances visual appeal but also helps users better understand the changes in the data.</p>
+<pre class="codehilite"><code class="language-xml">// 添加高亮显示动画
+const chartSpec = {
+  series: [
+    {
+      type: 'bar',
+      data: [/* 数据数组 */],
+      animationEnter: {
+        type: 'fadeIn',
+        duration: 800,
+        easing: 'easeInOutQuad',
+        onEnd: (element: IElement) =&gt; {
+          element.addHighlight(); // 添加高亮效果
+        }
+      }
+    }
+  ]
+};
+
+// 添加标签提示动画
+chart.on('element:hover', (event) =&gt; {
+  const element = event.detail.element;
+  if (element) {
+    element.showTooltip(); // 显示标签提示
+  }
+});    
+</code></pre>
+
+<h4 id="5-dynamic-control-of-animation">5. Dynamic Control of Animation</h4>
+<p><strong>Dynamically Adjust Animation Parameters</strong></p>
+<p>In some cases, you may want to dynamically adjust animation parameters such as duration, easing functions, etc., based on user input or other external factors. VChart provides flexible methods to achieve this.</p>
+<pre class="codehilite"><code class="language-xml">// 根据用户选择动态调整动画参数
+const updateAnimationParams = (seriesIndex: number, newParams: Partial&lt;IAnimationTypeConfig&gt;) =&gt; {
+  chart.updateSeriesOptions(seriesIndex, {
+    animationEnter: {
+      ...chart.getSeriesOptions(seriesIndex).animationEnter,
+      ...newParams
+    }
+  });
+
+  // 重新应用新的动画配置
+  chart.render();
+};
+
+// 用户选择更快的动画速度
+updateAnimationParams(0, { duration: 500 });    
+</code></pre>
+
+<p><strong>Pause and Resume Animation</strong>    </p>
+<p># This document was revised and organized by the following person 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

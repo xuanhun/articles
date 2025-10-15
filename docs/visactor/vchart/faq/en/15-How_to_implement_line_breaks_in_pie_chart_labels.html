@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to achieve line break effect for pie chart labels?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>How to achieve line break effect for pie chart labels?</br></p>
+<h2 id="solution">Solution</h2>
+<p>The pie chart label supports the formatting method. In the formatting method, we can switch the label to rich text by setting <code>type: rich</code> in the return object; rich text supports common line breaks, ICONS, and image displays.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/J4z6bOh9YoMRGAxA4j6csYBBnmg.gif' alt='' width='3356' height='1196'></p>
+<h2 id="code-examples">Code Examples</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'pie',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { type: 'oxygen', value: '26.60' },
+        { type: 'silicon', value: '27.72' },
+        { type: 'aluminum', value: '8.13' },
+        { type: 'iron', value: '5' },
+        { type: 'calcium', value: '3.63' },
+      ]
+    }
+  ],
+  outerRadius: 0.8,
+  innerRadius: 0.5,
+  padAngle: 0.6,
+  valueField: 'value',
+  categoryField: 'type',
+  pie: {
+    style: {
+      cornerRadius: 10
+    },
+    state: {
+      hover: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      },
+      selected: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      }
+    }
+  },
+  title: {
+    visible: true,
+    text: 'Statistics of Surface Element Content'
+  },
+  legends: {
+    visible: true,
+    orient: 'left'
+  },
+  label: {
+    visible: true,
+    formatMethod: (label, datum) =&gt; {
+      return {
+        type: 'rich',
+        text: [{
+          text: `${label}\n`,
+          fontSize: 12,
+          fill: '#8a8a8a',
+          lineHeight: 20,
+          fontWeight: 400
+        }, {
+          text: `${datum._percent_}%`,
+          fill: '#121212',
+          fontSize: 14,
+          fontWeight: 500,
+          lineHeight: 22,
+        }]
+      }
+    }
+  },
+  tooltip: {
+    mark: {
+      content: [
+        {
+          key: datum =&gt; datum['type'],
+          value: datum =&gt; datum['value'] + '%'
+        }
+      ]
+    }
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="result-presentation">Result Presentation</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WiK3bz6ekofOlmx0uNNc3j3Onaf.gif' alt='' width='1616' height='1062'></p>
+<h2 id="related-documents">Related documents</h2>
+<ul>
+<li><a href="https%3A%2F%2Fvisactor.com%2Fvchart%2Fguide%2Ftutorial_docs%2FRichtext_and_Dom">Rich Text and Dom Extensions</a></br></li>
+<li><a href="https%3A%2F%2Fgithub.com%2FVisActor%2FVChart">VChart github</a></br></li>
+</ul>
+</body>
+</html>

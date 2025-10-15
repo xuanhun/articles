@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to set the text style of the VTable table component?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-title">Question title</h2>
+<p>How to set text style for VTable component?</br></p>
+<h2 id="problem-description">Problem description</h2>
+<p>What text styles are supported and how to configure them when using the VTable table component?</br></p>
+<h2 id="solution">Solution</h2>
+<p>VTable supports the following text styles:</br>
+*  <code>fontSize</code>: The font size of the text.</br>
+*  <code>FontFamily</code>: Font used for text. Multiple fonts can be specified, such as <code>Arial, sans-serif</code>, and the browser will search and use them in the specified order.</br>
+*  <code>FontWeight</code>: Set font thickness.</br>
+*  <code>FontVariant</code>: Sets the font variant.</br>
+*  <code>fontStyle</code>: Set font style.</br>
+The places where VTable supports setting text styles are:</br>
+*  <code>Column (row/indicator)</code>, configure the style corresponding to the column (row/indicator)</br>
+*  <code>Style</code>: The style corresponding to the content cell</br>
+*  <code>headerStyle</code>: the style corresponding to the header cell</br>
+*  <code>In theme</code>, configure the theme style</br>
+*  <code>defaultStyle</code>: default style</br>
+*  <code>bodyStyle</code>: table content area style</br>
+*  <code>headerStyle</code>: header (list)/list header (pivot table) style</br>
+*  <code>rowHeaderStyle</code>: Row header style</br>
+*  <code>cornerHeaderStyle</code>: corner head style</br>
+*  <code>bottomFrozenStyle</code>: Bottom frozen cell style</br>
+*  <code>rightFrozenStyle</code>: Freeze cell style on the right</br></p>
+<h2 id="code-example">Code example</h2>
+<p>You can paste it into the official website editor for testing: <a href="https%3A%2F%2Fvisactor.io%2Fvtable%2Fdemo%2Ftable-type%2Flist-table">https://visactor.io/vtable/demo/table-type/list-table</a></br></p>
+<pre class="codehilite"><code>let  tableInstance;
+  fetch('https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/North_American_Superstore_data.json')
+    .then((res) =&gt; res.json())
+    .then((data) =&gt; {
+
+const columns =[
+    {
+        &quot;field&quot;: &quot;Order ID&quot;,
+        &quot;title&quot;: &quot;Order ID&quot;,
+        &quot;width&quot;: &quot;auto&quot;,
+        style: {
+            fontSize: 14
+        },
+        headerStyle: {
+            fontSize: 16,
+            fontFamily: 'Verdana'
+        }
+    },
+    {
+        &quot;field&quot;: &quot;Customer ID&quot;,
+        &quot;title&quot;: &quot;Customer ID&quot;,
+        &quot;width&quot;: &quot;auto&quot;
+    },
+    {
+        &quot;field&quot;: &quot;Product Name&quot;,
+        &quot;title&quot;: &quot;Product Name&quot;,
+        &quot;width&quot;: &quot;auto&quot;
+    },
+    {
+        &quot;field&quot;: &quot;Category&quot;,
+        &quot;title&quot;: &quot;Category&quot;,
+        &quot;width&quot;: &quot;auto&quot;
+    },
+    {
+        &quot;field&quot;: &quot;Sub-Category&quot;,
+        &quot;title&quot;: &quot;Sub-Category&quot;,
+        &quot;width&quot;: &quot;auto&quot;
+    },
+    {
+        &quot;field&quot;: &quot;Region&quot;,
+        &quot;title&quot;: &quot;Region&quot;,
+        &quot;width&quot;: &quot;auto&quot;
+    }
+];
+
+const option = {
+  records:data,
+  columns,
+  widthMode:'standard',
+  theme: VTable.themes.DEFAULT.extends({
+    bodyStyle: {
+        fontSize: 12
+    },
+    headerStyle: {
+        fontSize: 18
+    }
+  })
+};
+tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID),option);
+window['tableInstance'] = tableInstance;
+    })&lt;/br&gt;
+</code></pre>
+
+<h2 id="related-documents">Related Documents</h2>
+<p>Related api: https://visactor.io/vtable/option/ListTable-columns-text#style.fontSize</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

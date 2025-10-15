@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>19. How can I increase the gap between adjacent sparklines in the VTable component?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-title">Question Title</h2>
+<p>How can I increase the gap between adjacent sparklines in the VTable component?</br></p>
+<h2 id="question-description">Question Description</h2>
+<p>The mini graph in the product uses VTable, but the effect of generating the mini graph with data is that the users feel the distance between adjacent line segments is too close. How to adjust this spacing?</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WCfcbEOuIoKc3JxEbmVcsbAsnIe.gif' alt='' width='1475' height='628'></p>
+<h2 id="solution">Solution</h2>
+<p>First, it is necessary to clarify that the width and height of a cell include two parts: the padding margin and the content. The padding margin in the VTable is set to [10, 16, 10, 16] by default, and the row height of the VTable is 40px by default, with the top and bottom padding margins taking up 20px. Therefore, the height of the content is reduced to 20px.</br>
+The top and bottom padding margins take up 20px, so the minimum distance between two adjacent  sparklines charts is also 20px. In other words, the minimum distance between two adjacent  sparklines charts is determined by the padding margin. In the official example, padding margin is adjusted to 20, and it is found that the line curve becomes a straight line after the adjustment. This is because the 40px row height is occupied by the padding margin, leaving no space for the line chart to stretch.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AxaLbDVvMoViADxrhPxciAOLnDc.gif' alt='' width='945' height='266'></p>
+<p>So in this case, we need to increase the row height accordingly. The effect of setting defaultRowHeight to 60 is as follows:</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NzN8bMoTJoPtQWxRkYzcjSbqnde.gif' alt='' width='916' height='311'></p>
+<h2 id="code-example">Code Example</h2>
+<pre class="codehilite"><code>const records = [
+  {
+   'lineData':[50,20,20,40,60,50,70],
+   'lineData2':[{x:1,y:1500},{x:2,y:1480},{x:3,y:1520},{x:4,y:1550},{x:5,y:1600}],
+  },
+  {
+   'lineData':[50,20,60,40,60,50,70],
+   'lineData2':[{x:1,y:1500},{x:2,y:1480},{x:3,y:1520},{x:4,y:1550},{x:5,y:1600}],
+  },
+  {
+   'lineData':[50,50,20,40,10,50,70],
+   'lineData2':[{x:1,y:1500},{x:2,y:1480},{x:3,y:1520},{x:4,y:1550},{x:5,y:1600}],
+  },
+  {
+   'lineData':[70,20,20,40,60,50,70],
+   'lineData2':[{x:1,y:1500},{x:2,y:1480},{x:3,y:1520},{x:4,y:1550},{x:5,y:1600}],
+  }
+];
+
+const columns = [
+  {
+    field: 'lineData',
+    title: 'sparkline',
+    cellType: 'sparkline',
+    width:300,
+    style:{
+      padding:20
+    },
+    sparklineSpec: {
+        type: 'line',
+        pointShowRule: 'none',
+        smooth: true,
+        line: {
+          style: {
+            stroke: '#2E62F1',
+            strokeWidth: 2,
+          },
+        },
+        point: {
+          hover: {
+              stroke: 'blue',
+              strokeWidth: 1,
+              fill: 'red',
+              shape: 'circle',
+              size: 4,
+          },
+          style: {
+            stroke: 'red',
+            strokeWidth: 1,
+            fill: 'yellow',
+            shape: 'circle',
+            size: 2,
+          },
+        },
+        crosshair: {
+          style: {
+            stroke: 'gray',
+            strokeWidth: 1,
+          },
+        },
+      },
+  },
+  {
+    field: 'lineData2',
+    title: 'sparkline 2',
+    cellType: 'sparkline',
+    width:300,
+    style:{
+      padding:20
+    },
+    sparklineSpec: {
+        type: 'line', 
+        xField: 'x',
+        yField: 'y',
+        pointShowRule: 'all',
+        smooth: true,
+        line: {
+          style: {
+            stroke: '#2E62F1',
+            strokeWidth: 2,
+          },
+        },
+      },
+  },
+];
+const option = {
+  records,
+  columns,
+  defaultRowHeight:60
+};
+const tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID), option);
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="result-display">Result Display</h2>
+<p>Just paste the code from the example directly into the official editor and it will be displayed.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HkPgbc4aLoaqczxnug8ccxZwnOQ.gif' alt='' width='916' height='311'></p>
+<h2 id="relevant-documents">Relevant Documents</h2>
+<p>Sparkline Usage Reference Demo：https://visactor.io/vtable/guide/cell_type/sparkline</br>
+Style Usage Toturial：https://visactor.io/vtable/guide/theme_and_style/style</br>
+Related api：https://visactor.io/vtable/option/ListTable-columns-sparkline#style.padding</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

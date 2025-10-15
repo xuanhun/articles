@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>57-When_listening_to_events_at_the_Chart_level,_is_it_possible_to_get_the_type_of_element_that_was_clicked_via_the_event_parameter,_similar_to_the_target_parameter_in_dom</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="when-listening-to-events-at-the-chart-level-is-it-possible-to-get-the-type-of-element-that-was-clicked-via-the-event-parameter-similar-to-the-target-parameter-in-dom">When listening to events at the Chart level, is it possible to get the type of element that was clicked via the event parameter, similar to the target parameter in dom?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>Is it possible to listen to the whole chart or canvas and then determine if the click is on axis/legend/item based on the parameters returned, such as type?</p>
+<h2 id="solution">Solution</h2>
+<p>This can be done. The VChart instance provides event registration and unregistration, you can listen to different event types via chart.on(event: string, callback: (params: EventParams)=&gt; void): void and get the context information via the callback function. If you want to distinguish the different events you are triggering on axis/legend/item, you can do so by event filtering and passing <code>{ level: 'model' | 'mark', type: 'axis' }</code>, where <code>'model'</code> denotes the model type of the chart's constituent elements and <code>'mark'</code> denotes the chart's item elements.
+For example: <code>vchart.on('pointerdown', { level: 'model', type: 'axis' }, (params) =&gt; {})</code>. When I click on the axis, I can get the specific parameters.
+More event types and parameters can be found at: https://www.visactor.io/vchart/api/API/event.</p>
+<p><a href="/vchart/faq/8-0.png">event</a></p>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const spec = {
+  type: 'bar',
+  data: [
+    {
+      id: 'barData',
+      values: [
+        {
+          State: 'WY',
+          Age: 'Under 5 Years',
+          Population: 25635
+        },
+        {
+          State: 'WY',
+          Age: '5 to 13 Years',
+          Population: 1890
+        },
+        {
+          State: 'WY',
+          Age: '14 to 17 Years',
+          Population: 9314
+        },
+        {
+          State: 'DC',
+          Age: 'Under 5 Years',
+          Population: 30352
+        },
+        {
+          State: 'DC',
+          Age: '5 to 13 Years',
+          Population: 20439
+        },
+        {
+          State: 'DC',
+          Age: '14 to 17 Years',
+          Population: 10225
+        },
+        {
+          State: 'VT',
+          Age: 'Under 5 Years',
+          Population: 38253
+        },
+        {
+          State: 'VT',
+          Age: '5 to 13 Years',
+          Population: 42538
+        },
+        {
+          State: 'VT',
+          Age: '14 to 17 Years',
+          Population: 15757
+        },
+        {
+          State: 'ND',
+          Age: 'Under 5 Years',
+          Population: 51896
+        },
+        {
+          State: 'ND',
+          Age: '5 to 13 Years',
+          Population: 67358
+        },
+        {
+          State: 'ND',
+          Age: '14 to 17 Years',
+          Population: 18794
+        },
+        {
+          State: 'AK',
+          Age: 'Under 5 Years',
+          Population: 72083
+        },
+        {
+          State: 'AK',
+          Age: '5 to 13 Years',
+          Population: 85640
+        },
+        {
+          State: 'AK',
+          Age: '14 to 17 Years',
+          Population: 22153
+        }
+      ]
+    }
+  ],
+  xField: 'State',
+  yField: 'Population',
+  seriesField: 'Age',
+  stack: true,
+  legends: {
+    visible: true
+  },
+  bar: {
+    // The state style of bar
+    state: {
+      hover: {
+        stroke: '#000',
+        lineWidth: 1
+      }
+    }
+  }
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>vchart.on('pointerdown', { level: 'model', type: 'axis' }, params =&gt; {
+  console.log('params', params);
+});</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://www.visactor.io/vchart/guide/event">Event Tutorial</a></li>
+<li><a href="https://www.visactor.io/vchart/api/event">Related api</a></li>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+</ul>
+</body>
+</html>

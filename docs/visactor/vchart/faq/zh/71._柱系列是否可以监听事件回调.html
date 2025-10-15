@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>71. 柱系列是否可以监听事件回调？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>柱系列是否可以监听事件回调？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>小程序使用 VChart 柱状图时，在选中柱状图某个柱时，是否有事件可以回调？</br></p>
+<h2 id="_3">解决方案</h2>
+<p>在vchart中，您可以通过监听pointerdown事件来获取当前点击的图元信息；此外，还可以通过事件过滤获取不同元素上的事件。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/IUGQbR1r7oc2Pdxp3IdcwcCIngg.gif' alt='' width='2628' height='1926'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Ebb4b1dzBoReqoxfpbPcZL4InCh.gif' alt='' width='1392' height='1488'></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'bar',
+  data: [
+    {
+      id: 'barData',
+      values: [
+        { month: 'Monday', sales: 22 },
+        { month: 'Tuesday', sales: 13 },
+        { month: 'Wednesday', sales: 25 },
+        { month: 'Thursday', sales: 29 },
+        { month: 'Friday', sales: 38 }
+      ]
+    }
+  ],
+  xField: 'month',
+  yField: 'sales'
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+vchart.on('pointerdown', { level: 'mark' }, (...params) =&gt; console.log(params))
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>在线效果参考：https://codesandbox.io/p/sandbox/bar-event-listener-dt8pjg?file=%2Fsrc%2Findex.ts%3A26%2C5</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/JaQdb5qiao66z6xRd2wcpy0bnZc.gif' alt='' width='1392' height='1488'></p>
+<h2 id="_6">相关文档</h2>
+<p>事件教程：https://www.visactor.io/vchart/guide/tutorial_docs/Event</br>
+相关api：https://www.visactor.io/vchart/api/API/event</br>
+github：https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

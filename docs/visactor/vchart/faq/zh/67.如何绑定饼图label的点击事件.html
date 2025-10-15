@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>67.如何绑定饼图label的点击事件</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何绑定饼图label的点击事件？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>如下饼图中，希望能够在点击的标签的时候，实现自定义的回调，应该怎么实现？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AQh9bZNIcojcdFxsoJ1chubhneb.gif' alt='' width='824' height='502'></p>
+<h2 id="_3">解决方案</h2>
+<p>VChart中，标签组件默认是不响应事件的，主要为了避免标签比较密集的时候，影响图表中主要图元的事件响应，想要实现标签的事件监听，需要两步：</br>
+*  开启标签的事件响应，即<code>label.interactive</code>设置为<code>true</code></br>
+*  通过 <code>{ level: 'model', type: 'label' }</code>实现标签组件的事件监听</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WEzVb5ejIoZnffxnB8Xc6bgrnud.gif' alt='' width='3194' height='1090'></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'pie',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { type: 'oxygen', value: '46.60' },
+        { type: 'silicon', value: '27.72' },
+        { type: 'aluminum', value: '8.13' },
+        { type: 'iron', value: '5' },
+        { type: 'calcium', value: '3.63' },
+        { type: 'sodium', value: '2.83' },
+        { type: 'potassium', value: '2.59' },
+        { type: 'others', value: '3.5' }
+      ]
+    }
+  ],
+  outerRadius: 0.8,
+  innerRadius: 0.5,
+  padAngle: 0.6,
+  valueField: 'value',
+  categoryField: 'type',
+  pie: {
+    style: {
+      cornerRadius: 10
+    },
+    state: {
+      hover: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      },
+      selected: {
+        outerRadius: 0.85,
+        stroke: '#000',
+        lineWidth: 1
+      }
+    }
+  },
+  title: {
+    visible: true,
+    text: 'Statistics of Surface Element Content'
+  },
+  legends: {
+    visible: true,
+    orient: 'left'
+  },
+  label: {
+    visible: true,
+    interactive: true
+  },
+  tooltip: {
+    mark: {
+      content: [
+        {
+          key: datum =&gt; datum['type'],
+          value: datum =&gt; datum['value'] + '%'
+        }
+      ]
+    }
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+vchart.on('click',{ level:'model', type:'label'}, (e) =&gt; { 
+  console.log('label', e) 
+})
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">相关文档</h2>
+<ul>
+<li><a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fapi%2FAPI%2Fevent">事件API</a></br></li>
+<li><a href="https%3A%2F%2Fgithub.com%2FVisActor%2FVChart">VChart github</a></br></li>
+</ul>
+</body>
+</html>

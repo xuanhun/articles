@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11. VTable使用问题：如何实现拖拽调整行高</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何实现拖拽调整行高</br></p>
+<h2 id="_2">问题描述</h2>
+<p>拖拽单元格底部边框，调整该行的行高</br></p>
+<h2 id="_3">解决方案</h2>
+<p><code>option</code>中的<code>rowResizeMode</code>配置可以开启或关闭行高调整功能：</br>
+*  <code>all</code>: 整列包括表头和 body 处的单元格均可调整列宽/行高</br>
+*  <code>none</code>: 禁止调整列宽/行高</br>
+*  <code>header</code>: 只能在表头处单元调整列宽/行高</br>
+*  <code>body</code>: 只能在 body 单元格调整列宽/行高</br>
+<code>rowResizeType</code>配置控制了调整作用范围：</br>
+*  <code>column</code>/<code>row</code>：默认值，仅调整当前列/行的宽度；</br>
+*  <code>indicator</code>：相同指标列的列宽/行高一并调整；</br>
+*  <code>all</code>：所有列的列宽/行高一并调整；</br>
+*  <code>indicatorGroup</code>：同一组的指标列一并调整，如东北维度值下有两个指标为：销售额和利润，当调整销售额的列宽时，利润列也会进行调整；</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const option = {
+  rowResizeType: 'row',
+  rowResizeMode: 'all',
+  // ......
+};
+tableInstance = new VTable.PivotTable(document.getElementById(CONTAINER_ID),option);&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/LuJibaHWsobVcgxYgBbc88YGnRd.gif' alt='' width='1336' height='792'></p>
+<p>完整示例：https://www.visactor.io/vtable/demo/interaction/resize-row-height</br></p>
+<h2 id="_6">相关文档</h2>
+<p>行高列宽调整：https://www.visactor.io/vtable/guide/interaction/resize_column_width</br>
+相关api：https://www.visactor.io/vtable/option/ListTable#rowResizeMode</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

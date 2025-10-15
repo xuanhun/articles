@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>103-How_to_change_the_hover_display_content_when_the_mouse_is_moved_into_the_chart_area</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-change-the-hover-display-content-when-the-mouse-is-moved-into-the-chart-area">How to change the hover display content when the mouse is moved into the chart area ?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>After I move the mouse into a bar chart, the hovered bar will display a floating box showing the data information of the bar. I want to change the display content to other data content. How can I achieve this?</p>
+<p><img alt="bar" src="/vchart/faq/79-0.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>The information displayed after the graphic element in the chart is hovered is generally called tooltip. In VChart, developers can customize the title and the content displayed in each line through the configuration of the tooltip component. Tooltip includes two forms of interaction, one is the interaction of hover on the graphic element, and the other is the interaction of hover on the data dimension. These two interactions can be configured through tooltip.mark and tooltip.dimension.</p>
+<p><img alt="tooltip" src="/vchart/faq/79-1.png" /></p>
+<p>In addition to customizing the display text of the tooltip, VChart also allows users to render arbitrary content through the tooltip handler, such as displaying an additional chart in the tooltip:</p>
+<p><img alt="tooltip-example" src="/vchart/faq/79-2.png" /></p>
+<p><a href="https://www.visactor.io/vchart/demo/tooltip/custom-tooltip-handler?keyword=tooltip">example</a></p>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const data = [
+  { year: '2012', type: 'Forest', value: 320 },
+  { year: '2012', type: 'Steppe', value: 220 },
+  { year: '2012', type: 'Desert', value: 150 },
+  { year: '2012', type: 'Wetland', value: 98 },
+  { year: '2013', type: 'Forest', value: 332 },
+  { year: '2013', type: 'Steppe', value: 182 },
+  { year: '2013', type: 'Desert', value: 232 },
+  { year: '2013', type: 'Wetland', value: 77 },
+  { year: '2014', type: 'Forest', value: 301 },
+  { year: '2014', type: 'Steppe', value: 191 },
+  { year: '2014', type: 'Desert', value: 201 },
+  { year: '2014', type: 'Wetland', value: 101 },
+  { year: '2015', type: 'Forest', value: 334 },
+  { year: '2015', type: 'Steppe', value: 234 },
+  { year: '2015', type: 'Desert', value: 154 },
+  { year: '2015', type: 'Wetland', value: 99 },
+  { year: '2016', type: 'Forest', value: 390 },
+  { year: '2016', type: 'Steppe', value: 290 },
+  { year: '2016', type: 'Desert', value: 190 },
+  { year: '2016', type: 'Wetland', value: 40 }
+];
+const aggregation = {};
+data.forEach(({ year, value }) =&gt; {
+  if (!aggregation[year]) {
+    aggregation[year] = 0;
+  }
+  aggregation[year] += value;
+});
+const spec = {
+  type: 'bar',
+  data: [
+    {
+      id: 'bar',
+      values: data
+    }
+  ],
+  xField: ['year', 'type'],
+  yField: 'value',
+  seriesField: 'type',
+  bar: {
+    state: {
+      legend_hover_reverse: {
+        fill: '#ccc'
+      }
+    }
+  },
+  legends: {
+    visible: true
+  },
+  tooltip: {
+    mark: {
+      title: {
+        value: datum =&gt; datum['year'] + '年'
+      },
+      content: [
+        {
+          key: datum =&gt; datum['type'],
+          value: datum =&gt; datum['value']
+        },
+        {
+          hasShape: false,
+          key: 'Proportion',
+          value: datum =&gt; Math.round((datum['value'] / aggregation[datum['year']]) * 10000) / 100 + '%'
+        }
+      ]
+    },
+    dimension: {
+      title: {
+        value: datum =&gt; datum['year'] + '年'
+      },
+      content: [
+        {
+          key: datum =&gt; datum['type'],
+          value: datum =&gt; datum['value']
+        },
+        {
+          hasShape: false,
+          key: datum =&gt; datum['type'] + ' Proportion',
+          value: datum =&gt; Math.round((datum['value'] / aggregation[datum['year']]) * 10000) / 100 + '%'
+        }
+      ]
+    }
+  }
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+<li><a href="https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Tooltip">Tooltip Tutorial</a></li>
+<li><a href="https://visactor.io/vchart/option/barChart#tooltip.visible">Related api</a></li>
+</ul>
+</body>
+</html>

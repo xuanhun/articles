@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4.5  事件到状态的更新流程</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">简介</h2>
+<p>VTable 将交互效果的实现拆到了三个模块中去处理，分别是：    </p>
+<ul>
+<li>
+<p>状态模块<code>stateManager</code>：状态模块负责维持表格当前各种交互的状态，状态的改变会导致场景树的重新渲染；    </p>
+</li>
+<li>
+<p>事件模块为 <code>eventManager</code>：事件模块负责监听事件，并根据不同的事件来改变状态；    </p>
+</li>
+<li>
+<p>场景树 <code>scenegraph</code>：场景树负责重新渲染表格，为实现交互的最后一步；    </p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ikb2bbZLooBdHDxfwsRct6CLnaf.gif' alt='' width='1000' height='auto'></p>
+<p>接下来将从六个常用的交互来看下事件到状态的更新流程。    </p>
+<h2 id="_2">交互实现</h2>
+<h3 id="select">单元格 select</h3>
+<h4 id="_3">核心状态</h4>
+<p>在状态模块中，决定单元格选中的核心状态值为 <code>select.ranges</code>，VTable 通过该字段来判断当前单元格是否选中，改变 select.ranges 即可实现单元格选中状态的改变。    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\state\state.ts
+select: {
+    ranges: (CellRange &amp; { skipBodyMerge?: boolean })[];
+    //...
+}    
+</code></pre>
+
+<p>我们来看下单元格选中是如何通过事件去影响状态的。    </p>
+<p>select 包含三种交互，分别是多选，拖拽多选和清空选择，三者所监听的事件各不相同。    </p>
+<h4 id="_4">单选</h4>
+<ul>
+<li>pointerdown 单选单元格    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QKzLb3NQwo2gESxn29ec7nI8nCf.gif' alt='' width='740' height='auto'></p>
+<p>在处理完单元格选中事件之后，更新 interactionState     </p>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\listener\table-group.ts
+stateManager.updateInteractionState(InteractionState.grabing);    
+</code></pre>
+
+<p>至于是否更新当前单元格选中状态的逻辑，则位于状态模块 <code>stateManager.updateSelectPos</code>中。    </p>
+<h4 id="_5">拖拽多选</h4>
+<ul>
+<li>pointermove 多选单元格    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/N3S5b9ojioIPbExzQfGcnz5znWg.gif' alt='' width='515' height='auto'></p>
+<h4 id="_6">清空选中</h4>
+<ul>
+<li>事件模块接收 pointertap 事件，点击空白区域取消选中，结束 select 交互。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// packages\vtable\src\event\listener\table-group.ts
+   table.scenegraph.stage.addEventListener('pointertap', (e: FederatedPointerEvent) =&gt; {
+    // ...
+      if (table.options.select?.blankAreaClickDeselect ?? true) {
+        eventManager.dealTableSelect();
+      }    
+      // ...
+  }    
+</code></pre>
+
+<h4 id="_7">状态更新</h4>
+<p>在状态模块关于 selct 单元格的流程中，单选单元格和框选单元格核心区别点在于 stateManger.interactionState 的不同：    </p>
+<ul>
+<li>
+<p>stateManager.interactionState === 'grabing' 表示当前正在框选单元格的过程    </p>
+</li>
+<li>
+<p>stateManager.interactionState === 'default' 表示单选单元格    </p>
+</li>
+</ul>
+<hr />
+<p>状态管理中关于选择状态的更新流程如下：    </p>
+<ul>
+<li>updateSelectPos    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/C4AsbOKs2ou17Tx7nyTcGDDMn6b.gif' alt='' width='1000' height='auto'></p>
+<h3 id="_8">滚动条滚动</h3>
+<p>滚动效果主要是监听的 <code>wheel</code> 事件，通过 <code>wheel</code> 事件改变当前的滚动条的状态，更新 scrollTop 和 scrollLeft ，调整表格的 x，y 坐标，实现滚动效果。    </p>
+<h4 id="_9">核心状态</h4>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\state\state.ts
+  scroll: {
+    horizontalBarPos: number;
+    verticalBarPos: number;
+  };
+</code></pre>
+
+<h4 id="_10">更新流程</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WVxvbjLqMoyD0zxiOb6cvbX5noc.gif' alt='' width='1000' height='auto'></p>
+<h3 id="hover">hover 单元格</h3>
+<h4 id="_11">核心状态</h4>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\state\state.ts
+  hover: {
+    cellPos: CellPosition; *// 记录当前hover的位置*
+  };    
+</code></pre>
+
+<p>VTable 内部通过 hover.cellPos 判断当前单元格是否处于 hover 状态，从而实现 hover 单元格的功能。    </p>
+<h4 id="_12">处理流程</h4>
+<p>单元格 hover 效果是通过监听 <code>pointermove</code> 事件来完成的。    </p>
+<ol>
+<li>首先由事件模块处理 pointermove 事件    </li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\table-group.ts
+  table.scenegraph.tableGroup.addEventListener('pointermove', (e: FederatedPointerEvent) =&gt; {
+    // ...
+    const eventArgsSet = getCellEventArgsSet(e);
+    eventManager.dealTableHover(eventArgsSet);
+    // ...
+  })    
+</code></pre>
+
+<ol>
+<li>事件模块 <code>eventManager.dealTableHover</code> 处理 hover 效果，通过 eventArgs 判断是清空还是更新 hover 状态。    </li>
+</ol>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\event.ts
+  dealTableHover(eventArgsSet?: SceneEvent) {
+    if (!eventArgsSet) {
+      this.table.stateManager.updateHoverPos(-1, -1);
+      return;
+    }
+    const { eventArgs } = eventArgsSet;
+
+    if (eventArgs) {
+      this.table.stateManager.updateHoverPos(eventArgs.col, eventArgs.row);
+    } else {
+      this.table.stateManager.updateHoverPos(-1, -1);
+    }
+  }
+</code></pre>
+
+<ol>
+<li>
+<p>状态模块更新 hover 位置 <code>stateManager.updateHoverPos</code>    </p>
+</li>
+<li>
+<p>整体流程图    </p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XWvtbdteGoR9pkxuS2CcR4RFnPe.gif' alt='' width='1000' height='auto'></p>
+<h3 id="_13">行高列宽调整</h3>
+<h4 id="_14">核心状态</h4>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\state\state.ts
+columnResize: {
+  col: number;
+  */** x坐标是相对table内坐标 */*
+  x: number;
+  resizing: boolean;
+};
+rowResize: {
+  row: number;
+  */** y坐标是相对table内坐标 */*
+  y: number;
+  resizing: boolean;
+};    
+</code></pre>
+
+<p>该状态中记录了当前拖拽行列的索引以及坐标，后续在实际的拖拽中，仅会去调整 <code>columnResize.col</code> 或 <code>rowResize.row</code> 对应的行或列。    </p>
+<h4 id="_15">调整流程</h4>
+<ul>
+<li>接收 pointerdown 事件，由事件模块检查是否进入拖拽调整列宽，如果确认进入调整行高列宽，则更新 <code>state.interactionState</code> 为 <code>grabing</code>；    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\table-group.ts
+  table.scenegraph.tableGroup.addEventListener('pointerdown', (e: FederatedPointerEvent) =&gt; {
+  // ...
+  *// 处理列宽调整*
+  if (
+    !eventManager.checkCellFillhandle(eventArgsSet) &amp;&amp;
+    (eventManager.checkColumnResize(eventArgsSet, true) || eventManager.checkRowResize(eventArgsSet, true))
+  ) {
+    table.scenegraph.updateChartState(null);
+    stateManager.updateInteractionState(InteractionState.grabing);
+    return;
+  }
+  // ...
+ }    
+</code></pre>
+
+<ul>
+<li>
+<p>首先根据 <code>pointerdown</code> 提供的点击坐标，计算是否命中拖拽热区，如果命中的话，返回对应的行列索引。    </p>
+</li>
+<li>
+<p>拖拽列宽检查    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\event.ts
+  checkColumnResize(eventArgsSet: SceneEvent, update?: boolean): boolean {
+    const { eventArgs } = eventArgsSet;
+    // ...
+    *// 如果是鼠标处理表格外部如最后一列的后面 也期望可以拖拽列宽*
+    // 获取当前点击的单元格行列号
+    const resizeCol = this.table.scenegraph.getResizeColAt(
+      eventArgsSet.abstractPos.x,
+      eventArgsSet.abstractPos.y,
+      eventArgs?.targetCell
+    );
+    if (this.table._canResizeColumn(resizeCol.col, resizeCol.row) &amp;&amp; resizeCol.col &gt;= 0) {
+      if (update) {
+        this.table.stateManager.startResizeCol(
+          resizeCol.col,
+          eventArgsSet.abstractPos.x,
+          eventArgsSet.abstractPos.y,
+          resizeCol.rightFrozen
+        );
+      }
+      return true;
+    }
+    // ...
+  }    
+</code></pre>
+
+<ul>
+<li>拖拽行高检查    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\event.ts
+  checkRowResize(eventArgsSet: SceneEvent, update?: boolean): boolean {
+  // ...
+    const { eventArgs } = eventArgsSet;
+    if (eventArgs) {
+      const resizeRow = this.table.scenegraph.getResizeRowAt(
+        eventArgsSet.abstractPos.x,
+        eventArgsSet.abstractPos.y,
+        eventArgs.targetCell
+      );
+
+      if (this.table._canResizeRow(resizeRow.col, resizeRow.row) &amp;&amp; resizeRow.row &gt;= 0) {
+        if (update) {
+          this.table.stateManager.startResizeRow(
+            resizeRow.row,
+            eventArgsSet.abstractPos.x,
+            eventArgsSet.abstractPos.y,
+            resizeRow.bottomFrozen
+          );
+        }
+        return true;
+      }
+    }
+
+  }
+</code></pre>
+
+<ul>
+<li>根据行列索引，通过状态模块初始化 <code>columnResize</code> 和 <code>rowResize</code> 的状态，触发下一帧渲染；    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\state\state.ts
+  startResizeCol(col: number, x: number, y: number, isRightFrozen?: boolean) {
+    this.columnResize.resizing = true;
+    this.columnResize.col = col;
+    this.columnResize.x = x;
+    this.columnResize.isRightFrozen = isRightFrozen;
+
+    this.table.scenegraph.component.showResizeCol(col, y, isRightFrozen);
+    this.table.scenegraph.updateNextFrame();
+  }    
+</code></pre>
+
+<ul>
+<li>
+<p>处理 <code>pointermove</code> 事件，由状态模块判断当前是拖拽行还是列；    </p>
+</li>
+<li>
+<p>如果 interactionState === 'grabing' 代表当前处于拖拽行高列宽的交互中；    </p>
+</li>
+<li>
+<p>由 <code>columnResize.resizing</code> 和 <code>rowResize.resizing</code> 判断当前是拖拽行高还是列宽；    </p>
+</li>
+<li>
+<p>通过事件模块做中转，处理拖拽事件 <code>eventManager.dealColumnResize(x, y)</code>；    </p>
+</li>
+<li>
+<p>触发 <code>RESIEZE_COLUMN</code> 和 <code>RESIZE_ROW</code> 事件；    </p>
+</li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">  const globalPointermoveCallback = (e: MouseEvent) =&gt; {
+  // ... 
+    const { x, y } = table._getMouseAbstractPoint(e, false);
+    if (stateManager.interactionState === InteractionState.grabing) {
+      if (stateManager.isResizeCol()) {
+        eventManager.dealColumnResize(x, y);
+        if ((table as any).hasListeners(TABLE_EVENT_TYPE.RESIZE_COLUMN)) {
+          table.fireListeners(TABLE_EVENT_TYPE.RESIZE_COLUMN, {
+            col: table.stateManager.columnResize.col,
+            colWidth: table.getColWidth(table.stateManager.columnResize.col)
+          });
+        }
+      } else if (stateManager.isResizeRow()) {
+        eventManager.dealRowResize(x, y);
+        if ((table as any).hasListeners(TABLE_EVENT_TYPE.RESIZE_ROW)) {
+          table.fireListeners(TABLE_EVENT_TYPE.RESIZE_ROW, {
+            row: table.stateManager.rowResize.row,
+            rowHeight: table.getRowHeight(table.stateManager.rowResize.row)
+          });
+        }
+      }
+    }
+  // ...
+  }
+  document.body.addEventListener('pointermove', globalPointermoveCallback);    
+</code></pre>
+
+<ul>
+<li>通过状态模块处理 <code>pointermove</code> 事件，通过当前指针的坐标，更新 <code>columnResize.col</code> 和 <code>rowResize.row</code> 对应索引处的列宽/行高。    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\event.ts
+  dealColumnResize(xInTable: number, yInTable: number) {
+    this.table.stateManager.updateResizeCol(xInTable, yInTable);
+  }
+
+  dealRowResize(xInTable: number, yInTable: number) {
+    this.table.stateManager.updateResizeRow(xInTable, yInTable);
+  }    
+</code></pre>
+
+<ul>
+<li>处理 <code>pointerup</code> 事件，将 <code>state.interactionState</code> 还原为 <code>default</code>；    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\listener\table-group.ts
+  table.scenegraph.stage.addEventListener('pointerup', (e: FederatedPointerEvent) =&gt; {
+    *// 处理列宽调整  这里和tableGroup.addEventListener('pointerup' 逻辑一样*
+    if (stateManager.interactionState === 'grabing') {
+      stateManager.updateInteractionState(InteractionState.default);
+      if (stateManager.isResizeCol()) {
+        endResizeCol(table);
+      } else if (stateManager.isResizeRow()) {
+        endResizeRow(table);
+      }
+    }
+  });    
+</code></pre>
+
+<ul>
+<li>交由状态模块去重置 <code>stateManager.columnResize</code> 和 <code>stateManager.rowResize</code>，随后触发 <code>RESIZE_COLUMN_END</code> 或 <code>RESIZE_ROW_END</code> 事件    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\listener\table-group.ts
+export function endResizeCol(table: BaseTableAPI) {
+  table.stateManager.endResizeCol();
+  const columns = [];
+  *// 返回所有列宽信息*
+  for (let col = 0; col &lt; table.colCount; col++) {
+    columns.push(table.getColWidth(col));
+  }
+  table.fireListeners(TABLE_EVENT_TYPE.RESIZE_COLUMN_END, {
+    col: table.stateManager.columnResize.col,
+    colWidths: columns
+  });
+}
+
+export function endResizeRow(table: BaseTableAPI) {
+  table.stateManager.endResizeRow();
+
+  table.fireListeners(TABLE_EVENT_TYPE.RESIZE_ROW_END, {
+    row: table.stateManager.rowResize.row,
+    rowHeight: table.getRowHeight(table.stateManager.rowResize.row)
+  });    
+</code></pre>
+
+<ul>
+<li>重置 <code>columnResize.resizing</code> 和 <code>rowResize.resizing</code> 为 false，隐藏拖拽基准线，进入下一帧渲染。    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\state\state.ts
+  endResizeCol() {
+    setTimeout(() =&gt; {
+      this.columnResize.resizing = false;
+    }, 0);
+    // ...
+    this.table.scenegraph.component.hideResizeCol();
+    this.table.scenegraph.updateNextFrame();
+  }
+  endResizeRow() {
+    setTimeout(() =&gt; {
+      this.rowResize.resizing = false;
+    }, 0);
+    // ...
+    this.table.scenegraph.component.hideResizeRow();
+    this.table.scenegraph.updateNextFrame();
+  }    
+</code></pre>
+
+<ul>
+<li>流程图    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GhLAbSX5Mo9mZsxw2Sxcwxgrnkb.gif' alt='' width='1000' height='auto'></p>
+<h3 id="_16">拖拽换行换列</h3>
+<h4 id="_17">核心状态</h4>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\state\state.ts
+  columnMove: {
+    colSource: number;
+    colTarget: number;
+    rowSource: number;
+    rowTarget: number;
+    x: number;
+    y: number;
+    moving: boolean;
+  };    
+</code></pre>
+
+<p>columnRemove 中存储了拖拽行列的原始索引以及目标索引，还有是否处于移动中的标识，通过改变 <code>colTarget</code> 和 <code>rowTarget</code> 即可实现将选中的行/列替换到目标位置的功能。    </p>
+<h4 id="_18">处理流程</h4>
+<p>拖拽换行换列也是依靠了三个事件来完成的：<code>pointerdown</code>、<code>pointermove</code> 、<code>pointerup</code>    </p>
+<ul>
+<li>流程图    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/H1Gebs14DoUQWOxF53icOGhjn9d.gif' alt='' width='1000' height='auto'></p>
+<h3 id="_19">固定列</h3>
+<p>VTable 提供了内置的冻结列操作，可以通过配置 <code>allowFrozenColCount</code> 开启。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Xz8kbT8hDoW669xVm95cHoLbnZd.gif' alt='' width='568' height='auto'></p>
+<h4 id="_20">核心状态</h4>
+<p>VTable 通过<code>tableInstance.internalProps.frozenColCount</code>状态维护了当前实际冻结的列数，内部会根据该字段调整左侧冻结列数，采取特殊样式。    </p>
+<h4 id="_21">处理流程</h4>
+<p>冻结列的操作主要由 <code>pointertap</code> 和 自定义事件 <code>ICON_CLICK</code> 协同实现。    </p>
+<ul>
+<li>首先处理 <code>pointertap</code> 事件；    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\listener\table-group.ts
+  table.scenegraph.tableGroup.addEventListener('pointertap', (e: FederatedPointerEvent) =&gt; {
+  // ...
+    if (
+      !eventManager.touchMove &amp;&amp;
+      e.button === 0 &amp;&amp;
+      eventArgsSet.eventArgs &amp;&amp;
+      (table as any).hasListeners(TABLE_EVENT_TYPE.CLICK_CELL)
+    ) {
+    // ...
+    eventManager.dealIconClick(e, eventArgsSet);
+
+  });    
+</code></pre>
+
+<ul>
+<li>事件模块中通过 eventArgsSet 判断是否点击中图标图元，如果点击的为图标图元，则触发自定义事件 <code>ICON_CLICK</code>；    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\event.ts
+ dealIconClick(e: FederatedPointerEvent, eventArgsSet: SceneEvent): boolean {
+    const { eventArgs } = eventArgsSet;
+
+    const { target, event, col, row } = eventArgs || {
+      target: e.target,
+      event: e,
+      col: -1,
+      row: -1
+    };
+    const icon = target as unknown as Icon;
+
+    if (icon.role &amp;&amp; icon.role.startsWith('icon-')) {
+      this.table.fireListeners(TABLE_EVENT_TYPE.ICON_CLICK, {
+        name: icon.name,
+        *// 默认位置：icon中部正下方*
+        x: (icon.globalAABBBounds.x1 + icon.globalAABBBounds.x2) / 2,
+        y: icon.globalAABBBounds.y2,
+        col,
+        row,
+        funcType: icon.attribute.funcType,
+        icon,
+        event
+      });
+
+  }    
+</code></pre>
+
+<ul>
+<li><code>ICON_CLICK</code>事件早在事件模块初始化时就已注册，<code>ICON_CLICK</code> 事件中会判断当前点击图标类型是否为 frozen；    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\event.ts
+    *// 图标点击*
+    this.table.on(TABLE_EVENT_TYPE.ICON_CLICK, iconInfo =&gt; {
+      const { col, row, x, y, funcType, icon, event } = iconInfo;
+      // ...
+      if (funcType === IconFuncTypeEnum.frozen) {
+        stateManager.triggerFreeze(col, row, icon);
+      } 
+      // ...
+    });
+</code></pre>
+
+<ul>
+<li>状态模块处理点击 <code>fronzen</code> 事件，根据当前点击的列索引，更新<code>this.internalProps.frozenColCount</code>，如果当前点击的列跟状态中维持的 <code>frozenColCount</code> 相同，则重置 <code>frozenColCount</code> 为 0，如果不同则更新 <code>frozenColCount</code> 为 col；    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\state\frozen\index.ts
+export function dealFreeze(col: number, row: number, table: BaseTableAPI) {
+  if (table.frozenColCount &gt; 0) {
+    if (col !== table.frozenColCount - 1) {
+      table.setFrozenColCount(col + 1);
+    } else {
+      table.setFrozenColCount(0);
+    }
+  } else {
+    table.setFrozenColCount(col + 1);
+  }
+}
+</code></pre>
+
+<ul>
+<li>触发 <code>FREEZE_CLICK</code> 事件    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">  triggerFreeze(col: number, row: number, iconMark: Icon) {
+  // ...
+    if ((this.table as any).hasListeners(PIVOT_TABLE_EVENT_TYPE.FREEZE_CLICK)) {
+      const fields: ColumnData[] = (this.table as ListTable).internalProps.layoutMap.columnObjects.slice(0, col + 1);
+      this.table.fireListeners(PIVOT_TABLE_EVENT_TYPE.FREEZE_CLICK, {
+        col: col,
+        row: row,
+        fields: fields.reduce((pre: any, cur: any) =&gt; pre.concat(cur.field), []),
+        colCount: this.table.frozenColCount
+      });
+    }
+    // ...
+   }    
+</code></pre>
+
+<h2 id="_22">结语</h2>
+<p>本文从常用的六种交互效果出发，详细讲解了从事件到状态的更新流程。    </p>
+<p>VTable 将交互效果拆为事件模块和状态模块，使得处理交互事件时，在流程处理方面能够更加清晰。    </p>
+<h1 id="_23">本文档由以下人员提供</h1>
+<p>taiiiyang( https://github.com/taiiiyang)    </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

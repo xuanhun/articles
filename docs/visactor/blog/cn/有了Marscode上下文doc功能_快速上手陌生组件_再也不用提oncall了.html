@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>有了Marscode 上下文doc功能 ，快速上手陌生组件，再也不用提oncall了</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="marscode">什么是Marscode</h1>
+<p>豆包 MarsCode 编程助手是豆包旗下的 AI 编程助手，提供以智能代码补全为代表的 AI 功能。它支持主流的编程语言和 IDE，在开发过程中提供单行代码或整个函数的编写建议。此外，它还支持代码解释、单测生成和问题修复等功能，提高了开发效率和质量。 更多信息，请参考<a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">豆包 MarsCode 编程助手的文档</a>。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Q2e1bbkztofydIxbrWJcl8knnkd.gif' alt='' width='1000' height='auto'></p>
+<h1 id="doc">什么上下文Doc 功能</h1>
+<p>指定上下文可以让 AI 助手提供更精准的回答，但是大模型对一个组件的理解的实时程度是低于组件自己的官方文档的。如果我们在使用一个不熟悉的组件的时候，如果能将该组件的相关文档引入到上下文中，可以大大的提升智能化编程水平。</p>
+<p>Marscode 使用 “#” 来指定上下文。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Bp7jbfiupo8oPexQfWQcvVS5n2c.gif' alt='' width='527' height='auto'></p>
+<p>输入“#Doc：”，可以看到Marscode 默认支持的文档。继续输入可以进行文档搜索。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XREJbWAXDogI2tx43oKcgaC9n6e.gif' alt='' width='551' height='auto'></p>
+<p>这里我们可以看到Marscode 已经内置了 VisActor 开源可视化解决方案中的三个组件（<a href="https://www.visactor.io/vchart">VChart</a>，<a href="https://www.visactor.io/vtable">VTable</a>，<a href="https://www.visactor.io/vstory">VStory</a>）的文档。</p>
+<p>下面我们实地测试一下引用文档作为上下文是否会给编程带来实际的益处。</p>
+<h1 id="_1">效果测试</h1>
+<h2 id="_2">创建测试项目</h2>
+<p>我们创建一个最简单web 项目</p>
+<pre class="codehilite"><code>npm create vite@latest my-ts-web -- --template typescript
+cd my-ts-web
+</code></pre>
+
+<h1 id="_3">实践验证</h1>
+<h2 id="_4">新增一个线图</h2>
+<p>我们要求Marscode 生成一段代码，在当前文件中添加一个VChart 线图。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/RIWabmbm5o981xxoCD3cYvyBnjb.gif' alt='' width='301' height='auto'></p>
+<p>生成的结果还是有错误的。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Pm23biobIocfdAxNpeKcYTnEnEC.gif' alt='' width='1000' height='auto'></p>
+<p>我们下面引入文档，看看是不是会有所改变。</p>
+<p>首先我们看到使用了多个文档作为上下文信息：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/SF55bBy84oRAzkxfniUcPt7Wnbc.gif' alt='' width='504' height='auto'></p>
+<p>重新生成的代码修复了之前的api 错误调用。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/IPf5bH7XXoAficxl6yfc44n4npd.gif' alt='' width='312' height='auto'></p>
+<p>生成了一个正确的线图。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/LTZyb2kuYo95JfxVQo4cUjdpnAg.gif' alt='' width='1000' height='auto'></p>
+<h2 id="_5">加大难度</h2>
+<p>首先我们来修改数据，显示三条线。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/UJvdb88RSojHlrx75dvczjHXnqh.gif' alt='' width='526' height='auto'></p>
+<p>我们看到这次并没有引用文档，同时生成的结果也不是很好。调整一下说法，看看是不是会好一些。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/KSUjbcYlfoQFrwxlzAhcXLUnnzb.gif' alt='' width='454' height='auto'></p>
+<p>主要修改点：</p>
+<ol>
+<li>
+<p>重构了数据结构，使用type字段来区分不同系列</p>
+</li>
+<li>
+<p>使用seriesField来指定系列的分类字段</p>
+</li>
+<li>
+<p>每个数据点包含year（x轴）、value（y轴）和type（系列）三个字段</p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VGqCbLZHNovw5cxM2GIcaBHunic.gif' alt='' width='1000' height='auto'></p>
+<p>修改入场动画效果：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/BZhUb5Z7PobnASxJnQwc55oyn0b.gif' alt='' width='517' height='auto'></p>
+<p>主要修改：</p>
+<ol>
+<li>
+<p>添加了animation配置</p>
+</li>
+<li>
+<p>appear设置入场动画为fadeIn（淡入淡出）</p>
+</li>
+<li>
+<p>duration设置动画持续时间为1000毫秒</p>
+</li>
+</ol>
+<p>结果如下：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Y34UbtKNwo9efYxAswkcbnvxnGh.gif' alt='' width='1000' height='auto'></p>
+<h2 id="_6">更多问答</h2>
+<p>因为有了官方文档，我们可以让Marscode 回答更多类型的问题，不只是代码本身。</p>
+<p>比如基本的图表概念：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/KBYIbB9Fyoh5NbxlxKrcM0CSncd.gif' alt='' width='483' height='auto'></p>
+<p>或者 跨端支持情况：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VC9JbsIMXo3VRKx8XIOcEImWnac.gif' alt='' width='488' height='auto'></p>
+<p>导航到更相关文档：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/T25UbYqrQooLPOxkr5ocuUyrnTf.gif' alt='' width='521' height='auto'></p>
+<h1 id="_7">自定义添加文档</h1>
+<p>如果你想使用的文档没有被Marscode 默认提供，也无需担心，Marscode提供了添加自定义文档的功能。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/BPnhboTMho5udbxfi9EcA9gEnvf.gif' alt='' width='578' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/GiTKbd3caokSPYxg5a0cO7Rwnhf.gif' alt='' width='565' height='auto'></p>
+<p>添加文档入口链接即可。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/QfkhbDZe7oxTHmxrhBOcauxLnre.gif' alt='' width='548' height='auto'></p>
+<p>接下来就可以引用了。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Tsr0buovdol3vCxE5PucoeNTnkd.gif' alt='' width='518' height='auto'></p>
+<h1 id="_8">简单总结</h1>
+<p>Marscode 结合文档有如下好处：</p>
+<ol>
+<li>
+<p>提升开发效率</p>
+</li>
+<li>
+<p>快速访问：通过Marscode直接查阅VisActor API文档</p>
+</li>
+<li>
+<p>智能提示：基于VisActor文档的精准代码补全</p>
+</li>
+<li>
+<p>增强开发体验</p>
+</li>
+<li>
+<p>无缝集成：在开发环境中直接获取VTable使用指导</p>
+</li>
+<li>
+<p>实时反馈：快速验证代码效果</p>
+</li>
+<li>
+<p>降低学习成本</p>
+</li>
+<li>
+<p>文档辅助：随时查阅VisActor官方示例</p>
+</li>
+<li>
+<p>代码生成：自动生成符合VisActor规范的代码</p>
+</li>
+<li>
+<p>提高代码质量</p>
+</li>
+<li>
+<p>规范检查：确保代码符合VisActor最佳实践</p>
+</li>
+<li>
+<p>性能优化：自动生成高性能表格配置</p>
+</li>
+</ol>
+<h1 id="_9">联系我们</h1>
+<p>github ：<a href="https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2FVisActor">github.com/VisActor</a></p>
+<p>VisActor 微信订阅号留言（可以通过订阅号菜单加入微信群）：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/N4TXbfbH1o8Lu2xwSNfcTA5qnnf.gif' alt='' width='258' height='auto'></p>
+<p>VisActor 官网：<a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.io/</a>  ； <a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.</a>com</p>
+<p>飞书群：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/TTiRbhzCYocjQVxg6LPc2u6in74.gif' alt='' width='264' height='auto'></p>
+<p>discord：https://discord.com/invite/3wPyxVyH6m</p>
+</body>
+</html>

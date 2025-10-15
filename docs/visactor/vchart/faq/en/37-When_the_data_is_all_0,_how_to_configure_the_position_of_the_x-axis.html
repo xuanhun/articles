@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>37-When_the_data_is_all_0,_how_to_configure_the_position_of_the_x-axis</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="when-the-data-is-all-0-how-to-configure-the-position-of-the-x-axis">When the data is all 0, how to configure the position of the x-axis?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>Similar to (https://www.visactor.io/vchart/demo/line-chart/basic-line) such a line chart with all 0 data,
+The position of the x-axis will center the polyline. I want to adjust the position of the X-axis so that the X-axis is aligned with the Y scale of 0. How to achieve this?</p>
+<h2 id="solution">Solution</h2>
+<p>Different chart libraries have different solutions. According to the demo you gave, you only need to set the axes-linear.zero of the Y axis to true.</p>
+<ul>
+<li>barChart-axes-linear.zero = true only works if the axis is a linear axis, whether to include 0 value. When min and max are configured, this configuration item becomes invalid.</li>
+</ul>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const spec = {
+  type: 'line',
+  data: {
+    values: [
+      {
+        time: '2:00',
+        value: 0
+      },
+      {
+        time: '4:00',
+        value: 0
+      },
+      {
+        time: '6:00',
+        value: 0
+      },
+      {
+        time: '8:00',
+        value: 0
+      },
+      {
+        time: '10:00',
+        value: 0
+      },
+      {
+        time: '12:00',
+        value: 0
+      },
+      {
+        time: '14:00',
+        value: 0
+      },
+      {
+        time: '16:00',
+        value: 0
+      },
+      {
+        time: '18:00',
+        value: 0
+      }
+    ]
+  },
+  xField: 'time',
+  yField: 'value',
+  axes: [
+    {
+      orient: 'left',
+      zero: true
+    }
+  ]
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="results">Results</h2>
+<ul>
+<li><a href="https://codesandbox.io/s/data-is-all-0-smhq6h">Online demo</a></li>
+</ul>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://www.visactor.io/vchart/demo/line-chart/basic-line">Basic Line Chart Demo</a></li>
+<li><a href="https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Axes">Axes Tutorial</a></li>
+<li><a href="https://www.visactor.io/vchart/option/lineChart-axes-linear#zero">Related API</a></li>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+</ul>
+</body>
+</html>

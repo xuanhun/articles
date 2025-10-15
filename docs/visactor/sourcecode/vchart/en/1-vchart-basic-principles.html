@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1 Basic Principles of VChart</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="11-chart-composition">1.1 Chart Composition</h1>
+<h2 id="terminology">Terminology</h2>
+<ol>
+<li>
+<p>Mark: Basic graphical elements (basic primitives), such as lines, points, rectangles, etc.    </p>
+</li>
+<li>
+<p>Series: Responsible for the visual representation of a specific type of data, containing a set of primitives and their corresponding chart logic, such as a series of lines in a line chart    </p>
+</li>
+<li>
+<p>Region: Defines the spatial area of the chart, associates one or more series, handles interactions and animations, and provides coordinate systems    </p>
+</li>
+<li>
+<p>Component: Components that assist in chart reading and interaction, such as legends, axes, tooltips, etc.    </p>
+</li>
+<li>
+<p>Layout: Manages the layout of the chart, including the position and size of regions and components    </p>
+</li>
+<li>
+<p>Chart: The abstract concept of the entire chart, containing elements on the view such as layout, components, and regions, as well as data and all elements required to form a chart    </p>
+</li>
+</ol>
+<h2 id="structural-relationships">Structural Relationships</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/HOM9w48WrhyL5hbEByTcG0BanGf.gif' alt='' width='534' height='auto' /></p>
+<h2 id="simple-chart-example">Simple Chart Example</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/S64ebNauBobOOJxwIalcq8E9ncf.gif' alt='' width='1000' height='auto' /></p>
+<h2 id="combined-chart-example">Combined Chart Example</h2>
+<h3 id="same-region">Same Region</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GAGOb6NrBoGdMrxHbt9cvDXNndb.gif' alt='' width='1000' height='auto' /></p>
+<p>The above image is a composite chart, simply put, it has multiple series groups, with bar and line series groups above.</p>
+<ol>
+<li>
+<p>If we do not configure specifically, all series will be associated with one region, so they will overlap and share certain coordinates.</p>
+</li>
+<li>
+<p>Each series can have its own data source, or the data source can be configured directly on the chart. In the series, it is associated through <code>fromDataId</code> or <code>fromDataIndex</code>. In the current example, we choose to configure it on the chart.</p>
+</li>
+</ol>
+<h3 id="different-regions">Different Regions</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/FdZebrNhWo3MqTxoqOfcAyYJnh6.gif' alt='' width='1000' height='auto' /></p>
+<p>In this example, it is also a combined chart, but its two series appear in different regions. As mentioned above, we use layout to manage the layout of regions. In this example, we use the following code:    </p>
+<pre class="codehilite"><code class="language-Typescript">  layout: {
+    type: 'grid',
+    col: 4,
+    row: 3,
+    elements: [
+      {
+        modelId: 'legend',
+        col: 0,
+        colSpan: 4,
+        row: 0
+      },
+      {
+        modelId: 'pie-region',
+        col: 0,
+        colSpan: 2,
+        row: 1
+      },
+      {
+        modelId: 'axis-left',
+        col: 2,
+        row: 1
+      },
+      {
+        modelId: 'bar-region',
+        col: 3,
+        row: 1
+      },
+      {
+        modelId: 'axis-bottom',
+        col: 3,
+        row: 2
+      }
+    ]
+  },    
+</code></pre>
+
+<p>Above, the layout of regions and components was managed in a manner similar to a grid. We use these <code>modelId</code>s to associate the corresponding configurations of regions and components:</p>
+<pre class="codehilite"><code class="language-Typescript">  region: [
+    {
+      id: 'pie-region'
+    },
+    {
+      id: 'bar-region'
+    }
+  ],
+  axes: [
+    {
+      id: 'axis-left',
+      regionId: 'bar-region',
+      orient: 'left'
+    },
+    {
+      id: 'axis-bottom',
+      regionId: 'bar-region',
+      orient: 'bottom'
+    }
+  ]    
+</code></pre>
+
+<h1 id="12-vchart-architecture-and-source-code-structure">1.2 VChart Architecture and Source Code Structure</h1>
+<h2 id="121-the-relationship-among-vchart-vgrammar-and-vrender">1.2.1 The Relationship Among VChart, VGrammar, and VRender</h2>
+<p>These three are the core components in the VisActor visualization system, and their relationship is hierarchical, from the bottom layer to the top layer as follows:    </p>
+<h3 id="vrender-bottom-layer">VRender (Bottom Layer)</h3>
+<p>VRender is a low-level visualization rendering engine responsible for the most basic graphic drawing and rendering tasks:    </p>
+<ul>
+<li>
+<p>It provides rich visualization rendering capabilities, including custom animations, element composition, and narrative arrangement    </p>
+</li>
+<li>
+<p>It is the foundation of the VisActor visualization system, providing rendering capabilities for upper-level libraries    </p>
+</li>
+<li>
+<p>VRender offers a plugin system for flexible extension    </p>
+</li>
+<li>
+<p>It can seamlessly switch between 2D/3D effects    </p>
+</li>
+<li>
+<p>It handles low-level Canvas operations, graphic drawing, scene management, etc.    </p>
+</li>
+</ul>
+<h3 id="vgrammar-middle-layer">VGrammar (Middle Layer)</h3>
+<p>VGrammar is a visualization grammar library based on VRender:    </p>
+<ul>
+<li>
+<p>It uses declarative syntax to describe data visualization    </p>
+</li>
+<li>
+<p>VGrammar maps data to visual elements, handling data transformation, marks, scales, etc.    </p>
+</li>
+<li>
+<p>It provides more advanced APIs to simplify the process of creating complex visualizations    </p>
+</li>
+<li>
+<p>VGrammar is responsible for chart grammar definition, data mapping, automatic layout, etc.    </p>
+</li>
+<li>
+<p>It is essentially a further encapsulation of VRender, adding more visualization grammar concepts    </p>
+</li>
+</ul>
+<h3 id="vchart-top-layer">VChart (Top Layer)</h3>
+<p>VChart is the top-level chart component library:    </p>
+<ul>
+<li>
+<p>It is built on VGrammar and encapsulates common chart types (bar charts, pie charts, line charts, etc.)    </p>
+</li>
+<li>
+<p>VChart provides ready-to-use chart components, so users do not need to understand the underlying graphic grammar    </p>
+</li>
+<li>
+<p>It features cross-platform capabilities, automatically adapting to desktop, H5, and various mini-program environments    </p>
+</li>
+<li>
+<p>VChart offers comprehensive data narrative capabilities, including extensive annotations, animations, flow control, and narrative templates    </p>
+</li>
+<li>
+<p>It is aimed at end users, providing the most user-friendly visualization interface and APIs    </p>
+</li>
+</ul>
+<h3 id="summary-of-the-relationship">Summary of the Relationship</h3>
+<p>The architectural relationship among these three can be understood as:    </p>
+<pre class="codehilite"><code class="language-Typescript">VChart (图表组件库)
+   ↓
+VGrammar (可视化语法)
+   ↓
+VRender (渲染引擎)
+   ↓
+浏览器/Canvas/WebGL    
+</code></pre>
+
+<p>From the code implementation perspective:    </p>
+<ul>
+<li>
+<p>VChart uses VGrammar to define and construct charts    </p>
+</li>
+<li>
+<p>VGrammar uses VRender for actual drawing and rendering    </p>
+</li>
+<li>
+<p>Ultimately, VRender controls the underlying Canvas/WebGL to draw graphics    </p>
+</li>
+</ul>
+<p>This layered architecture allows developers to choose tools at different levels according to their needs: if highly customized visualizations are required, VRender or VGrammar can be used directly; if quick creation of standard charts is needed, VChart can be used.    </p>
+<h2 id="122-relationships-between-internal-components-of-vchart-and-source-code-structure">1.2.2 Relationships Between Internal Components of VChart and Source Code Structure</h2>
+<p>The overall architecture adopts a modular design, with the core divided into the following main parts:    </p>
+<ol>
+<li>
+<p>Core Engine (Core): The central controller of VChart, responsible for organizing the collaboration of various modules    </p>
+</li>
+<li>
+<p>Chart: Specific implementations of various chart types    </p>
+</li>
+<li>
+<p>Series: Responsible for mapping data to graphics in charts    </p>
+</li>
+<li>
+<p>Mark: Basic graphic elements    </p>
+</li>
+<li>
+<p>Region: Defines the rendering area of the chart    </p>
+</li>
+<li>
+<p>Component: Additional components such as axes, legends, etc.    </p>
+</li>
+<li>
+<p>Layout: Handles the position calculation of chart elements    </p>
+</li>
+<li>
+<p>Event: Handles user interactions    </p>
+</li>
+<li>
+<p>Scale: Related to data mapping and scales    </p>
+</li>
+<li>
+<p>Data: Data transformation and processing    </p>
+</li>
+</ol>
+<h3 id="core-module">Core Module</h3>
+<h4 id="vchart-core-class">VChart Core Class</h4>
+<p>The VChart class is the entry point of the entire chart library, responsible for instantiating and managing the lifecycle of the entire chart.    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/core/vchart.ts
+export class VChart implements IVChart {
+  readonly id = createID();
+
+  // 用于注册图表、组件、系列等
+  static useRegisters(comps: (() =&gt; void)[]) { ... }
+  static useChart(charts: IChartConstructor[]) { ... }
+  static useSeries(series: ISeriesConstructor[]) { ... }
+
+  // 核心渲染流程
+  renderSync(morphConfig?: IMorphConfig) { ... }
+  async renderAsync(morphConfig?: IMorphConfig) { ... }
+
+  // 数据更新方法
+  updateData(id: StringOrNumber, data: DataView | Datum[] | string, ...) { ... }
+  updateSpec(spec: ISpec, forceMerge: boolean = false, ...) { ... }
+
+  // 状态管理
+  setSelected(datum: MaybeArray&lt;any&gt; | null, ...) { ... }
+  setHovered(datum: MaybeArray&lt;Datum&gt; | null, ...) { ... }
+}    
+</code></pre>
+
+<p>The lifecycle of VChart mainly includes:    </p>
+<ol>
+<li>
+<p>Initialization of configuration and data    </p>
+</li>
+<li>
+<p>Creation of chart instance    </p>
+</li>
+<li>
+<p>Layout calculation    </p>
+</li>
+<li>
+<p>Rendering    </p>
+</li>
+<li>
+<p>Interaction event handling    </p>
+</li>
+<li>
+<p>Updating and destruction    </p>
+</li>
+</ol>
+<h4 id="modular-chart-class-chart">Modular Chart Class (Chart)</h4>
+<p>The chart module implements various types of charts, such as bar charts, line charts, pie charts, etc., all inheriting from BaseChart.    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/chart/base/base-chart.ts
+export class BaseChart&lt;T extends IChartSpec&gt; extends CompilableBase implements IChart {
+  readonly type: string = 'chart';
+  readonly seriesType: string;
+
+  protected _regions: IRegion[] = [];
+  protected _series: ISeries[] = [];
+  protected _components: IComponent[] = [];
+
+  protected _layoutFunc: LayoutCallBack;
+  protected _layoutRect: IRect = { ... };
+
+  layout(params: ILayoutParams): void { ... }
+  compile() { ... }
+}    
+</code></pre>
+
+<p>For example, BarChart inherits from BaseChart    </p>
+<pre class="codehilite"><code class="language-Typescript">export class BarChart&lt;T extends IBarChartSpec = IBarChartSpec&gt; extends BaseChart&lt;T&gt; {
+  static readonly type: string = ChartTypeEnum.bar;
+  static readonly seriesType: string = SeriesTypeEnum.bar;
+  static readonly transformerConstructor = BarChartSpecTransformer;
+  readonly transformerConstructor = BarChartSpecTransformer;
+  readonly type: string = ChartTypeEnum.bar;
+  readonly seriesType: string = SeriesTypeEnum.bar;
+}    
+</code></pre>
+
+<p>The chart module is responsible for:    </p>
+<ul>
+<li>
+<p>Determining chart types and layouts    </p>
+</li>
+<li>
+<p>Managing included areas, series, and components    </p>
+</li>
+<li>
+<p>Handling the overall mapping from data to visual elements    </p>
+</li>
+</ul>
+<h4 id="series-module-series">Series Module (Series)</h4>
+<p>The series module is the core mapping from data to visual representation, with different series types corresponding to different graphical forms.    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages/vchart/src/series/base/base-series.ts
+export abstract class BaseSeries&lt;T extends ISeriesSpec&gt; extends BaseModel&lt;T&gt; implements ISeries {
+  readonly type: string = 'series';
+  readonly coordinate: CoordinateType = 'none';
+
+  protected _region: IRegion;
+  protected _rootMark: IGroupMark = null;
+  protected _seriesMark: Maybe&lt;IMark&gt; = null;
+
+  protected _rawData!: DataView;
+  protected _data: SeriesData = null;
+
+  abstract initMark(): void;
+  abstract initMarkStyle(): void;
+  abstract dataToPosition(data: Datum, checkInViewData?: boolean): IPoint;
+}    
+</code></pre>
+
+<p>Series modules are responsible for:    </p>
+<ul>
+<li>
+<p>Converting data to graphical marks    </p>
+</li>
+<li>
+<p>Handling data mapping for specific chart types    </p>
+</li>
+<li>
+<p>Managing the style and state of marks    </p>
+</li>
+</ul>
+<h4 id="mark-module-mark">Mark Module (Mark)</h4>
+<p>Marks are the most basic visual elements, such as lines, rectangles, points, etc., which are the fundamental units that make up charts. Corresponding code implementations can be found in the <code>packages/vchart/src/mark</code> directory.    </p>
+<p>Marks are responsible for:    </p>
+<ul>
+<li>
+<p>Implementing specific graphic rendering    </p>
+</li>
+<li>
+<p>Handling interaction states (such as highlight, selection)    </p>
+</li>
+<li>
+<p>Binding with data    </p>
+</li>
+</ul>
+<h4 id="region-module-region">Region Module (Region)</h4>
+<p>Regions define the rendering positions of charts on the canvas and can contain multiple series. Corresponding code is in <code>packages/vchart/src/region</code>    </p>
+<p>The region module is responsible for:    </p>
+<ul>
+<li>
+<p>Determining the position and size of each sub-region in the chart    </p>
+</li>
+<li>
+<p>Managing the series contained within    </p>
+</li>
+<li>
+<p>Handling layout relationships between regions    </p>
+</li>
+</ul>
+<h4 id="component-module-component">Component Module (Component)</h4>
+<p>Components are auxiliary elements in charts besides data graphics, such as axes, legends, titles, etc. Various component implementations are in the <code>packages/vchart/src/component</code> directory    </p>
+<p>The component module is responsible for:    </p>
+<ul>
+<li>
+<p>Rendering various auxiliary elements    </p>
+</li>
+<li>
+<p>Interacting with users (such as legend clicks)    </p>
+</li>
+<li>
+<p>Collaborating with the main chart    </p>
+</li>
+</ul>
+<h4 id="layout-module-layout">Layout Module (Layout)</h4>
+<p>The layout module is responsible for calculating the position and size of each chart element. Corresponding code is in <code>packages/vchart/src/layout</code>. Specifically, it includes:    </p>
+<ul>
+<li>
+<p>Calculating element positions    </p>
+</li>
+<li>
+<p>Adjusting container size adaptively    </p>
+</li>
+<li>
+<p>Handling layering relationships between elements    </p>
+</li>
+</ul>
+<h4 id="event-module-event">Event Module (Event)</h4>
+<p>The event module handles user interactions and internal events. Specifically, it includes:    </p>
+<ul>
+<li>
+<p>Handling user interaction events (such as clicks, hover)    </p>
+</li>
+<li>
+<p>Dispatching internal events    </p>
+</li>
+<li>
+<p>Triggering data updates and rendering updates    </p>
+</li>
+</ul>
+<h4 id="scale-module-scale">Scale Module (Scale)</h4>
+<p>The scale module is responsible for mapping data to visual attributes. Specifically, it includes:    </p>
+<ul>
+<li>
+<p>Handling the mapping between data and visual space    </p>
+</li>
+<li>
+<p>Managing various scales (linear, discrete, color, etc.)    </p>
+</li>
+<li>
+<p>Calculating axis ranges and ticks    </p>
+</li>
+</ul>
+<h4 id="data-module-data">Data Module (Data)</h4>
+<p>The data module handles the transformation and processing of raw data. Specifically, it includes:    </p>
+<ul>
+<li>
+<p>Parsing and transforming data    </p>
+</li>
+<li>
+<p>Statistical calculations    </p>
+</li>
+<li>
+<p>Handling missing and abnormal values    </p>
+</li>
+</ul>
+<h2 id="rendering-process">Rendering Process</h2>
+<p>The rendering process of VChart mainly includes the following steps:    </p>
+<ol>
+<li>
+<p>Initialization: Create a VChart instance through the spec configuration    </p>
+</li>
+<li>
+<p>Compilation: Parse the configuration and create various components and series    </p>
+</li>
+<li>
+<p>Layout: Calculate the position and size of each element    </p>
+</li>
+<li>
+<p>Data processing: Process and transform data    </p>
+</li>
+<li>
+<p>Rendering preparation: Bind data to marks    </p>
+</li>
+<li>
+<p>Actual rendering: Draw marks onto the canvas    </p>
+</li>
+<li>
+<p>Interaction binding: Bind various interaction events    </p>
+</li>
+</ol>
+<h2 id="data-update-process">Data Update Process</h2>
+<p>When data or configuration changes:    </p>
+<ol>
+<li>
+<p>Call updateData or updateSpec methods    </p>
+</li>
+<li>
+<p>Reprocess affected data    </p>
+</li>
+<li>
+<p>Update related scales    </p>
+</li>
+<li>
+<p>Re-layout (if needed)    </p>
+</li>
+<li>
+<p>Update affected marks    </p>
+</li>
+<li>
+<p>Trigger re-rendering    </p>
+</li>
+</ol>
+<p># This document was revised and organized by<br />
+<a href="https://github.com/xuanhun">Xuanhun</a></p>
+</body>
+</html>

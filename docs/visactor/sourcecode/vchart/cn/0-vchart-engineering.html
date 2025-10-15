@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>0 VChart 工程化</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="01-demo">0.1 启动 demo</h1>
+<h2 id="011-fork">0.1.1 Fork 项目</h2>
+<p>在 Github 上，你需要 Fork VChart 项目。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XgFMbjw62o7QnDxfi62cfY6znKe.gif' alt='' width='1000' height='auto' /></p>
+<h2 id="012">0.1.2 克隆项目</h2>
+<p>在你 fork 的仓库中，点击 <code>Code</code> 按钮，复制项目地址。然后使用 git clone 命令克隆项目到本地。例如：    </p>
+<pre class="codehilite"><code class="language-bash">git clone https://github.com/your-username/VChart.git    
+</code></pre>
+
+<p>克隆完毕后需要添加 VChart 的远程地址。    </p>
+<pre class="codehilite"><code class="language-bash">git remote add upstream https://github.com/VisActor/VChart.git    
+</code></pre>
+
+<p>这样以后你就可以从 VChart 的远程地址获取最新的源码。    </p>
+<pre class="codehilite"><code class="language-bash">git pull upstream develop    
+</code></pre>
+
+<h2 id="013-demo">0.1.3 启动 demo</h2>
+<p>我们是用 <a href="https://rushjs.io/">@microsoft/rush</a> 来管理 monorepo。所以先安装 rush。    </p>
+<pre class="codehilite"><code class="language-bash">npm install -g @microsoft/rush    
+</code></pre>
+
+<p>接下来执行命令启动 demo。    </p>
+<pre class="codehilite"><code class="language-typescript">*安装依赖*
+$ rush update
+*启动 vchart 的demo页*
+$ rush start
+*启动 react-vchart 的demo页*
+$ rush react
+*启动本地文档站点*
+$ rush docs    
+</code></pre>
+
+<h2 id="014-demo">0.1.4 启动 demo 的时候发生了什么？</h2>
+<p>当你运行 <code>rush start</code> 的时候，会启动 vchart 的 demo 页。可是具体发生了什么呢？    </p>
+<p>首先我们在 <code>command-line.json</code> 中配置了 <code>start</code> 命令：    </p>
+<pre class="codehilite"><code class="language-json">{&quot;commandKind&quot;: &quot;global&quot;,&quot;name&quot;: &quot;start&quot;,&quot;summary&quot;: &quot;Start the development server&quot;,&quot;description&quot;: &quot;Run this command to start vchart development server&quot;,&quot;shellCommand&quot;: &quot;rush run -p @visactor/vchart -s start&quot;},    
+</code></pre>
+
+<p>所以我们得知 start 命令会执行 <code>rush run -p @visactor/vchart -s start</code> 命令。    </p>
+<p>让我详细解释 <code>rush run -p @visactor/vchart -s start</code> 这个命令：    </p>
+<p>这是一个 Rush 工具的命令，可以拆解为以下几个部分：    </p>
+<ol>
+<li>
+<p><code>rush run</code>：Rush 的子命令，用于在 monorepo 中运行特定项目的 npm 脚本    </p>
+</li>
+<li>
+<p><code>-p @visactor/vchart</code>：<code>-p</code> 或 <code>--project</code> 参数，指定要运行脚本的项目名称，这里指定的是 @visactor/vchart 项目    </p>
+</li>
+<li>
+<p><code>-s start</code>：<code>-s</code> 或 <code>--script</code> 参数，指定要运行的 npm 脚本名称，这里要运行的是 start 脚本    </p>
+</li>
+</ol>
+<p>根据代码库，我们可以看到这个命令最终会执行 @visactor/vchart 包中 package.json 定义的 start 脚本：    </p>
+<pre class="codehilite"><code class="language-bash">ts-node __tests__/runtime/browser/scripts/initVite.ts &amp;&amp; vite serve __tests__/runtime/browser    
+</code></pre>
+
+<p>这个命令前半部分是运行初始化脚本 <code>initVite.ts</code>，它的主要作用是生成 local 版本的 <code>vite.config.local.ts</code> 和 <code>index.page.local.ts</code> 文件，这两个文件是被 git 忽略的，用于本地开发的配置，后面会详细讲到。    </p>
+<p>后半部分的脚本 <code>vite serve __tests__/runtime/browser</code>是启动 demo 网页。    </p>
+<h2 id="015-indexpagelocalts">0.1.5 如何使用 <code>index.page.local.ts</code></h2>
+<p>该文件的默认内容为    </p>
+<pre class="codehilite"><code class="language-xml">import './test-page/area';    
+</code></pre>
+
+<p>笼统的来说，它可以用来指定启动不同的 chart 页面。实际上它就是会运行不同文件的 VChart 表格生成代码，来达到网页启动不同的 chart 页面的效果。所以你只要 import 不同的文件，就可以启动不同的 chart 页面。    </p>
+<h2 id="016-viteconfiglocalts">0.1.6 如何使用 <code>vite.config.local.ts</code></h2>
+<p>这个文件主要用来配置端口和本地包。比如下面的配置：    </p>
+<pre class="codehilite"><code class="language-xml">export default {
+  *// 启动端口*port: 4000,
+  resolve: {
+    alias: {
+      '@visactor/vgrammar-core': '/path/to/visactor/VGrammar/packages/vgrammar-core/src/index.ts',
+      '@visactor/vgrammar-util': '/path/to/visactor/VGrammar/packages/vgrammar-util/src/index.ts',
+      '@visactor/vgrammar-wordcloud': '/path/to/visactor/VGrammar/packages/vgrammar-wordcloud/src/index.ts',
+      '@visactor/vgrammar-wordcloud-shape': '/path/to/visactor/VGrammar/packages/vgrammar-wordcloud-shape/src/index.ts',
+      '@visactor/vgrammar-sankey': '/path/to/visactor/VGrammar/packages/vgrammar-sankey/src/index.ts',
+      '@visactor/vgrammar-hierarchy': '/path/to/visactor/VGrammar/packages/vgrammar-hierarchy/src/index.ts',
+      '@visactor/vgrammar-projection': '/path/to/visactor/VGrammar/packages/vgrammar-projection/src/index.ts',
+      '@visactor/vgrammar-coordinate': '/path/to/visactor/VGrammar/packages/vgrammar-coordinate/src/index.ts',
+      '@visactor/vgrammar-venn': '/path/to/visactor/VGrammar/packages/vgrammar-venn/src/index.ts',
+      '@visactor/vscale': '/path/to/visactor/VUtil/packages/vscale/src/index.ts',
+      '@visactor/vdataset': '/path/to/visactor/VUtil/packages/vdataset/src/index.ts',
+      '@visactor/vutils': '/path/to/visactor/VUtil/packages/vutils/src/index.ts',
+      '@visactor/vrender-core': '/path/to/visactor/VRender/packages/vrender-core/src/index.ts',
+      '@visactor/vrender-kits': '/path/to/visactor/VRender/packages/vrender-kits/src/index.ts',
+      '@visactor/vrender-components': '/path/to/visactor/VRender/packages/vrender-components/src/index.ts'
+    }
+  }
+};    
+</code></pre>
+
+<p>它把启动端口配置为 4000，并且配置了一系列的本地包，这样你的 VChart 在调试时会依赖这些本地包，你对上游本地包的改动会实时生效，方便调试一些和上游有关的 bug，如果你不需要这个功能，去掉这些配置即可。    </p>
+<h1 id="02-vchart">0.2 VChart 工程化详解</h1>
+<h2 id="021">0.2.1 项目结构</h2>
+<p>VChart 是一个使用 Rush 管理的 monorepo 项目，主要包含以下几个部分：    </p>
+<p>核心包：    </p>
+<ol>
+<li>
+<p>@visactor/vchart - 核心图表库    </p>
+</li>
+<li>
+<p>@visactor/react-vchart - React 封装    </p>
+</li>
+<li>
+<p>@visactor/openinula-vchart - OpenInula 封装    </p>
+</li>
+<li>
+<p>@visactor/taro-vchart - Taro 封装    </p>
+</li>
+<li>
+<p>@visactor/lark-vchart - 飞书封装    </p>
+</li>
+<li>
+<p>@visactor/wx-vchart - 微信小程序封装    </p>
+</li>
+<li>
+<p>@visactor/vchart-schema - 图表配置 Schema    </p>
+</li>
+<li>
+<p>@visactor/vchart-types - TypeScript 类型定义    </p>
+</li>
+<li>
+<p>@visactor/vutils-extension - 工具函数扩展    </p>
+</li>
+<li>
+<p>@visactor/tt-vchart - 字节小程序封装    </p>
+</li>
+</ol>
+<p>工具包：    </p>
+<ol>
+<li>
+<p>@internal/bundler - 打包工具    </p>
+</li>
+<li>
+<p>@internal/typescript-json-schema - TypeScript 类型定义生成工具    </p>
+</li>
+<li>
+<p>@internal/story-player - 故事播放器    </p>
+</li>
+<li>
+<p>@internal/bugserver-trigger - Bug 服务触发器    </p>
+</li>
+</ol>
+<h2 id="022">0.2.2 文档系统</h2>
+<p>文档的内容都存储在 <code>docs/assets</code> 文件夹下，比如包含:    </p>
+<ul>
+<li>
+<p>API 文档    </p>
+</li>
+<li>
+<p>示例代码    </p>
+</li>
+<li>
+<p>教程文档    </p>
+</li>
+<li>
+<p>配置项文档    </p>
+</li>
+<li>
+<p>主题文档    </p>
+</li>
+</ul>
+<h2 id="023">0.2.3 开发命令</h2>
+<ul>
+<li>
+<p>rush update - 安装依赖    </p>
+</li>
+<li>
+<p>rush start - 启动 vchart 开发服务    </p>
+</li>
+<li>
+<p>rush react - 启动 react-vchart 开发服务    </p>
+</li>
+<li>
+<p>rush docs - 启动文档开发服务    </p>
+</li>
+</ul>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

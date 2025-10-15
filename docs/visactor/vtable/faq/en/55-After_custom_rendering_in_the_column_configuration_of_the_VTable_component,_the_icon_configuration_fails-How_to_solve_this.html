@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>33. After custom rendering in the column configuration of the VTable component, the icon configuration fails. How to solve this?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-title">Question Title</h2>
+<p>After custom rendering in the column configuration of the VTable component, the icon configuration fails. How to solve this?</br></p>
+<h2 id="problem-description">Problem Description</h2>
+<p>We have used the customLayout or customRender configuration for custom rendering in business scenarios, but we also want to use the icon button icon feature of VTable itself. However, after both configurations are enabled, the icon does not display correctly. Is there any way to make both configurations work properly?</br>
+As shown below, only the content of customRender is displayed. The icon configuration icon is not displayed.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/BloSbz1VaoStC5xeL28coNMnnFc.gif' alt='' width='2512' height='522'></p>
+<h2 id="solution">Solution</h2>
+<p>You can solve this problem by using renderDefault of the custom rendering configuration.</br>
+However, after configuration, you may find unwanted content being drawn.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/KOTybyej9oA4sExlrxzcBESZnlb.gif' alt='' width='832' height='366'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OmiNbNeMdoRVevxjTPxczxWanKf.gif' alt='' width='2446' height='628'></p>
+<p>To solve this problem, you can use fieldFormat to directly return an empty value with this custom function, so that the default text content will not be drawn.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/QNyOb8RFfoKdLbxpPl5c7KMwnR6.gif' alt='' width='1978' height='396'></p>
+<h2 id="code-examples">Code Examples</h2>
+<p>You can paste it into the official editor for testing:</br>
+https://visactor.io/vtable/demo/custom-render/custom-render</br></p>
+<pre class="codehilite"><code>const option = {
+    columns:[
+    {
+      field: 'not_urgency',
+      title:'not urgency',
+      width:400,
+      headerStyle:{
+          lineHeight:50,
+          bgColor:'#4991e3',
+          color:'white',
+          textAlign:'center',
+          fontSize:26,
+          fontWeight:600,
+      },
+      style:{
+        fontFamily:'Arial',
+        fontSize:12,
+        fontWeight:'bold'
+      },
+      fieldFormat:()=&gt;'',
+      icon:{
+              name: 'detail',
+              type: 'svg',
+              svg: `&lt;svg t=&quot;1710211168958&quot; class=&quot;icon&quot; viewBox=&quot;0 0 1024 1024&quot; version=&quot;1.1&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot; p-id=&quot;3209&quot; xmlns:xlink=&quot;http://www.w3.org/1999/xlink&quot; width=&quot;200&quot; height=&quot;200&quot;&gt;&lt;path d=&quot;M722.944 256l-153.6 153.6c-3.072 3.072-5.12 6.656-7.168 10.24-1.536 4.096-2.56 8.192-2.56 12.288v1.536c0 4.096 1.024 7.68 2.56 11.264 1.536 3.584 3.584 6.656 6.656 9.728 3.072 3.072 6.656 5.12 10.24 7.168 4.096 1.536 8.192 2.56 12.288 2.56 4.096 0 8.192-1.024 12.288-2.56 4.096-1.536 7.168-4.096 10.24-7.168l153.6-153.6v114.688c0 2.048 0 4.096 0.512 6.144 0.512 2.048 1.024 4.096 2.048 6.144 1.024 2.048 1.536 3.584 3.072 5.632 1.024 1.536 2.56 3.584 4.096 4.608 1.536 1.536 3.072 2.56 4.608 4.096 1.536 1.024 3.584 2.048 5.632 3.072 2.048 1.024 4.096 1.536 6.144 2.048 2.048 0.512 4.096 0.512 6.144 0.512 2.048 0 4.096 0 6.144-0.512 2.048-0.512 4.096-1.024 6.144-2.048 2.048-1.024 3.584-1.536 5.632-3.072 1.536-1.024 3.584-2.56 4.608-4.096 1.536-1.536 2.56-3.072 4.096-4.608 1.024-1.536 2.048-3.584 3.072-5.632 1.024-2.048 1.536-4.096 2.048-6.144 0.512-2.048 0.512-4.096 0.512-6.144V223.744c0-4.096-1.024-8.192-2.56-12.288-1.536-4.096-4.096-7.168-7.168-10.24h-0.512c-3.072-3.072-6.656-5.12-10.24-6.656-4.096-1.536-7.68-2.56-12.288-2.56h-192c-2.048 0-4.096 0-6.144 0.512-2.048 0.512-4.096 1.024-6.144 2.048-2.048 1.024-3.584 1.536-5.632 3.072-1.536 1.024-3.584 2.56-4.608 4.096-1.536 1.536-2.56 3.072-4.096 4.608-1.024 1.536-2.048 3.584-3.072 5.632-1.024 2.048-1.536 4.096-2.048 6.144-0.512 2.048-0.512 4.096-0.512 6.144s0 4.096 0.512 6.144c0.512 2.048 1.024 4.096 2.048 6.144 1.024 2.048 1.536 3.584 3.072 5.632 1.024 1.536 2.56 3.584 4.096 4.608 1.536 1.536 3.072 2.56 4.608 4.096 1.536 1.024 3.584 2.048 5.632 3.072 2.048 1.024 4.096 1.536 6.144 2.048 2.048 0.512 4.096 0.512 6.144 0.512h115.712z m-268.288 358.4l-153.6 153.6h114.688c2.048 0 4.096 0 6.144 0.512 2.048 0.512 4.096 1.024 6.144 2.048 2.048 1.024 3.584 1.536 5.632 3.072 1.536 1.024 3.584 2.56 4.608 4.096 1.536 1.536 2.56 3.072 4.096 4.608 1.024 1.536 2.048 3.584 3.072 5.632 1.024 2.048 1.536 4.096 2.048 6.144 0.512 2.048 0.512 4.096 0.512 6.144 0 2.048 0 4.096-0.512 6.144-0.512 2.048-1.024 4.096-2.048 6.144-1.024 2.048-1.536 3.584-3.072 5.632-1.024 1.536-2.56 3.584-4.096 4.608-1.536 1.536-3.072 2.56-4.608 4.096-1.536 1.024-3.584 2.048-5.632 3.072-2.048 1.024-4.096 1.536-6.144 2.048-2.048 0.512-4.096 0.512-6.144 0.512H224.256c-2.048 0-4.096 0-6.144-0.512-2.048-0.512-4.096-1.024-6.144-2.048-2.048-1.024-3.584-1.536-5.632-3.072-1.536-1.024-3.584-2.56-4.608-4.096-1.536-1.536-2.56-3.072-4.096-4.608-1.024-1.536-2.048-3.584-3.072-5.632-1.024-2.048-1.536-4.096-2.048-6.144-0.512-2.048-0.512-4.096-0.512-6.144v-192.512c0-2.048 0-4.096 0.512-6.144 0.512-2.048 1.024-4.096 2.048-6.144 1.024-2.048 1.536-3.584 3.072-5.632 1.024-1.536 2.56-3.584 4.096-4.608 1.536-1.536 3.072-2.56 4.608-4.096 1.536-1.024 3.584-2.048 5.632-3.072 2.048-1.024 4.096-1.536 6.144-2.048 2.048-0.512 4.096-0.512 6.144-0.512s4.096 0 6.144 0.512c2.048 0.512 4.096 1.024 6.144 2.048 2.048 1.024 3.584 1.536 5.632 3.072 1.536 1.024 3.584 2.56 4.608 4.096 1.536 1.536 2.56 3.072 4.096 4.608 1.024 1.536 2.048 3.584 3.072 5.632 1.024 2.048 1.536 4.096 2.048 6.144 0.512 2.048 0.512 4.096 0.512 6.144v114.688l153.6-153.6c3.072-3.072 6.656-5.12 10.24-7.168 4.096-1.536 8.192-2.56 12.288-2.56 4.096 0 8.192 1.024 12.288 2.56 4.096 1.536 7.168 3.584 10.24 6.656h0.512c3.072 3.072 5.12 6.656 7.168 10.24 1.536 4.096 2.56 8.192 2.56 12.288 0 4.096-1.024 8.192-2.56 12.288-3.072 5.12-5.12 8.704-8.192 11.264z&quot; p-id=&quot;3210&quot; fill=&quot;#999999&quot;&gt;&lt;/path&gt;&lt;/svg&gt;`,
+              marginRight: 8,
+              positionType: VTable.TYPES.IconPosition.absoluteRight,
+              width: 16,
+              height: 16,
+              cursor: 'pointer',
+              visibleTime: 'mouseenter_cell',
+              funcType: 'record_detail',
+              tooltip: {
+                title:'展开详情',
+                style: {
+                  fontSize: 12,
+                  padding: [8, 8, 8, 8],
+                  bgColor: '#46484a',
+                  arrowMark: true,
+                  color: 'white',
+                  maxHeight: 100,
+                  maxWidth: 200
+                },
+                placement: VTable.TYPES.Placement.top
+              }
+            },
+      customRender(args){
+        const { width, height}= args.rect;
+        const {dataValue,table,row} =args;
+        const elements=[];
+        let top=30;
+        const left=15;
+        let maxWidth=0;
+          elements.push({
+            type: 'text',
+            fill: 'red',
+            fontSize: 20,
+            fontWeight: 500, 
+            textBaseline: 'middle',
+            text: row===1? 'important but not urgency':'not important and not urgency',
+            x: left+50,
+            y: top-5,
+          });
+        return {
+          elements,
+          expectedHeight:top+20,
+          expectedWidth: 300,
+          renderDefault:true
+        }
+      }
+    }, 
+    ],
+    records:[
+      {
+        'type': 'important',
+        &quot;urgency&quot;: ['crisis','urgent problem','tasks that must be completed within a limited time'],
+        &quot;not_urgency&quot;: ['preventive measures','development relationship','identify new development opportunities','establish long-term goals'],
+      },
+      {
+        'type': 'Not\nimportant',
+        &quot;urgency&quot;: ['Receive visitors','Certain calls, reports, letters, etc','Urgent matters','Public activities'],
+        &quot;not_urgency&quot;: ['Trivial busy work','Some letters','Some phone calls','Time-killing activities','Some pleasant activities'],
+      },
+    ],
+    defaultRowHeight:80,
+    heightMode:'autoHeight',
+    widthMode:'standard',
+    autoWrapText:true,
+  };
+
+const tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID),option);
+window['tableInstance'] = tableInstance;&lt;/br&gt;
+</code></pre>
+
+<h2 id="relevant-documents">Relevant Documents</h2>
+<p>Related API: <a href="https%3A%2F%2Fvisactor.io%2Fvtable%2Foption%2FListTable-columns-text%23customRender.renderDefault">https://visactor.io/vtable/option/ListTable-columns-text#customRender.renderDefault</a></br>
+Tutorial：https://visactor.io/vtable/demo/custom-render/custom-render</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

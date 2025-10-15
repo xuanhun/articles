@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to format axis labels?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-title"><strong>Question Title</strong></h2>
+<p>How to format axis labels?</br></p>
+<h2 id="question-description"><strong>Question Description</strong></h2>
+<p>As shown in the figure, when the axis label value is inaccurate with a very long decimal point, can it be formatted?</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Cs0gbHm28oVi79xXz9HcUinZnxc.gif' alt='' width='1280' height='908'></p>
+<p></br></p>
+<h2 id="solution"><strong>Solution</strong></h2>
+<p>The problem of floating-point precision here is due to the addition operation of floating-point numbers when realizing the alignment of the axis scale. To improve the readability of axis labels, you can format the axis labels through <code>label.formatMethod</code>.
+ </br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DdhibJCh7oEaqfxiq20cRda2n2d.gif' alt='' width='1280' height='453'></p>
+<h2 id="code-example"><strong>Code Example</strong></h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'common',
+  seriesField: 'color',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { x: 'Monday', type: 'Breakfast', y: 0.1633 },
+      ]
+    },
+    {
+      id: 'id1',
+      values: [
+        { x: 'Monday', type: 'Drink', y: -0.3455 },
+      ]
+    }
+  ],
+  series: [
+    {
+      type: 'line',
+      id: 'line',
+      dataIndex: 0,
+      label: { visible: true },
+      seriesField: 'type',
+      dataIndex: 0,
+      xField: ['x', 'type'],
+      yField: 'y'
+    },
+    {
+      type: 'line',
+      id: 'line',
+      dataIndex: 1,
+      label: { visible: true },
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      stack: false
+    }
+  ],
+  axes: [
+    { orient: 'left', seriesIndex: [0], id: 'left' },
+    {
+      orient: 'right',
+      seriesId: ['line'],
+      grid: { visible: false },
+      label: {
+        formatMethod: (label) =&gt; {
+          return Math.round(label * 100) / 100;
+        }
+      },
+      sync: {
+        axisId: 'left',
+        tickAlign: true
+      }
+    },
+    { orient: 'bottom', label: { visible: true }, type: 'band' }
+  ],
+  legends: {
+    visible: true,
+    orient: 'bottom'
+  }
+};
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+// Just for the convenience of console debugging, DO NOT COPY!  
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="result-display"><strong>Result Display</strong></h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/STRabpn6Io4ROsxHRujc2hmLnth.gif' alt='' width='1280' height='852'></p>
+<h2 id="related-documentation"><strong>Related Documentation</strong></h2>
+<p>Related configuration: <a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Foption%2FbarChart-axes-linear%23label.formatMethod">https://www.visactor.io/vchart/option/barChart-axes-linear#label.formatMethod</a>
+ Axes axis tutorial: <a href="https%3A%2F%2Fwww.visactor.io%2Fvchart%2Fguide%2Ftutorial_docs%2FChart_Concepts%2FAxes">https://www.visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Axes</a>
+ github: <a href="https%3A%2F%2Fgithub.com%2FVisActor%2FVChart">https://github.com/VisActor/VChart</a></br></p>
+</body>
+</html>

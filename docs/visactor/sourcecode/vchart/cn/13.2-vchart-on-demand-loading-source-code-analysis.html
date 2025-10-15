@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>13.2 VChart 按需加载源码详解</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>基于前文，我们已介绍了 VChart 图表组成和 Tree Shaking 概念。基于这两个前置概念，接下来将详细阐述 VChart 按需加载的具体实现。    </p>
+<h2 id="vchart">VChart图表的核心创建流程</h2>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OPhHwelczhjcCBb4zlQcbTIDnzh.gif" /></p>
+<h2 id="factory">Factory</h2>
+<p>VChart 的按需加载主要依托 <code>Factory</code> 类来达成。该类承担着重要职责，负责对各类图表、系列、组件、图元、Region、布局以及插件进行注册和创建。下面将从注册机制、创建机制以及图表的按需注册这几个方面展开深入分析。    </p>
+<h3 id="_1">注册机制</h3>
+<p><code>Factory</code> 类提供了一系列静态方法，用于注册不同类型的模块。通过这些方法，模块被注册到 <code>Factory</code> 的静态属性中，进而形成一个注册表。具体代码如下：    </p>
+<pre class="codehilite"><code class="language-xml">static registerChart(key: string, chart: IChartConstructor) {
+  Factory._charts[key] = chart;
+}
+static registerSeries(key: string, series: ISeriesConstructor) {
+  Factory._series[key] = series;
+}
+static registerComponent(key: string, cmp: IComponentConstructor, alwaysCheck?: boolean) {
+  Factory._components[key] = { cmp, alwaysCheck };
+}
+// 其他注册方法...    
+</code></pre>
+
+<h3 id="_2">创建机制</h3>
+<p><code>Factory</code> 类同样提供了一系列静态方法，用于按需创建模块实例。这些方法会依据类型从注册表中查找对应的构造函数，并创建实例。示例代码如下：    </p>
+<pre class="codehilite"><code class="language-xml">static createChart(chartType: string, spec: any, options: IChartOption): IChart | null {
+  if (!Factory._charts[chartType]) {
+    return null;
+  }
+  const ChartConstructor = Factory._charts[chartType];
+  return new ChartConstructor(spec, options);
+}
+static createSeries(seriesType: string, spec: any, options: ISeriesOption) {
+  if (!Factory._series[seriesType]) {
+    return null;
+  }
+  const SeriesConstructor = Factory._series[seriesType];
+  return new SeriesConstructor(spec, options);
+}
+// 其他创建方法...    
+</code></pre>
+
+<h3 id="_3">图表的按需注册</h3>
+<p>以线图为例，下面来看具体的按需注册实现。在 <code>packages/vchart/src/chart/line/line.ts</code> 中，有如下代码：    </p>
+<pre class="codehilite"><code class="language-javascript">export const registerLineChart = () =&gt; {
+  registerLineSeries();
+  Factory.registerChart(LineChart.type, LineChart);
+};    
+</code></pre>
+
+<p>其中 <code>registerLineSeries</code> 在 <code>packages/vchart/src/series/line/line.ts</code> 中实现，代码如下：    </p>
+<pre class="codehilite"><code class="language-javascript">export const registerLineSeries = () =&gt; {
+  registerSampleTransform();
+  registerMarkOverlapTransform();
+  registerLineMark();
+  registerSymbolMark();
+  registerLineAnimation();
+  registerScaleInOutAnimation();
+  registerCartesianBandAxis();
+  registerCartesianLinearAxis();
+  Factory.registerSeries(LineSeries.type, LineSeries);
+};    
+</code></pre>
+
+<p>通过上述代码实现，在使用 VChart 时，若调用 <code>registerLineChart</code> 注册线图，就会将线图依赖的线的系列、线图元、点图元等必要元素默认注册。具体使用方式如下：    </p>
+<pre class="codehilite"><code class="language-xml">import { VChart } from './core';
+import { registerLineChart } from './chart/line';
+VChart.useRegisters([
+  registerLineChart,
+  // 其他需要的模块
+]);    
+</code></pre>
+
+<p>而在 <code>packages/vchart/src/core/vchart.ts</code> 中，创建图表实例时并非直接通过路径引用，而是借助 <code>Factory.createChart</code> 来创建。如此一来，核心类 <code>vchart</code> 就能在不引用所有图表实现的情况下，依据用户注册的图表创建实例。相关代码如下：    </p>
+<pre class="codehilite"><code class="language-xml">private _initChart(spec: any) {
+   // ...
+    const chart = Factory.createChart(spec.type, spec, this._getChartOption(spec.type));
+   //...
+  }    
+</code></pre>
+
+<h2 id="vchart_1">核心类 VChart 的按需加载</h2>
+<p>接下来探讨一个问题：以下两种引用 <code>VChart</code> 的方式是否存在差异？    </p>
+<ul>
+<li>方法一：    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">import VChart from '@visactor/vchart';    
+</code></pre>
+
+<ul>
+<li>方法二：    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">import { VChart } from '@visactor/vchart';    
+</code></pre>
+
+<p>答案是肯定的，这两种引用方式所产生的效果不同。下面分析其差异原因。    </p>
+<p>首先，在 vchart 代码库对应的 <code>package.json</code> 中，可看到如下配置：    </p>
+<pre class="codehilite"><code class="language-xml">{
+  &quot;sideEffects&quot;: [
+    &quot;./*/index-lark.js&quot;,
+    &quot;./*/index-wx-simple.js&quot;,
+    &quot;./*/index-wx.js&quot;,
+    &quot;./*/vchart-all.js&quot;,
+    &quot;./*/vchart-simple.js&quot;
+  ],
+}    
+</code></pre>
+
+<p>该配置明确声明了所有有副作用的文件。    </p>
+<p>在 <code>packages/vchart/index.ts</code> 中，有以下导出内容：    </p>
+<pre class="codehilite"><code class="language-xml">import { VChart } from './vchart-all';
+export default VChart;
+export * from './core';    
+</code></pre>
+
+<p>其中 <code>core/index.ts</code> 文件中又有如下导出：    </p>
+<pre class="codehilite"><code class="language-javascript">import { VChart } from './vchart';
+export { VChart, Factory };    
+</code></pre>
+
+<p>所以方法一等价于如下引用，引用的 VChart 是 vchart - all 导出的 VChart 类，方法二引用的相当于从 <code>core/vchart.ts</code> 导出的 VChart 类。    </p>
+<pre class="codehilite"><code class="language-json">import { default as VChart } from '@visactor/vchart';    
+</code></pre>
+
+<p>其中文件 <code>vchart-all.ts</code> 的主要作用是注册和导出 VChart 的所有功能模块：    </p>
+<pre class="codehilite"><code class="language-json">VChart.useRegisters([
+  // charts
+  registerLineChart,
+  registerAreaChart,
+  // ...其他图表
+  // components
+  registerCartesianLinearAxis,
+  registerCartesianBandAxis,
+  // ...其他组件
+  // layout
+  registerGridLayout,
+  registerLayout3d,
+  // mark
+  registerAllMarks,
+  // plugin
+  registerDomTooltipHandler,
+  registerCanvasTooltipHandler,
+  // ...其他插件
+]);
+export { VChart };    
+</code></pre>
+
+<p>由于 vchart - all 是声明了有副作用的文件，所以当采用方案一引用 VChart 时，会将所有 <code>vchart-all</code> 中依赖的文件都进行打包；而使用方案二引用 VChart 时，仅会打包 <code>core/vchart.ts</code>。     </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

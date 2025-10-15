@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>110. 如何在vChart的tooltip卡片底部添加自定义内容？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">问题描述</h1>
+<p>我正在使用vChart进行数据可视化的编程，并遇到了一些问题。我想在tooltip的卡片底部新增一些自定义的内容，尤其是一个按钮。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/KURmbG6nJov1O2xb9HoccdRNnyG.gif' alt='' width='1026' height='844'></p>
+<p>但是我发现在vChart.renderAsync().then的时候，似乎无法获取我们定义了className的tooltip，必须要等一段时间才能获取到。我并不希望通过自定义tooltip来实现这个功能，因为我希望保持原有的组件样式。所以，我想问一下，有没有更好的解决方案？</br></p>
+<h1 id="_2">解决方案</h1>
+<p>对于这个问题，可以通过updateElement回调在原有的dom上进行修改。这里有一个示例代码：</br></p>
+<pre class="codehilite"><code>tooltip: {
+...
+updateElement: el =&gt; {
+el.style.width = 'auto';
+el.style.height = 'auto';
+el.style.minHeight = 'auto';
+if (el.lastElementChild?.id !== 'test') {
+el.innerHTML = '';
+const div = document.createElement('div');
+div.id = 'test';
+div.style.width = '200px';
+div.innerText = 'test';
+div.style.color = 'red';
+el.appendChild(div);
+}
+}
+}&lt;/br&gt;
+</code></pre>
+
+<p>此段代码将在tooltip的原有dom上进行修改。你可以选择清空tooltip内容或者保留原内容。但需要注意的是tooltip的enterable支持可能还不理想，更新tooltip位置时，每次都会执行回调函数。</br>
+升级到vchart1.6.0版本后可以使用updateElement功能。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/C7spbeDn9oUTIRx3RdEcO8Rqnge.gif' alt='' width='1998' height='278'></p>
+<p>updateElement第三个参数可以取到params.changePositionOnly，如果为true表示默认tooltip内容没有发生变化。如果自定义的tooltip内容需要和默认tooltip同步更新，可以考虑过滤掉params.changePositionOnly为true的情况。</br></p>
+<h1 id="_3">结果展示</h1>
+<p>经过以上步骤后，我成功在vChart的tooltip卡片的底部添加了一个按钮。</br></p>
+<h1 id="_4">相关文档</h1>
+<ul>
+<li><a href="https://visactor.bytedance.net/vchart/option/barChart#tooltip.updateElement">updateElement文档</a></br></li>
+</ul>
+</body>
+</html>

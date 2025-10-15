@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>97. 柱状图支持对某一列单独设置颜色吗？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>柱状图支持对某一列单独设置颜色吗？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>想单独设置某一个柱子的颜色， 该如何实现？</br></p>
+<h2 id="_3">解决方案</h2>
+<p>不同图表库的解决方案不一样，VChart 的允许用户通过回调函数的方式控制样式， 包括颜色、描边等多种样式配置。</br>
+柱状图可以通过配置<code>bar.style.fill</code>来根据控制颜色， <code>fill</code>支持配置回调函数， 可以通过 datum 对某一个柱子进行样式修改， 其余数据可以通过<code>seriesColor</code>接口， 获取到原始的分组颜色。</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>import { StrictMode, useEffect } from &quot;react&quot;;
+import { createRoot } from &quot;react-dom/client&quot;;
+
+const rootElement = document.getElementById(&quot;root&quot;);
+const root = createRoot(rootElement);
+
+import VChart from &quot;@visactor/vchart&quot;;
+
+const App = () =&gt; {
+  useEffect(() =&gt; {
+    const spec = {
+      type: &quot;bar&quot;,
+      data: [
+        {
+          id: &quot;barData&quot;,
+          values: [
+            { type: &quot;Autocracies&quot;, year: &quot;1930&quot;, value: 129 },
+            { type: &quot;Autocracies&quot;, year: &quot;1940&quot;, value: 133 },
+            { type: &quot;Autocracies&quot;, year: &quot;1950&quot;, value: 130 },
+            { type: &quot;Autocracies&quot;, year: &quot;1960&quot;, value: 126 },
+            { type: &quot;Autocracies&quot;, year: &quot;1970&quot;, value: 117 },
+            { type: &quot;Autocracies&quot;, year: &quot;1980&quot;, value: 114 },
+            { type: &quot;Autocracies&quot;, year: &quot;1990&quot;, value: 111 },
+            { type: &quot;Autocracies&quot;, year: &quot;2000&quot;, value: 89 },
+            { type: &quot;Autocracies&quot;, year: &quot;2010&quot;, value: 80 },
+            { type: &quot;Autocracies&quot;, year: &quot;2018&quot;, value: 80 },
+            { type: &quot;Democracies&quot;, year: &quot;1930&quot;, value: 22 },
+            { type: &quot;Democracies&quot;, year: &quot;1940&quot;, value: 13 },
+            { type: &quot;Democracies&quot;, year: &quot;1950&quot;, value: 25 },
+            { type: &quot;Democracies&quot;, year: &quot;1960&quot;, value: 29 },
+            { type: &quot;Democracies&quot;, year: &quot;1970&quot;, value: 38 },
+            { type: &quot;Democracies&quot;, year: &quot;1980&quot;, value: 41 },
+            { type: &quot;Democracies&quot;, year: &quot;1990&quot;, value: 57 },
+            { type: &quot;Democracies&quot;, year: &quot;2000&quot;, value: 87 },
+            { type: &quot;Democracies&quot;, year: &quot;2010&quot;, value: 98 },
+            { type: &quot;Democracies&quot;, year: &quot;2018&quot;, value: 99 },
+          ],
+        },
+      ],
+      xField: [&quot;year&quot;, &quot;type&quot;],
+      yField: &quot;value&quot;,
+      seriesField: &quot;type&quot;,
+      bar: {
+        style: {
+          fill: (datum, chart) =&gt; {
+            if (datum[&quot;year&quot;] === &quot;2000&quot;) {
+              return &quot;red&quot;;
+            }
+            // origin color
+            return chart.seriesColor(datum[&quot;type&quot;]);
+          },
+        },
+      },
+      legends: {
+        visible: true,
+        orient: &quot;top&quot;,
+        position: &quot;start&quot;,
+      },
+    };
+
+    const vchart = new VChart(spec, { dom: &quot;chart&quot; });
+    vchart.renderSync();
+
+    return () =&gt; {
+      vchart.release();
+    };
+  }, []);
+
+  return &lt;div id=&quot;chart&quot; style={{ width: 400 }}&gt;&lt;/div&gt;;
+};
+
+root.render(
+  &lt;StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/StrictMode&gt;
+);
+&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>Online Demo: https://codesandbox.io/p/sandbox/vchart-single-bar-style-n9m6np?file=%2Fsrc%2Findex.js%3A7%2C39</br></p>
+<h2 id="_6">相关文档</h2>
+<p>Bar Style API: https://visactor.io/vchart/option/barChart#bar.style.fill</br>
+Github: https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

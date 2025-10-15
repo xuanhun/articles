@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>26. When using the pivot table of the VTable component, how to display the calculated indicator results in a separate column?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="question-title">Question Title</h2>
+<p>When using the pivot table of the VTable component, how to display the calculated indicator results in a separate column?</br></p>
+<h2 id="question-description">Question Description</h2>
+<p>Is there any configuration that can generate derived indicators? Calculate the indicator results after aggregation, and then display them in the indicator.</br>
+Description: For example, my row dimension is region - area, column dimension is month, and indicator is target, actual, and achievement (this achievement is calculated as actual / target). Achievement is the indicator I want to derive, because there is no achievement field in my data.</br>
+Screenshot of the problem:</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/V0NCbqaOKoJmitxZvkVcZ4cCn1f.gif' alt='' width='1347' height='260'></p>
+<h2 id="solution">Solution</h2>
+<p><strong>The best and latest solution: </strong>There is now a better solution because VTable has launched the feature of Pivot Table calculated fields!!!</br>
+<strong>Previous solution:</strong></br>
+Taking the pivot table on the official website of VTable as an example for similar target modifications, we add an indicator called <code>Profit Ratio</code> to the original demo, and use the <code>format</code> function to calculate the displayed value. The calculation logic depends on the values of the <code>Sales</code> and <code>Profit</code> indicators. That is, we calculate a profit ratio where <code>profit ratio = profit / sales</code>.</br></p>
+<pre class="codehilite"><code>        {
+          indicatorKey: 'Profit Ratio',
+          title: 'Profit Ratio',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          format: (value,col,row,table) =&gt; {
+            const sales=table.getCellOriginValue(col-2,row);
+            const profit=table.getCellOriginValue(col-1,row);
+            const ratio= profit/sales;
+            var percentage = ratio * 100;
+            return percentage.toFixed(2) + &quot;%&quot;;
+          }
+        }&lt;/br&gt;
+</code></pre>
+
+<h2 id="code-examples">Code Examples</h2>
+<pre class="codehilite"><code>let tableInstance;
+fetch('https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/North_American_Superstore_Pivot_data.json')
+  .then(res =&gt; res.json())
+  .then(data =&gt; {
+    const option = {
+      records: data,
+      rows: [
+        {
+          dimensionKey: 'City',
+          title: 'City',
+          headerStyle: {
+            textStick: true
+          },
+          width: 'auto'
+        }
+      ],
+      columns: [
+        {
+          dimensionKey: 'Category',
+          title: 'Category',
+          headerStyle: {
+            textStick: true
+          },
+          width: 'auto'
+        }
+      ],
+      indicators: [
+        {
+          indicatorKey: 'Quantity',
+          title: 'Quantity',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          style: {
+            padding: [16, 28, 16, 28],
+            color(args) {
+              if (args.dataValue &gt;= 0) return 'black';
+              return 'red';
+            }
+          }
+        },
+        {
+          indicatorKey: 'Sales',
+          title: 'Sales',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          format: rec =&gt; {
+            return '$' + Number(rec).toFixed(2);
+          },
+          style: {
+            padding: [16, 28, 16, 28],
+            color(args) {
+              if (args.dataValue &gt;= 0) return 'black';
+              return 'red';
+            }
+          }
+        },
+        {
+          indicatorKey: 'Profit',
+          title: 'Profit',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          format: rec =&gt; {
+            return '$' + Number(rec).toFixed(2);
+          },
+          style: {
+            padding: [16, 28, 16, 28],
+            color(args) {
+              if (args.dataValue &gt;= 0) return 'black';
+              return 'red';
+            }
+          }
+        },
+        {
+          indicatorKey: 'Profit Ratio',
+          title: 'Profit Ratio',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          format: (value,col,row,table) =&gt; {
+            const sales=table.getCellOriginValue(col-2,row);
+            const profit=table.getCellOriginValue(col-1,row);
+            const ratio= profit/sales;
+            var percentage = ratio * 100;
+            return percentage.toFixed(2) + &quot;%&quot;;
+          }
+        }
+      ],
+      corner: {
+        titleOnDimension: 'row',
+        headerStyle: {
+          textStick: true
+        }
+      },
+      dataConfig: {
+        sortRules: [
+          {
+            sortField: 'Category',
+            sortBy: ['Office Supplies', 'Technology', 'Furniture']
+          }
+        ]
+      },
+      widthMode: 'standard'
+    };
+    tableInstance = new VTable.PivotTable(document.getElementById(CONTAINER_ID), option);
+    window['tableInstance'] = tableInstance;
+  });&lt;/br&gt;
+</code></pre>
+
+<h2 id="result-display">Result Display</h2>
+<p>Just paste the code in the example code directly into the official editor to display it.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Wxc7bfIQfoLb29xabyjc1ov4n6c.gif' alt='' width='853' height='540'></p>
+<h2 id="related-documents">Related documents</h2>
+<p>Tutorial on pivot table usage: <a href="https%3A%2F%2Fvisactor.io%2Fvtable%2Fguide%2Ftable_type%2FPivot_table%2Fpivot_table_useage">https://visactor.io/vtable/guide/table_type/Pivot_table/pivot_table_useage</a></br>
+Demo of pivot table usage: <a href="https%3A%2F%2Fvisactor.io%2Fvtable%2Fdemo%2Ftable-type%2Fpivot-analysis-table">https://visactor.io/vtable/demo/table-type/pivot-analysis-table</a></br>
+Related API: <a href="https%3A%2F%2Fvisactor.io%2Fvtable%2Foption%2FPivotTable%23indicators">https://visactor.io/vtable/option/PivotTable#indicators</a></br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

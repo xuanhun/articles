@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>111. How to set the font size of the title in vchart to semi for heading-4?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="question-title">Question title</h1>
+<p>How to set the font size of title to semi in vchart for heading4?</br></p>
+<h1 id="problem-description">Problem description</h1>
+<p>I am using the @visactor/vchart library for data lake visualization. However, I encountered a problem where I want to set the font size of the title in vchart to semi's heading-4 font size, but I don't know how to pass this variable in.</br></p>
+<h1 id="solution">Solution</h1>
+<p>The new version of vchart provides a package called vchart-semi-theme, which can automatically crawl semi CSS variables on the page, so most of the color values of the chart can use this function. As for font size, although this package currently does not directly provide the function of introducing semi variables, you can manually modify the spec or register the theme to achieve the goal.</br></p>
+<p>Usage is as follows:</br>
+1. First, install the vchart-semi-theme package</br>
+2. Use Documentation: https://visactor.bytedance.net/vchart/guide/tutorial_docs/Theme/Theme_Extension</br>
+3. You can refer to some examples: https://vp4y9p.csb.app/</br></p>
+<p>Note: Since the use of vchart-semi-theme requires crawling the CSS variables of the page, please make sure that your page contains the required semi CSS variables.</br></p>
+<h1 id="related-documents">Related Documents</h1>
+<p>VChart official website: https://visactor.bytedance.net/vchart</br>
+Vchart-semi-theme documentation: https://visactor.bytedance.net/vchart/guide/tutorial_docs/Theme/Theme_Extension</br>
+Online Demo: https://vp4y9p.csb.app/</br></p>
+</body>
+</html>

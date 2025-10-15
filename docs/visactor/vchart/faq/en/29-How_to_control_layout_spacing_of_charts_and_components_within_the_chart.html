@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>26. How to control the layout spacing of charts and components within charts</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="title">Title</h2>
+<p>How to control the layout spacing of charts and components within charts</br></p>
+<h2 id="description">Description</h2>
+<p>How to control the layout spacing of charts and components within charts, as shown in the figure below, you want to adjust the spacing at the red box mark so that the chart axis and legend can be aligned on the left</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/FkcsbCSh0oicN1xRPdecF6grnod.gif' alt='' width='804' height='496'></p>
+<h2 id="solution">Solution</h2>
+<p>You can use the padding property provided on VChart. If you want to configure the padding of the chart, you can directly configure it at the first level of the spec, as follows:</br></p>
+<pre class="codehilite"><code>const spec = {
+  padding: {
+    left: 0,
+  }
+}&lt;/br&gt;
+</code></pre>
+
+<p>If you want to configure the padding of a component, you can directly configure it under the properties of the corresponding component. VChart provides the padding property for all elements on the chart. The specific usage can be found on the configuration page.</br></p>
+<h2 id="code-example">Code Example</h2>
+<p>The following code configures padding on axes, legends, and charts, leaving 0 blank space on the left side of the chart.</br></p>
+<pre class="codehilite"><code>const spec = {
+  type: 'bar',
+  data: [
+    {
+      id: 'barData',
+      values: [
+        {
+          x: '2:00',
+          y: 82,
+          type: 'sales'
+        },
+        {
+          x: '4:00',
+          y: 50,
+          type: 'sales'
+        },
+        {
+          x: '6:00',
+          y: 64,
+          type: 'sales'
+        },
+        {
+          x: '8:00',
+          y: 30,
+          type: 'sales'
+        },
+        {
+          x: '10:00',
+          y: 40,
+          type: 'sales'
+        },
+        {
+          x: '12:00',
+          y: 40,
+          type: 'sales'
+        },
+        {
+          x: '14:00',
+          y: 56,
+          type: 'sales'
+        },
+        {
+          x: '16:00',
+          y: 40,
+          type: 'sales'
+        },
+        {
+          x: '18:00',
+          y: 64,
+          type: 'sales'
+        },
+        {
+          x: '20:00',
+          y: 74,
+          type: 'sales'
+        },
+        {
+          x: '22:00',
+          y: 98,
+          type: 'sales'
+        },
+        {
+          x: '2:00',
+          y: 62,
+          type: 'profit'
+        },
+        {
+          x: '4:00',
+          y: 30,
+          type: 'profit'
+        },
+        {
+          x: '6:00',
+          y: 32,
+          type: 'profit'
+        },
+        {
+          x: '8:00',
+          y: 10,
+          type: 'profit'
+        },
+        {
+          x: '10:00',
+          y: 20,
+          type: 'profit'
+        },
+        {
+          x: '12:00',
+          y: 20,
+          type: 'profit'
+        },
+        {
+          x: '14:00',
+          y: 36,
+          type: 'profit'
+        },
+        {
+          x: '16:00',
+          y: 20,
+          type: 'profit'
+        },
+        {
+          x: '18:00',
+          y: 44,
+          type: 'profit'
+        },
+        {
+          x: '20:00',
+          y: 74,
+          type: 'profit'
+        },
+        {
+          x: '22:00',
+          y: 78,
+          type: 'profit'
+        }
+      ]
+    }
+  ],
+  direction: 'horizontal',
+  xField: 'y',
+  yField: ['x', 'type'],
+  seriesField: 'type',
+  legends: {
+    visible: true,
+    orient: 'bottom',
+    position: 'left',
+    padding: {
+      left: 0
+    }
+  },
+  axes: [
+    {
+      orient: 'left',
+      paddingInner: 0,
+      padding: {
+        left: 0
+      }
+    }
+  ],
+  padding: {
+    left: 0
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="results">Results</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Hb8fbOxcKo8zKnxbjDVci8Lon1b.gif' alt='' width='818' height='624'></p>
+<h2 id="related-documents">Related Documents</h2>
+<ul>
+<li>API：</br></li>
+<li>https://visactor.io/vchart/option/barChart#padding</br></li>
+<li>https://visactor.io/vchart/option/barChart-axes-linear#padding</br></li>
+<li>https://visactor.io/vchart/option/barChart-legends-discrete#padding</br></li>
+<li>Github：https://github.com/VisActor/VChart/</br></li>
+</ul>
+</body>
+</html>

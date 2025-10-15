@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTable表格自定义渲染:技术实践与案例</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="vtable">VTable简介</h1>
+<p>VTable是一款基于可视化渲染引擎VRender的高性能表格组件库，为用户提供卓越的性能和强大的多维分析能力，以及灵活强大的图形能力。相对于dom表格，VTable 基于canvas 画布进行渲染，性能与可视化能力具有碾压级的优势。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/M4TPbKgdpo2nSaxB4SNcOPycnBh.gif' alt='' width='1000' height='auto'></p>
+<p>介绍文档：<a href="https://juejin.cn/post/7287214029449805836">VTable——不只是高性能的多维数据分析表格，开源，免费，百万数据秒级渲染</a></p>
+<p>站点：https://visactor.com/vtable</p>
+<p>在用户实际的应用场景中，随着需求的不断迭代，对于 VTable 的自定义能力提出来更高的要求。用户期望能够更加灵活、便捷地根据自身的特定需求来定制 VTable 的各项功能和特性，以满足不同业务场景下的多样化需求。为了更好地满足用户的这些需求，VTable 的自定义能力也在不断地进行优化和改进，进行了多个阶段的功能迭代。接下来，我们将分享这部分自定义能力的演进历程和功能展示。</p>
+<h1 id="_1">第一阶段 自定义内容和样式</h1>
+<h2 id="_2">属性配置函数</h2>
+<p>在VTable最初的版本，我们给用户提供了内容和样式的回调函数式的配置方式：</p>
+<ul>
+<li>文字内容：在列或指标配置中，fieldFormat配置可以对单元格内容显示进行自定义处理，常用于文字内容的格式化</li>
+</ul>
+<pre class="codehilite"><code>type FieldFormat = (record: any, col?: number, row?: number, table?: BaseTableAPI) =&gt; any;
+</code></pre>
+
+<ul>
+<li>图标：在列或指标配置中，icon配置除了支持固定的图标之外，也支持函数配置，不同单元格显示不同图标</li>
+</ul>
+<pre class="codehilite"><code>type Icons = (string | ColumnIconOption)[] | ((args: CellInfo) =&gt; (string | ColumnIconOption)[]);
+</code></pre>
+
+<ul>
+<li>单元格样式（文字样式，单元格样式）：与图标相同，单元格相关的样式都支持函数式配置</li>
+</ul>
+<pre class="codehilite"><code>{
+    // 斑马线效果
+    bgColor: (args: StylePropertyFunctionArg): string {
+      const { row, table } = args;
+      const index = row - table.frozenRowCount; // 计算该单元格在body区域的行index
+      if (!(index &amp; 1)) {
+        return '#FAF9FB';
+      }
+      return '#FDFDFD';
+    }
+    // ......
+}
+</code></pre>
+
+<ul>
+<li>......</li>
+</ul>
+<p>生成单元格节点时，会依据函数的不同返回结果，分别设置各个单元格内的内容和样式。</p>
+<h2 id="_3">相关使用案例</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Am3QbfxK3oaqWbxXGCDcuruvnye.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Y4ODbF6xmozuELxyUojcoaKVnbd.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/BQysbpbS5oFM4TxpuH5cn4dPnxg.gif' alt='' width='1000' height='auto'></p>
+<pre class="codehilite"><code>const option = {
+    // style
+    style: {
+        bgColor: (arg) =&gt; {
+            return getBgColor(arg.value)
+        },
+        color: (arg) =&gt; {
+            return getColor(arg.value)
+        },
+        // ......
+    },
+    // icon
+    icon: (arg) =&gt; {
+        if (arg.value &gt;= 0) {
+            return 'up-icon'
+        } else if (arg.value &lt; 0) {
+            return 'down-icon'
+        }
+    },
+    // ......
+}
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/U2yDbaxEpoDp8TxSluXcbwx7nPg.gif' alt='' width='1000' height='auto'></p>
+<p>https://www.visactor.com/vtable/demo/business/project-schedule</p>
+<h1 id="_4">第二阶段 自定义图形</h1>
+<p>自定义内容和样式的能力，满足了用户的对单元格内容的调整需求，但是所有的修改都是在单元格原有内容的基础上进行的。部分用户提出了新的需求，希望可以不受单元格类型的限制，自由得绘制内容。基于这部分需求，我们开发了自定义图形（customRender）功能。</p>
+<h2 id="_5">图形配置</h2>
+<p>在全局option、列或指标配置中，可以配置customRender属性，来自由定义单元格内的图形</p>
+<pre class="codehilite"><code>type ICustomRenderObj = {
+  /** 配置出来的类型集合 */
+  elements: ICustomRenderElements;
+  /** 期望单元格的高度 */
+  expectedHeight: number;
+  /** 期望单元格的宽度 */
+  expectedWidth: number;
+  /** 是否还需要默认渲染内容 只有配置true才绘制 默认 不绘制 */
+  renderDefault?: boolean;
+};
+</code></pre>
+
+<p><code>elements</code>为图元配置组成的数组，支持下列类型：</p>
+<ul>
+<li>
+<p>Text</p>
+</li>
+<li>
+<p>Rect</p>
+</li>
+<li>
+<p>Circle</p>
+</li>
+<li>
+<p>Icon</p>
+</li>
+<li>
+<p>Image</p>
+</li>
+<li>
+<p>Arc</p>
+</li>
+<li>
+<p>Line</p>
+</li>
+</ul>
+<p>详细配置可以参考 https://www.visactor.com/vtable/option/ListTable-columns-text#customRender.elements。</p>
+<p>为了方便用户设置位置和尺寸，<code>x</code> <code>y</code> <code>width</code> <code>height</code>等属性支持配置百分比，基于单元格的宽度或高度设置；也可以在属性中使用函数，接收单元格数据，计算相应的属性值。</p>
+<p>下面是一个气泡效果的配置：</p>
+<pre class="codehilite"><code>{
+  customRender: {
+    elements: [
+      {
+        type: 'circle',
+        x: '50%', // 定位在单元格中心
+        y: '50%',
+        // 依据数据计算圆半径
+        radius: value =&gt; {
+          const percent = Math.max(5, (Number(value) / 59645 / 2) * 100);
+          return `${percent}%`;
+        },
+        // 依据数据计算渐变色
+        fill: value =&gt; {
+          const color = getColor(80, 59645, value, 0.5);
+          const color1 = getColor(80, 59645, value, 1);
+          return {
+            gradient: 'linear',
+            x0: 0,
+            y0: 1,
+            x1: 0,
+            y1: 0,
+            stops: [
+              {
+                offset: 0,
+                color: color
+              },
+              {
+                offset: 1,
+                color: color1
+              }
+            ]
+          };
+        }
+      }
+    ],
+    renderDefault: false
+  }
+  // ......
+ }
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DeGUb6IBboo2QlxgfVKcOL0Indc.gif' alt='' width='1000' height='auto'></p>
+<p>https://www.visactor.com/vtable/demo/business/sales-bubble</p>
+<h2 id="_6">相关使用案例</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/LidPb2klpoSrevxuLTGcAU9SnEf.gif' alt='' width='1000' height='auto'></p>
+<p>自定义图形功能在常常用在在表格中添加简易按钮，使用自定义图形绘制简单按钮，通过事件监听执行相应的功能</p>
+<pre class="codehilite"><code>const columns =[
+    // ......
+     {
+        &quot;field&quot;: &quot;Operation&quot;,
+        &quot;title&quot;: &quot;Operation&quot;,
+        &quot;width&quot;: 100,
+        customRender: {
+            elements: [
+                {
+                    type: 'text',
+                    x: '10%',
+                    y: '50%',
+                    textBaseline: 'middle',
+                    fill: '#00c',
+                    text: 'edit',
+                    fontSize: 14,
+                    underline: true,
+                    cursor: 'pointer',
+                    pickable: true
+                },
+                {
+                    type: 'text',
+                    x: '50%',
+                    y: '50%',
+                    textBaseline: 'middle',
+                    fill: '#00c',
+                    text: 'del',
+                    fontSize: 14,
+                    underline: true,
+                    cursor: 'pointer',
+                    pickable: true
+                }
+            ]
+        }
+    },
+];
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/UCzTb6SZsotARbxXKpmcu6Cqnjg.gif' alt='' width='780' height='auto'></p>
+<p>另一种用户经常使用的场景，是在单元格内原有数据的基础上，做一些简单的标注</p>
+<pre class="codehilite"><code>const columns =[
+    {
+        &quot;field&quot;: &quot;Sales&quot;,
+        &quot;title&quot;: &quot;Sales&quot;,
+        &quot;width&quot;: &quot;auto&quot;,
+        customRender: {
+            elements: [
+                {
+                    type: 'rect',
+                    x: '10%',
+                    y: '10%',
+                    fill: false,
+                    stroke: (value) =&gt; value &gt; 200 ? '#c00' : false,
+                    lineWidth: 20,
+                    width: &quot;80%&quot;,
+                    height: &quot;80%&quot;
+                }
+            ],
+            renderDefault: true
+        }
+    },
+    // ......
+];
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XaMhbIFpMosftbxJewecXLkBnsO.gif' alt='' width='1000' height='auto'></p>
+<p>https://www.visactor.com/vtable/demo/custom-render/custom-render-global</p>
+<p>自定义图形详细说明可以参考 https://www.visactor.com/vtable/guide/custom_define/custom_render，自定义图形能力，目前推荐使用在单元格原有内容上补充简单图形，或单元格内自定义简单内容的场景</p>
+<h1 id="_7">第三阶段 自定义渲染</h1>
+<p>自定义图形功能可以满足在单元格中自由绘制图元，但是在用户使用过程中，随着自定义内容的越来越复杂，发现了一些功能短板：</p>
+<ul>
+<li>
+<p>图元需要组织为一个一维数组，复杂场景强制要求扁平化，相应的代码也会很难维护</p>
+</li>
+<li>
+<p>图元布局需要基于单元格绝对定位，没有相对定位能力，也不能自适应布局（flex）</p>
+</li>
+<li>
+<p>内容只能基础绘图图元，对于复杂模块实现比较复杂</p>
+</li>
+<li>
+<p>没有实时更新能力（交互）</p>
+</li>
+</ul>
+<h2 id="_8">自定义场景树节点</h2>
+<p>针对各类新的复杂功能需求，我们希望提供较为底层的接口，支持用户自行组织VRender场景树节点，来实现单元格内复杂的内容；基于VRender提供的类flex布局能力，用户可以在单元格中进行自适应布局；针对表格中比较常用的一些功能组件（Tag, Chenkbox, Radio），我们也进行了封装，可以很方便的调用。</p>
+<p>以一个简单的上下布局的标题标签为例：</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/X3GabQIJSorHkpxw9ZKcmyKPnKg.gif' alt='' width='670' height='auto'></p>
+<pre class="codehilite"><code>import { Group, Text, Tag } from '@visactor/vtable/es/vrender';
+// ......
+
+const options = {
+  columns: [
+    {
+      field: 'custom',
+      title: 'custom-layout',
+      customLayout: (args) =&gt; {
+        const { table, row, col, rect } = args;
+        const { height, width } = rect ?? table.getCellRect(col, row);
+
+        // 单元格容器
+        const container = new Group({
+          height,
+          width,
+          display: 'flex',
+          flexDirection: 'column',
+          flexWrap: 'nowrap'
+        });
+
+        // 上部group
+        const containerTop = new Group({
+          height: height / 2,
+          width: width,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          fill: 'yellow',
+          opacity: 0.1,
+        });
+
+        // 上部文字Title
+        const title = new Text({
+          text: 'custom-layout-title',
+          fontSize: 14,
+          color: '#333',
+          fontWeight: 600,
+          boundsPadding: [0, 0, 0, 20]
+        });
+
+        containerTop.add(title);
+
+        // 下部group
+        const containerBottom = new Group({
+          height: height / 2,
+          width: width,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          fill: 'green',
+          opacity: 0.1
+        });
+
+        // 下部tags
+        const tag1 = new Tag({
+          text: 'tag1',
+          textStyle: {
+            fontSize: 10,
+            fill: 'rgb(51, 101, 238)'
+          },
+          panel: {
+            visible: true,
+            fill: '#f4f4f2',
+            cornerRadius: 5
+          },
+          space: 5,
+          boundsPadding: [0, 0, 0, 20]
+        });
+
+        const tag2 = new Tag({
+          text: 'tag2',
+          textStyle: {
+            fontSize: 10,
+            fill: 'rgb(51, 101, 238)'
+          },
+          panel: {
+            visible: true,
+            fill: '#f4f4f2',
+            cornerRadius: 5
+          },
+          space: 5,
+          boundsPadding: [0, 0, 0, 20]
+        });
+
+        containerBottom.add(tag1);
+        containerBottom.add(tag2);
+
+        container.add(containerTop);
+        container.add(containerBottom);
+
+        return {
+          rootContainer: container,
+          renderDefault: false
+        };
+      }
+    },
+    // ......
+  ],
+  // ......
+}
+</code></pre>
+
+<p>为了方便定义节点，我们除了实例化后组装的方式外，也支持直接写jsx标签（需要用户的打包环境支持编译jsx），上面的节点也可以写为</p>
+<pre class="codehilite"><code>const container = (
+  &lt;VGroup
+    attribute={{
+      // ......
+    }}
+  &gt;
+    &lt;VGroup
+      attribute={{
+        // ......
+      }}
+    &gt;
+      &lt;VText
+        attribute={{
+          // ......
+        }}
+      &gt;&lt;/VText&gt;
+    &lt;/VGroup&gt;
+    &lt;VGroup
+      attribute={{
+        // ......
+      }}
+    &gt;
+      &lt;VTag
+        attribute={{
+          // ......
+        }}
+      &gt;&lt;/VTag&gt;
+      &lt;VTag
+        attribute={{
+          // ......
+        }}
+      &gt;&lt;/VTag&gt;
+    &lt;/VGroup&gt;
+  &lt;/VGroup&gt;
+)
+</code></pre>
+
+<h2 id="_9">交互更新</h2>
+<p>直接操作VRender场景节点后，交互功能就可以使用相应的事件回调很方便的实现</p>
+<pre class="codehilite"><code>// hover显示icon背景
+&lt;VImage
+  attribute={{
+    id: 'location-icon',
+    width: 15,
+    height: 15,
+    image,
+    boundsPadding: [0, 0, 0, 10],
+    cursor: 'pointer'
+  }}
+  stateProxy={stateName =&gt; {
+    if (stateName === 'hover') {
+      // hover状态更新attribute
+      return {
+        background: {
+          fill: '#ccc',
+          cornerRadius: 5,
+          expandX: 1,
+          expandY: 1
+        }
+      };
+    }
+  }}
+  onMouseEnter={event =&gt; {
+    event.currentTarget.addState('hover', true, false);
+    event.currentTarget.stage.renderNextFrame();
+  }}
+  onMouseLeave={event =&gt; {
+    event.currentTarget.removeState('hover', false);
+    event.currentTarget.stage.renderNextFrame();
+  }}
+&gt;&lt;/VImage&gt;
+</code></pre>
+
+<h2 id="_10">相关使用案例</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/AuqFboM16oAF36x2jbTcL5csn3g.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/UA0KbsALLo9pP8xMEcNcdKMYnKf.gif' alt='' width='1000' height='auto'></p>
+<p>在需要展示富文本内容的场景，使用自定义渲染可以分段组织不同样式的文本，并在单元格中实现对应的布局和展示。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Cw2MbZdS5oqCOPxb7hMcGXxsnUd.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/PlJpbrR1Gorm8AxtykbceYOsnUf.gif' alt='' width='1000' height='auto'></p>
+<p>复杂的表格面板也是自定义渲染常用的场景，通过配置不同的图元，可以实现按钮、图标、状态Tag等等的单元格内容。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/FzJ8bFGv0ooXdnx7qcwcoyj2nGh.gif' alt='' width='1000' height='auto'></p>
+<p>在表格场景中高度定制展示内容的场景，自定义渲染可以供用户自由实现对应的显示效果。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Q2SwbH6FGoKH2vxAQJicWAVunxl.gif' alt='' width='1000' height='auto'></p>
+<p>https://www.visactor.com/vtable/demo/custom-render/custom-cell-layout</p>
+<p>自定义渲染详细说明可以参考：https://www.visactor.com/vtable/guide/custom_define/custom_layout，推荐使用在单元格内自定义内容较为复杂的场景中</p>
+<h1 id="_11">第四阶段 自定义组件</h1>
+<p>通过函数自定义场景树节点，可以满足大部分用户对于单元格内容的定义的功能，但在用户的开发过程中，一些新的使用问题也开始浮现出来：</p>
+<ul>
+<li>
+<p>随着api逐渐底层，自定义功能的上手难度逐渐增加，用户需要对VRender场景树有比较清楚的了解后，才能设计自己的单元格内容场景节点</p>
+</li>
+<li>
+<p>函数式的写法虽然支持jsx标签，但是不是真正的react组件，无法使用props等react组件的基础功能，对于希望可以把单元格内容组件化的用户很不友好</p>
+</li>
+<li>
+<p>一些业务场景，有一些已经完成的高度封装的业务组件，单元格内需要展示react dom组件</p>
+</li>
+</ul>
+<p>针对新的使用问题，我们在这一阶段对react场景进行了专项优化，将单元格内自定义部分进行真正的组件化，并且支持在单元格中展示react dom组件，优化后react开发者可以快速上手自定义组件，也可以支持一部分项目快速迁移。</p>
+<h2 id="_12">表格上浮层组件</h2>
+<p>针对在表格上层实现一个自定义浮层组件（例如tooltip、菜单等），不改变单元格内容的需求，我们提供了全局的<code>CustomComponent</code>组件，方便快速定位上层组件。</p>
+<p>以一个简单的自定义tooltip为例：</p>
+<pre class="codehilite"><code>function Tooltip(props) {
+  return (
+    &lt;div style={{ width: '100%', height: '100%', border: '1px solid #333', backgroundColor: '#ccc', fontSize: 10 }}&gt;
+      {`${props.value}`}
+    &lt;/div&gt;
+  );
+}
+
+function App() {
+  const [hoverCol, setHoverCol] = useState(-1);
+  const [hoverRow, setHoverRow] = useState(-1);
+  const [value, setValue] = useState('');
+  const visible = useRef(false);
+  const tableInstance = useRef(null);
+
+  const updateHoverPos = useCallback(args =&gt; {
+    if (visible.current) {
+      return;
+    }
+    setHoverCol(args.col);
+    setHoverRow(args.row);
+    const cellValue = tableInstance.current.getCellValue(args.col, args.row);
+    setValue(cellValue);
+  }, []);
+
+  return (
+    &lt;ListTable
+      ref = {tableInstance}
+      option={option}
+      onMouseEnterCell={updateHoverPos}
+    &gt;
+      &lt;CustomComponent
+        width=&quot;80%&quot;
+        height=&quot;100%&quot;
+        displayMode=&quot;cell&quot;
+        col={hoverCol}
+        row={hoverRow}
+        anchor=&quot;bottom-right&quot;
+        dx=&quot;-80%&quot;
+      &gt;
+        &lt;Tooltip value={value} /&gt;
+      &lt;/CustomComponent&gt;
+    &lt;/ListTable&gt;
+  );
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ZCbab9TaroEEZ8xnDSZc524Znmd.gif' alt='' width='406' height='auto'></p>
+<p><code>CustomComponent</code>组件中，可以依据锚定的单元格的尺寸和位置，自动设置相关样式</p>
+<ul>
+<li>
+<p>可以设置相对于单元格的展示位置（anchor）</p>
+</li>
+<li>
+<p>可以依据单元格的尺寸进行百分比设置自身的尺寸</p>
+</li>
+<li>
+<p>可以使用dx dy进行位置微调</p>
+</li>
+</ul>
+<p>详细说明可以参考 https://www.visactor.com/vtable/guide/custom_define/react-custom-component#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%A4%96%E9%83%A8%E7%BB%84%E4%BB%B6</p>
+<h2 id="_13">表格单元格自定义组件</h2>
+<p>在jsx标签的基础上，基于<code>react-reconciler</code>我们对自定义渲染进行了完全的组件封装，用户可以使用提供的图元组件，封装一个真正的react组件。</p>
+<p>以一个单元格展示两个Tag的简单组件为例：</p>
+<pre class="codehilite"><code>function Cell(props) {
+  const { table, row, col, rect, prefix } = props;
+  if (!table || row === undefined || col === undefined) {
+    return null;
+  }
+  const { height, width } = rect || table.getCellRect(col, row);
+  const record = table.getRecordByRowCol(col, row);
+
+  return (
+    &lt;Group
+      attribute={{
+        width,
+        height,
+        display: 'flex',
+        flexWrap: 'wrap',
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignContent: 'center',
+        justifyContent: 'space-around'
+      }}
+    &gt;
+      &lt;Tag 
+        textStyle={{
+          fontSize: 14,
+          fontFamily: 'sans-serif',
+          fill: 'rgb(51, 101, 238)'
+        }}
+        padding={[8, 10]}
+        panelStyle={{
+          visible: true,
+          fill: '#e6fffb',
+          lineWidth: 1,
+          cornerRadius: 4
+        }}
+      &gt;{`${prefix}-${record.name}-1`}&lt;/Tag&gt;
+      &lt;Tag 
+        textStyle={{
+          fontSize: 14,
+          fontFamily: 'sans-serif',
+          fill: 'rgb(51, 141, 38)'
+        }}
+        padding={[8, 10]}
+        panelStyle={{
+          visible: true,
+          fill: '#e6fffb',
+          lineWidth: 1,
+          cornerRadius: 4
+        }}
+      &gt;{`${prefix}-${record.name}-2`}&lt;/Tag&gt;
+    &lt;/Group&gt;
+  );
+}
+
+function App() {
+  const tableInstance = useRef(null);
+
+  const [prefix, setPrefix] = useState('cus');
+
+  return (
+    &lt;ListTable
+      ref={tableInstance}
+      records={[{name: 'tag'}]}
+    &gt;
+      &lt;ListColumn field={'name'} title={'Tag Component'} width={200}&gt;
+        &lt;Cell role={'custom-layout'} prefix={prefix}/&gt;
+      &lt;/ListColumn&gt;
+    &lt;/ListTable&gt;
+  );
+}
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DN6UbXJ27oGFpQxxpOJcYAr4nec.gif' alt='' width='472' height='auto'></p>
+<p>这里我们自定义了组件<code>Cell</code>，用来展示两个标签，内容由上层组件传递的props中的prefix和单元格数据决定。这里的组件和传统的组件会有一些区别：</p>
+<ul>
+<li>
+<p>组件中使用的标签，必须是react-vtable提供的图元和组件</p>
+</li>
+<li>
+<p>每个列或指标只需要设置一个组件，这个组件会被应用在该列的所有单元格上</p>
+</li>
+<li>
+<p>与<code>customLayout</code>的回调函数类似，组件会自带<code>table</code>, <code>row</code>, <code>col</code>, <code>rect</code>这些props供使用</p>
+</li>
+</ul>
+<p>除了基础的图元组件和Tag Checkbox Radio组件外，react-vtable也内置了Bottom, Link, Avatar和Poptip这些表格中的常用组件</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/N4Q2ba9s2oiIEdx1tr6cmn4snJc.gif' alt='' width='964' height='auto'></p>
+<p>详细说明可以参考 https://www.visactor.com/vtable/guide/custom_define/react-custom-component，自定义组件目前推荐在react环境，需要对单元格内自定义内容进行组件化封装的场景</p>
+<h2 id="react-dom">表格单元格中使用react dom组件</h2>
+<p>如果需要在组件中使用DOM react组件，VRender支持在图元组件的<code>attribute</code>属性中，指定<code>react</code>属性，并将react组件作为<code>element</code>属性传入：</p>
+<pre class="codehilite"><code>&lt;Group
+  attribute={{
+    // ......
+    react: {
+      pointerEvents: true,
+      container: table.bodyDomContainer, // table.headerDomContainer
+      anchorType: 'bottom-right',
+      element: &lt;CardInfo record={record} hover={hover} row={row} /&gt;
+    }
+  }}
+&gt;
+// ...
+&lt;/Group&gt;
+</code></pre>
+
+<p>相应的react组件会在相对于单元格的位置实例化，覆盖在canvas上</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/MT4gbpeDGoWiIzxvcm8cx5NgnSg.gif' alt='' width='1000' height='auto'></p>
+<p>目前react dom组件有两种使用方式：</p>
+<ul>
+<li>
+<p>在单元格内展示的内容，使用react-vtable提供的图元标签，单元格内触发的弹窗、菜单等组件，可以使用DOM react组件，这是我们推荐的方案。</p>
+</li>
+<li>
+<p>在单元格中完全使用react dom组件，react-vtable也提供完整的表格定位，滚动和更新功能</p>
+</li>
+</ul>
+<p>详细说明可以参考：https://www.visactor.com/vtable/guide/custom_define/react-custom-component#%E4%BD%BF%E7%94%A8dom-react%E7%BB%84%E4%BB%B6</p>
+<h2 id="_14">相关使用实例</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/GllCbvj6Oo5XWbx7Ke1caI8xnJX.gif' alt='' width='816' height='auto'></p>
+<p>使用react dom组件，可以快速将原先react项目中的组件在vtable中展示，并且保留组件的样式和相应的功能。</p>
+<p><a href="https://www.visactor.com/vtable/demo-react/component/custom-component">自定义外部组件——VisActor/VTable react demo</a></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/PuiKbUCc7oHsztxZWlKcbVrJn4c.gif' alt='' width='762' height='auto'></p>
+<p><a href="https://www.visactor.com/vtable/demo-react/component/custom-component">自定义组件——VisActor/VTable react demo</a></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/M1MNbzpW5oTpthxFmy7cF8HqnRf.gif' alt='' width='1000' height='auto'></p>
+<p><a href="https://www.visactor.com/vtable/demo-react/custom-layout/cell-custom-layout-dom">单元格自定义组件+dom组件——VisActor/VTable react demo</a></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/EHi8bYaMro3CrCxo9Icc3EkNn9c.gif' alt='' width='1000' height='auto'></p>
+<p><a href="https://www.visactor.com/vtable/demo-react/custom-layout/cell-custom-dom">单元格内dom组件——VisActor/VTable react demo</a></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/NgFhbZ1l5oygH7xs5LscIwF6nhf.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/XhtCbb6BooheKFx5oRmcb9zencc.gif' alt='' width='1000' height='auto'></p>
+<h1 id="_15">后续计划</h1>
+<ul>
+<li>
+<p>组件库的补充，增加表格能常用组件，扩展组件库覆盖范围</p>
+</li>
+<li>
+<p>进一步提升自定义组件的性能</p>
+</li>
+<li>
+<p>增加vue版本的自定义组件能力</p>
+</li>
+</ul>
+<h1 id="_16">欢迎交流</h1>
+<p>欢迎更多使用<a href="https://www.visactor.io/">VisActor</a>的用户联系我们，给我们投稿，交流业务场景，提建议，贡献代码，谢谢大家！</p>
+<p><strong>VChart</strong>：<a href="https://www.visactor.io/vchart">VChart 官网</a></p>
+<p><strong>VTable</strong>：<a href="https://www.visactor.io/vtable">VTable 官网</a></p>
+<p><strong>VMind</strong>：<a href="https://www.visactor.io/vmind">VMind 官网</a></p>
+<p>官方网站：<a href="https://www.visactor.io">www.visactor.io/</a></p>
+<p>Discord：<a href="https://discord.gg/3wPyxVyH6m">discord.gg/3wPyxVyH6m</a></p>
+<p>飞书群：
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/JWBBbE58Bo5pKOxaNGNcYweMnqb.gif' alt='' width='1000' height='auto'></p>
+<p>微信公众号：
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/weixin.jpg' alt='' width='1000' height='auto'></p>
+<p>Twiter：<a href="https://twitter.com/xuanhun1">twitter.com/xuanhun1</a></p>
+<p>github：<a href="https://github.com/VisActor">github.com/VisActor</a></p>
+</body>
+</html>

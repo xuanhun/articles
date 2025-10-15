@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VChart Official Website Launches AI Assistant and Sharing Features</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="abstract">Abstract</h2>
+<p>VChart's official website welcomes a major update, launching AI Assistant and brand new sharing features. The sharing functionality supports three methods: Playground link sharing (with real-time interactive debugging), iframe embed code (easy website integration), and image export (one-click high-definition screenshot generation), fully compatible with three mainstream frameworks: native JavaScript, React, and OpenInula. Meanwhile, the AI Assistant has been upgraded with an integrated AI Q&amp;A system in the search box for quick technical support, and the AI editing feature has been optimized with drawer-style interaction for a more immersive editing experience. These new features significantly enhance chart shareability and development efficiency, making data visualization work more efficient and convenient.</p>
+<h2 id="1-vchart-official-websites-new-sharing-features-are-live-bringing-your-charts-to-life">1 🚀 VChart Official Website's New Sharing Features Are Live, Bringing Your Charts to Life!</h2>
+<p>Still struggling with how to share and showcase your data visualization work? Now, VChart brings you a series of powerful sharing features that bring your charts to life in unprecedented ways, easily embedding them into any application scenario!</p>
+<p>This feature helps you persist chart examples, quickly create demos to share and discuss with others, and can also be used to embed in other web applications.</p>
+<hr />
+<h3 id="11-sharing-feature-entry-point">1.1 ✨ Sharing Feature Entry Point</h3>
+<ol>
+<li>
+<p>Visit https://visactor.io/vchart (https://visactor.com/vchart) official website</p>
+</li>
+<li>
+<p><a href="https://visactor.io/vchart/playground">Playground page</a> or <a href="https://visactor.io/vchart/demo/">any chart demo</a> page</p>
+</li>
+<li>
+<p>Click the share button in the upper right corner</p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RE1wb8999oQ6rRxZ9iwcNsEPnId.gif' alt='' width='1000' height='auto' /></p>
+<h3 id="12-core-feature-description">1.2 ✨ Core Feature Description</h3>
+<div style="padding:5px;background-color: rgb(217, 245, 214);border-color: rgb(240, 244, 255);">The new sharing feature fully supports **native JavaScript, React, and OpenInula** — three mainstream environments, ensuring your chart Spec renders perfectly in any environment!
+</div>
+
+<h4 id="121-share-as-playground-real-time-interaction-instant-debugging">1.2.1 Share as Playground: Real-time Interaction, Instant Debugging</h4>
+<p>Share your chart configuration as an independent Playground link with one click. Your colleagues or partners can view, modify, and debug the chart directly in the browser without any local configuration. This can also be used to report issues to the official team when submitting GitHub issues.</p>
+<ul>
+<li>
+<p><strong>Cross-environment Support</strong>: Seamlessly switch between native, React, and OpenInula environments.</p>
+</li>
+<li>
+<p><strong>Configuration Inheritance</strong>: Automatically inherits the VChart version and theme you're currently using, ensuring environment consistency.</p>
+</li>
+<li>
+<p><strong>Demo Effect</strong>:</p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YegpbRO0ooq38NxqKkRcz67PnW1.gif' alt='' width='1000' height='auto' /></p>
+<h4 id="2-share-as-iframe-easy-embedding-seamless-integration">2. Share as iframe: Easy Embedding, Seamless Integration</h4>
+<p>Need to embed charts into your website, blog, or internal system? Now, just copy one line of iframe code to seamlessly integrate dynamic charts into any webpage.</p>
+<ul>
+<li>
+<p><strong>Full Environment Coverage</strong>: Also supports native, React, and OpenInula.</p>
+</li>
+<li>
+<p><strong>Version &amp; Theme</strong>: Automatically syncs VChart version and theme to maintain consistency with your application style.</p>
+</li>
+<li>
+<p><strong>Demo Effect</strong>:</p>
+</li>
+</ul>
+<h4 id="3-share-as-image-one-click-screenshot-quick-sharing">3. Share as Image: One-Click Screenshot, Quick Sharing</h4>
+<p>Need to use charts in reports, presentations, or social media? The new "Share as Image" feature allows you to generate high-quality chart images with one click, sharing your data insights anytime, anywhere.</p>
+<ul>
+<li>
+<p><strong>Simple and Fast</strong>: In native environment, generate and download chart images with one click.</p>
+</li>
+<li>
+<p><strong>Demo Effect</strong>:</p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/LQdRb6y6uoDI2Axpuu4cD7ccndg.gif' alt='' width='1000' height='auto' /></p>
+<h2 id="2-ai-assistant-making-chart-editing-more-intelligent">2 🚀 AI Assistant, Making Chart Editing More "Intelligent"</h2>
+<p>The AI assistant in VChart brings more convenience and intelligent experience to chart editing. On one hand, the search box integrates the AI assistant, helping users quickly find the information they need, greatly improving information retrieval efficiency and reducing search time costs. On the other hand, for AI editing features, UI optimization has been implemented with a drawer-style interaction. This improvement creates a smoother, more immersive editing environment for users, reducing external distractions and allowing users to focus more on chart editing.</p>
+<hr />
+<h3 id="21-search-box-with-new-ai-assistant">2.1 ✨ Search Box with New AI Assistant</h3>
+<p>VChart's search box now integrates a powerful AI assistant to help you quickly find the information you need.</p>
+<p>Open the AI assistant through the search box:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/FstvbSyMaoAeSlxQJPZctnsBnIb.gif' alt='' width='1000' height='auto' /></p>
+<p>Enter your question to get answers:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Cm35bqD4zo04VlxOOJpckynMnob.gif' alt='' width='1000' height='auto' /></p>
+<h3 id="22-ai-editing-feature-ui-optimization">2.2 ✨ AI Editing Feature UI Optimization</h3>
+<p>We've optimized the UI for AI editing features, now with drawer-style interaction, providing you with a smoother, more immersive editing experience.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SknrbKLMsoCEe5xXyQ8cRWH9nyc.gif' alt='' width='1000' height='auto' /></p>
+<h2 id="3-try-it-now">3 🚀 Try It Now</h2>
+<p>Visit <a href="https://visactor.io/vchart">VChart Official Website</a> and try it now!</p>
+<p>This is just a small step in using AI to enhance user experience. There are more big moves coming. Welcome to follow us for communication and suggestions!</p>
+<h1 id="welcome-to-connect">Welcome to Connect</h1>
+<p>Finally, we sincerely welcome all friends interested in data visualization to participate in VisActor's open source development:</p>
+<p><strong>VChart</strong>: <a href="https://www.visactor.io/vchart">VChart Official Website</a>, <a href="https://github.com/VisActor/VChart">VChart Github (Welcome to Star)</a></p>
+<p><strong>VTable</strong>: <a href="https://www.visactor.io/vtable">VTable Official Website</a>, <a href="https://github.com/VisActor/VTable">VTable Github (Welcome to Star)</a></p>
+<p><strong>VMind</strong>: <a href="https://www.visactor.io/vmind">VMind Official Website</a>, <a href="https://github.com/VisActor/VMind">VMind Github (Welcome to Star)</a></p>
+<p>Official Website: <a href="http://www.visactor.io/">www.visactor.io/</a> or www.viactor.com</p>
+<p>Discord: <a href="http://discord.gg/3wPyxVyH6m">discord.gg/3wPyxVyH6m</a></p>
+<p>Feishu Group (External Network): <a href="https://link.juejin.cn?target=https%3A%2F%2Fp3-juejin.byteimg.com%2Ftos-cn-i-k3u1fbpfcp%2F40dcf4e6722d4925804361a2269991d8~tplv-k3u1fbpfcp-jj-mark%3A0%3A0%3A0%3A0%3Aq75.image%23%3Fw%3D264%26h%3D277%26s%3D35808%26e%3Dpng%26b%3Dfdfdfd">Open Link to Scan QR Code</a></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/D57ObfEegoglhQxeJqAcWTOInod.gif' alt='' width='264' height='auto' /></p>
+<p>WeChat Official Account: <a href="https://link.juejin.cn?target=https%3A%2F%2Fp3-juejin.byteimg.com%2Ftos-cn-i-k3u1fbpfcp%2Ff28519302ee94940a8159fc52d375aaa~tplv-k3u1fbpfcp-jj-mark%3A0%3A0%3A0%3A0%3Aq75.image%23%3Fw%3D258%26h%3D258%26s%3D8552%26e%3Dwebp%26b%3Dfefefe">Open Link to Scan QR Code</a></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/W1ohbqWZxoGLQuxEyTvcmJLbnuc.gif' alt='' width='258' height='auto' /></p>
+<p>GitHub: <a href="https://github.com/VisActor/">github.com/VisActor</a></p>
+</body>
+</html>

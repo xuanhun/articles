@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>31. VTable表格组件实现单元格可编辑后，怎么控制退出编辑的时机？</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VTable表格组件实现单元格可编辑后，怎么控制退出编辑的时机？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>结合官网流程图所示，当再编辑状态下点击其他单元格或者按enter键后，VTable处理在接收到事件时，就一定会触发这个onEnd退出编辑状态吗？在我的项目中，有个场景是会在用户触发这两种交互时，不期望退出编辑状态，这个目前有办法吗？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DKp2bRqkho3kGpxWd7cclU71nP5.gif' alt='' width='1302' height='913'></p>
+<h2 id="_3">解决方案</h2>
+<h3 id="_4">点击不退出编辑</h3>
+<p>可以使用编写自定义编辑器来控制退出编辑状态的时机。因为VTable逻辑会调用编辑器的<code>isEditorElement</code>方法如果返回false则VTable会走退出编辑的逻辑，如果返回true则不退出编辑，所以我们可以利用这个方法来显示不退出的需求。具体教程地址：https://visactor.io/vtable/guide/edit/edit_cell</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/YS3Kb4MmHo8W2txQpLlccdhmnTi.gif' alt='' width='1948' height='1730'></p>
+<h3 id="enter">键入enter不退出编辑</h3>
+<p>这个可以监听编辑dom的keydown事件，直接组织冒泡，不让VTable监听到也就不会退出编辑了</br></p>
+<h2 id="_5">示例代码</h2>
+<pre class="codehilite"><code>let  tableInstance;
+ class MyInputEditor {
+  createElement() {
+     const input = document.createElement('input');
+    input.setAttribute('type', 'text');
+    input.style.position = 'absolute';
+    input.style.padding = '4px';
+    input.style.width = '100%';
+    input.style.boxSizing = 'border-box';
+    this.element = input;
+    this.container.appendChild(input);
+    // 监听键盘事件
+    input.addEventListener('keydown', (e) =&gt; {
+        // 阻止冒泡
+        e.stopPropagation();
+    });
+  }
+  setValue(value) {
+    this.element.value = typeof value !== 'undefined' ? value : '';
+  }
+  getValue() {
+    return this.element.value;
+  }
+  onStart({ value, referencePosition, container, endEdit }){
+    this.container = container;
+    this.successCallback = endEdit;
+    if (!this.element) {
+      this.createElement();
+
+      if (value !== undefined &amp;&amp; value !== null) {
+        this.setValue(value);
+      }
+      if (referencePosition?.rect) {
+        this.adjustPosition(referencePosition.rect);
+      }
+    }
+    this.element.focus();
+  }
+
+  adjustPosition(rect) {
+    this.element.style.top = rect.top + 'px';
+    this.element.style.left = rect.left + 'px';
+    this.element.style.width = rect.width + 'px';
+    this.element.style.height = rect.height + 'px';
+  }
+  onEnd() {
+    this.container.removeChild(this.element);
+    this.element = undefined;
+  }
+
+  isEditorElement(target) {
+    // 仅允许点击到表格外部才会结束编辑
+    if(target.tagName === 'CANVAS')
+      return true;
+    return target === this.element;
+  }
+}
+
+const my_editor = new MyInputEditor();
+VTable.register.editor('my_editor', my_editor);
+
+const option = {
+  container: document.getElementById(CONTAINER_ID),
+  columns: [
+    {
+      field: 'bloggerName',
+      title: 'bloggerName'
+    },
+    {
+      field: 'fansCount',
+      title: 'fansCount',
+      fieldFormat(rec) {
+        return rec.fansCount + 'w';
+      },
+      style: {
+        fontFamily: 'Arial',
+        fontSize: 12,
+        fontWeight: 'bold'
+      }
+    },
+    {
+      field: 'worksCount',
+      title: 'worksCount',
+      style: {
+        fontFamily: 'Arial',
+        fontSize: 12,
+        fontWeight: 'bold'
+      }
+    },
+    {
+      field: 'viewCount',
+      title: 'viewCount',
+      fieldFormat(rec) {
+        return rec.fansCount + 'w';
+      },
+      style: {
+        fontFamily: 'Arial',
+        fontSize: 12,
+        fontWeight: 'bold'
+      }
+    },
+    {
+      field: 'viewCount',
+      title: 'viewCount',
+      fieldFormat(rec) {
+        return rec.fansCount + 'w';
+      },
+      style: {
+        fontFamily: 'Arial',
+        fontSize: 12,
+        fontWeight: 'bold'
+      }
+    },
+  ],
+  records: [
+    {
+      bloggerId: 1,
+      bloggerName: 'Virtual Anchor Xiaohua',
+     fansCount: 400,
+      worksCount: 10,
+      viewCount: 5,
+      city: 'Dream City',
+      tags: ['game', 'anime', 'food']
+    },
+    {
+      bloggerId: 2,
+      bloggerName: 'Virtual anchor little wolf',
+      fansCount: 800,
+      worksCount: 20,
+      viewCount: 15,
+      city: 'City of Music',
+      tags: ['music', 'travel', 'photography']
+    },
+    {
+      bloggerId: 3,
+      bloggerName: 'Virtual anchor bunny',
+      fansCount: 600,
+      worksCount: 15,
+      viewCount: 10,
+      city: 'City of Art',
+      tags: ['painting', 'handmade', 'beauty makeup']
+    },
+    {
+      bloggerId: 4,
+      bloggerName: 'Virtual anchor kitten',
+      fansCount: 1000,
+      worksCount: 30,
+      viewCount: 20,
+      city: 'Health City',
+      tags: ['dance', 'fitness', 'cooking']
+    },
+    {
+      bloggerId: 5,
+      bloggerName: 'Virtual anchor Bear',
+      fansCount: 1200,
+      worksCount: 25,
+      viewCount: 18,
+      city: 'City of Wisdom',
+      tags: ['Movie', 'Literature']
+    },
+    {
+      bloggerId: 6,
+      bloggerName: 'Virtual anchor bird',
+      fansCount: 900,
+      worksCount: 12,
+      viewCount: 8,
+      city: 'Happy City',
+      tags: ['music', 'performance', 'variety']
+    }
+  ],
+  enableLineBreak: true,
+
+  editCellTrigger: 'click',
+  editor:'my_editor'
+};
+tableInstance = new VTable.ListTable(option);
+tableInstance.on('change_cell_value', arg =&gt; {
+  console.log(arg);
+});&lt;/br&gt;
+</code></pre>
+
+<h2 id="_6">相关文档</h2>
+<p>编辑表格demo：https://visactor.io/vtable/demo/edit/edit-cell</br>
+编辑表格教程：https://visactor.io/vtable/guide/edit/edit_cell</br>
+相关api：</br>
+https://visactor.io/vtable/option/ListTable#editor</br>
+https://visactor.io/vtable/option/ListTable-columns-text#editor</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

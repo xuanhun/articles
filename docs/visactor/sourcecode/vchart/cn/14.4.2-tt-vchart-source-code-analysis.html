@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14.4.2 TT-VChart 源码详解</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">宿主环境的兼容</h2>
+<p>抖音小组件提供了自定义组件的能力（https://developer.open-douyin.com/docs/resource/zh-CN/mini-app/develop/tutorial/custom-component/custom-component），每一个自定义小组件都包含几个部分：    </p>
+<ul>
+<li>
+<p>index.js：组件的注册逻辑    </p>
+</li>
+<li>
+<p>index.json：组件的声明    </p>
+</li>
+<li>
+<p>index.ttml：组件的模板内容    </p>
+</li>
+<li>
+<p>index.ttss：组件的样式    </p>
+</li>
+</ul>
+<h3 id="_2">组件声明</h3>
+<p>为了保证抖音环境中的 VChart 能力，TT VChart 的自定义组件中声明了三个 canvas：    </p>
+<ul>
+<li>
+<p>Render canvas：用于渲染 VChart 图表内容；    </p>
+</li>
+<li>
+<p>Hit canvas：虽然叫做 Hit Canvas，但是目前 VChart 已经不再使用额外 canvas 做图形拾取。这一 canvas 主要用于执行额外的 canvas 操作。例如词云布局算法中像素匹配逻辑以及纹理渲染逻辑均需要在额外的 canvas 中进行；    </p>
+</li>
+<li>
+<p>Tooltip canvas：用于渲染额外的 tooltip 内容，拆分 Render canvas 与 Tooltip canvas，避免整个画布重绘。    </p>
+</li>
+</ul>
+<h3 id="_3">组件注册</h3>
+<p>组件的注册包含属性以及必要的声明周期。    </p>
+<p><strong>组件属性：</strong>    </p>
+<ul>
+<li>
+<p>spec：与 VChart 的 spec 配置相同，但是在注册中添加了 observer 用于监听图表 spec 的变化。当 spec 更新时，将会自动调用 vchart.updateSpec()；    </p>
+</li>
+<li>
+<p>options：与 VChart 的 options 配置相同；    </p>
+</li>
+<li>
+<p>events：与 VChart 的注册事件相同，会在图表初始化时调用 vchart.on 监听相应的事件。    </p>
+</li>
+</ul>
+<p><strong>组件方法：</strong>    </p>
+<ul>
+<li>
+<p>init：VChart 渲染核心需要的就是 Canvas 画布，在 init 函数中，tt vchart 会找到对应的 canvas 组件，并初始化 VChart 实例执行渲染过程。渲染过程与普通的 VChart 示例相同；    </p>
+</li>
+<li>
+<p>bindEvent：绑定事件，并针对抖音环境过滤可能重复触发的 PC 端 &amp; 移动端事件。    </p>
+</li>
+</ul>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

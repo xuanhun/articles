@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2. VTable使用问题：如何显示表格行号</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何在表格中每一行前，显示该行的序号。</br></p>
+<h2 id="_2">问题描述</h2>
+<p>通过配置，在表格第一列前加入一列，显示每一行的行号</br></p>
+<h2 id="_3">解决方案</h2>
+<p>可在表格初始化的<code>option</code>中配置<code>rowSeriesNumber</code>。该配置项定义如下：</br></p>
+<pre class="codehilite"><code>interface IRowSeriesNumber {
+  width?: number | 'auto'; // 显示行号列的宽度
+  title?: string; // 行序号标题，默认为空
+  format?: (col?: number, row?: number, table?: BaseTableAPI) =&gt; any; // 行序号格式化函数，默认为空，通过该配置可以将数值类型的序号转换为自定义序号，如使用 a,b,c...
+  cellType?: 'text' | 'link' | 'image' | 'video' | 'checkbox';  // 行序号单元格类型，默认为text
+  style?: ITextStyleOption | ((styleArg: StylePropertyFunctionArg) =&gt; ITextStyleOption); // body 单元格样式，可参考：[style](https%3A%2F%2Fwww.visactor.io%2Fvtable%2Foption%2FListTable-columns-text%23style.bgColor)
+  headerStyle?: ITextStyleOption | ((styleArg: StylePropertyFunctionArg) =&gt; ITextStyleOption); // 表头单元格样式，可参考： [headerStyle](https%3A%2F%2Fwww.visactor.io%2Fvtable%2Foption%2FPivotTable-columns-text%23headerStyle.bgColor)
+  /** 是否可拖拽顺序 */
+  dragOrder?: boolean; // 是否可拖拽行序号顺序，默认为 false。如果设置为 true，会显示拖拽位置的图标，交互在该图标上可以拖拽来换位。如果需要替换该图标可以自行配置。可参考教程：[https://visactor.io/vtable/guide/custom_define/custom_icon](https%3A%2F%2Fvisactor.io%2Fvtable%2Fguide%2Fcustom_define%2Fcustom_icon) 中重置功能图标的章节。
+}&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>const option = {
+  records: data,
+  columns,
+  widthMode: 'standard',
+  rowSeriesNumber: {
+    title: '序号',
+    width: 'auto',
+    headerStyle: {
+      color: 'black',
+      bgColor: 'pink'
+    },
+    style: {
+      color: 'red'
+    }
+  }
+};
+const tableInstance = new VTable.ListTable(container, option);&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>在线效果参考：https://www.visactor.io/vtable/demo/basic-functionality/row-series-number</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Z715bIZMoozEDSxXEO1cCjronRd.gif' alt='' width='709' height='403'></p>
+<h2 id="_6">相关文档</h2>
+<p>行序号demo：https://www.visactor.io/vtable/demo/basic-functionality/row-series-number</br>
+相关api：https://www.visactor.io/vtable/option/ListTable#rowSeriesNumber</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14.8.1 vchart-svg-plugin Introduction</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="overview">Overview</h2>
+<p>vchart-svg-plugin is a plugin that converts vchart rendering content into an SVG string, mainly used for printing, server-side rendering, and other scenarios;    </p>
+<h2 id="basic-principles">Basic Principles</h2>
+<p>Before reading the specific code, we first need to know some implementation principles of vchart. Vchart is rendered based on canvas and relies on the canvas rendering engine library @visactor/vrender at the bottom layer. Vrender generates a graphic scene tree stage based on the chart configuration of vchart:    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ui54bUs0io26WExxsEMcANmanyb.gif' alt='' width='1000' height='auto' /></p>
+<p>The relationship of graphics-related classes in vrender is as follows:    </p>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ri2xwVECThDBVkbBpDKc5HG0nGe.gif" /></p>
+<p>In other words, through the <code>vchart</code> instance, we can obtain the root node <code>stage</code> of the scene tree. By recursively traversing the child nodes of <code>stage</code>, we can get all the rendered graphics. In the implementation of vrender, all graphics have an <code>attribute</code> property to maintain the display configuration of the graphics. Therefore, the task is broken down into two parts:</p>
+<ul>
+<li>
+<p>Construct the child nodes of the svg based on the child nodes of <code>stage</code></p>
+</li>
+<li>
+<p>Convert the <code>attribute</code> of vrender graphic elements into the corresponding attributes of svg nodes</p>
+</li>
+</ul>
+<h2 id="core-file-structure">Core File Structure</h2>
+<pre class="codehilite"><code class="language-plaintext">src/svg/
+├── convert.ts     - 转换入口，处理图表到SVG的转换
+├── graphic.ts     - 图形元素转换的核心实现
+├── util.ts        - 通用工具函数集合
+├── pattern.ts     - 纹理属性转换
+├── shadow.ts      - shadow属性转换
+├── arc.ts         - 圆弧图形相关转换
+├── area.ts        - 区域图形相关转换
+├── line.ts        - 线图形相关转换
+├── polygon.ts     - 多边形图形相关转换
+├── rect.ts        - 矩形图形相关转换
+└── symbol.ts      - symbol图形相关转换
+</code></pre>
+
+<p>In the following chapters, we will describe in detail some core code implementations    </p>
+<p># This document was revised and organized by the following personnel 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

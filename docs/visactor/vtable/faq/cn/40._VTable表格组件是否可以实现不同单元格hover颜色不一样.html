@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>18. VTable表格组件是否可以实现不同单元格hover颜色不一样？</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VTable表格组件是否可以实现不同单元格hover颜色不一样？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>请问，可以实现不同单元格hover颜色不一样么？</br>
+使用场景：默认情况下，设置hover颜色为蓝色，根据不同条件，高亮了一部分单元格为紫色，但需求不希望hover到高亮单元格时也变成了hove蓝r色。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ZU9Ob7mjwoChtJx0WzEcAsstnfe.gif' alt='' width='626' height='526'></p>
+<h2 id="_3">解决方案</h2>
+<p>可通过背景色函数来解决，<code>bgColor</code>配置为函数形式来设置特殊值的高亮背景颜色。通过<code>theme.bodyStyle.hover.cellBgColor</code>来设置背景色，同样这里也需要设置成函数，返回不同的背景色，如果有些单元格不想要背景色的话可以放回空字符串。</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>let  tableInstance;
+  fetch('https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/North_American_Superstore_data.json')
+    .then((res) =&gt; res.json())
+    .then((data) =&gt; {
+
+const columns =[
+    {
+        &quot;field&quot;: &quot;Profit&quot;,
+        &quot;title&quot;: &quot;Profit&quot;,
+        &quot;width&quot;: &quot;auto&quot;,
+        style:{
+            bgColor(args){
+                if(args.value&gt;200){
+                    return 'rgba(153,0,255,0.2)'
+                }
+                // 以下代码参考DEFAULT主题配置实现 https://github.com/VisActor/VTable/blob/develop/packages/vtable/src/themes/DEFAULT.ts
+                const { col,row, table } = args;
+                const {row:index} = table.getBodyIndexByTableIndex(col,row);
+                if (!(index &amp; 1)) {
+                    return '#FAF9FB';
+                }
+                return '#FDFDFD';
+            }
+        }
+    },
+    {
+        &quot;field&quot;: &quot;Order ID&quot;,
+        &quot;title&quot;: &quot;Order ID&quot;,
+        &quot;width&quot;: &quot;auto&quot;
+    },
+    {
+        &quot;field&quot;: &quot;Customer ID&quot;,
+        &quot;title&quot;: &quot;Customer ID&quot;,
+        &quot;width&quot;: &quot;auto&quot;
+    },
+    {
+        &quot;field&quot;: &quot;Product Name&quot;,
+        &quot;title&quot;: &quot;Product Name&quot;,
+        &quot;width&quot;: &quot;auto&quot;
+    }
+];
+
+const option = {
+  records:data,
+  columns,
+  widthMode:'standard',
+  hover:{
+    highlightMode:'cell'
+  },
+  theme:VTable.themes.DEFAULT.extends({
+    bodyStyle:{
+      hover:{
+        cellBgColor(args){
+          if(args.value&gt;200){
+              return ''
+          }
+          return '#CCE0FF';
+        }
+      }
+    }
+  })
+};
+tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID),option);
+window['tableInstance'] = tableInstance;
+})&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>直接将示例代码中代码粘贴到官网编辑器中即可呈现。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HYU8bfXN4oCzq9xf9BTcBLSrnAe.gif' alt='' width='824' height='524'></p>
+<h2 id="_6">相关文档</h2>
+<p>主题用法参考demo：https://visactor.io/vtable/demo/theme/extend</br>
+主题用法教程：https://visactor.io/vtable/guide/theme_and_style/theme</br>
+相关api：https://visactor.io/vtable/option/ListTable#theme</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

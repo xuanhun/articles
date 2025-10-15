@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1.3 VTable Lifecycle</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>In the previous chapters, we introduced the basic concepts and source code architecture of <code>@Visactor/VTable</code>. However, to deeply understand the working principles of the table component library, we need to delve into its source code. This article will gradually introduce the lifecycle of <code>@Visactor/VTable</code> through step-by-step debugging, deeply analyzing the table rendering initialization, update, and destruction processes in its source code, helping readers better understand and master the lifecycle of <code>@Visactor/VTable</code>.</p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">The file location involved in this document:    
+VTable\packages\vtable\src\ListTable.ts    
+VTable\packages\vtable\src\core\BaseTable.ts    
+VTable\packages\vtable\src\event\EventTarget.ts    
+VTable\packages\vtable\src\PivotTable.ts    
+VTbale\packages\vtable\src\scenegraph\scenegraph.ts    
+VTable\packages\vtable\src\scenegraph\group-creater\init-scenegraph.ts    
+VTable\packages\vtable\src\scenegraph\layout\compute-row-height.ts    
+VTable\packages\vtable\src\scenegraph\group-creater\progress\proxy.ts    
+VTable\packages\vtable\src\scenegraph\group-creater\progress\create-group-for-first-screen.ts    
+VTable\packages\vtable\src\scenegraph\component\table-component.ts    
+VTable\packages\vtable\src\event\sparkline-event.ts    
+VTbale\packages\vtable\src\state\state.ts    
+VTable\packages\vtable\src\event\event.ts    
+VTable\packages\vtable\src\core\utils\get-custom-merge-cell-func.ts    
+</div>
+<h3 id="pre-debugging-process">Pre-Debugging Process</h3>
+<p>If you are using VSCode, you can refer to this configuration and enter the following settings in the .vscode file to enable debugging in VSCode.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/W8GFbx0zVowIsWxz7wochuywnQb.gif' alt='' width='1000' height='auto'></p>
+<h3 id="application-initialization-mounting-process">Application Initialization Mounting Process</h3>
+<p>Let's take <code>ListTable</code> as an example, set a breakpoint on the first line in the <code>ListTable constructor</code>. Open the console, and we successfully enter the constructor of <code>ListTable</code>.</p>
+<ul>
+<li>VTable\packages\vtable\src\ListTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RR2obFrwvoFsx1xOFI8cLBi7nUh.gif' alt='' width='1000' height='auto'></p>
+<p>It can be seen that ListTable inherits from <code>BaseTable</code> and supports three different initialization methods. After adapting to different parameters, it directly calls the super method to enter the initialization of BaseTable.</p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">The initialization of PivotTable is generally the same as that of ListTable. Both enter BaseTable directly after the constructor is compatible with different configurations, but there are some differences in the creation of graphics and the initialization of variables.    
+</div>
+<ul>
+<li>VTable\packages\vtable\src\PivotTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/AitAbtl38ozUWcxA8c0cJxXtn0f.gif' alt='' width='1000' height='auto'></p>
+<hr />
+<p>After entering the constructor of BaseTable, the super method is called directly, entering the initialization of EventTarget.    </p>
+<ul>
+<li>VTable\packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SKpibhMS4oJPdBxma1Oc4U6rnMb.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Qxqab2Ye7oYeUFxdr51cdmtmnvb.gif' alt='' width='1000' height='auto'></p>
+<p>The EventTarget class implements the event publish-subscribe mechanism to facilitate event notifications within the entire component.    </p>
+<ul>
+<li>VTable\packages\vtable\src\event\EventTarget.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NPrLbvWPfoHqLPxZPNNcyFtkn3f.gif' alt='' width='1000' height='auto'></p>
+<p>Continuing with debugging, we can see that most of the code in the BaseTable constructor deals with processing the configurations in options and placing them into internalProps and the BaseTable instance.    </p>
+<ul>
+<li>VTable\packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RN95bhxW4oqKMZxFSzscj8snnth.gif' alt='' width='1000' height='auto'></p>
+<p>After the data initialization of options is completed, an EventHandler instance is created. The <code>EventHandler</code> class is a more general event handler that can be used to manage event listeners for any type of event on any target, making listening more efficient. When no specific event is passed in, it defaults to the resize event and uses the modified <code>ResizeObserver</code> class within VTable to handle the <code>resize</code> event by default.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CwCbbD8LDoHsKix6IszcMKTpnDe.gif' alt='' width='1000' height='auto'></p>
+<hr />
+<p>After completing the initialization of the handler, the next core part is the creation and mounting of the element. Internally, it checks whether an element has been passed through options. If not, it creates the element using createRootElement and appends it to the container, completing the first mounting of the element.</p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">createRootElement just creates a basic div element based on the padding passed in.    
+</div>
+<ul>
+<li>packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/VNJqbiy6Po7kvVx9vcJcZBBEnQf.gif' alt='' width='840' height='auto'></p>
+<ul>
+<li>packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RM8ubF5Jto1SCjxa6ldctmp2nCf.gif' alt='' width='531' height='auto'></p>
+<p>After completing the mounting of the element, the scenegraph, stateManager, and eventManager are initialized immediately, which are the scene tree, state management, and interaction event management, respectively.    </p>
+<ul>
+<li>packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/X8C3byrUvownnmxmxCZcBp1xnmg.gif' alt='' width='479' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/P3W9wMV0Zh8BxybTUSWctg6unKd.gif' alt='' width='771' height='auto'></p>
+<p>继续深入 scenegraph 类的初始化，我们可以看到内部使用了 VRender 的 createStage 方法创建 Stage。在 Stage 初始化的时候，传入了 afterRender 回调函数，这样在 Stage 渲染完成后，就会通过 fireListener 触发after_render 生命周期事件，这里的 after_render 就对应了文档中的 methods 中的 <a href="https://visactor.io/vtable/api/events#AFTER_RENDER">after_render</a> 回调。    </p>
+<ul>
+<li>packages\vtable\src\scenegraph\scenegraph.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CQUjb8PzLoWPpfxCDA3cw4COnUf.gif' alt='' width='1000' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DXaybRZcsouFzixTn0YcuwZGn4e.gif' alt='' width='1000' height='auto'></p>
+<hr />
+<p>After the Stage is initialized, it is time for the initialization of the scene tree, elements, and the creation of components outside the table.    \r</p>
+<ul>
+<li>packages\vtable\src\scenegraph\scenegraph.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OSdWbSpw1o3jM0xasmhcLWlbnNc.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>packages\vtable\src\scenegraph\scenegraph.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/UiribvA8ioCPxfxvqkLc8uianKa.gif' alt='' width='1000' height='auto'></p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">关于 VRender Stage 的使用可以参考这篇文章 [🎁 VisActor Data Visualization Competition](https://visactor.io/vrender/guide/asd/Basic_Tutorial/Create_Instance)，简单来说，场景树就是通过Stage进行管理。    
+</div>
+<p>Returning from SceneGraph to BaseTable, we can see that legends, Tooltip, menu, dropDownMenuHighlight, and other features are initialized next, and finally, the size of the Canvas is readjusted. At this point, the internal initialization of BaseTable is complete.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/UcaXbbVX2oHgJ3xDCwpcgsoWnOg.gif' alt='' width='1000' height='auto'></p>
+<hr />
+<p>Returning to ListTable, we can see the initialization of dataSource as well as the Title and EmptyTip components.    </p>
+<ul>
+<li>packages\vtable\src\ListTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/JMqebq6KZoPPBux8M2xcLRVcnFc.gif' alt='' width='1000' height='auto'></p>
+<p>Pay attention to this part of the logic of the dataSource. For dataSource, VTable internally makes three judgments, analyzed from top to bottom:    \r</p>
+<ul>
+<li>packages\vtable\src\ListTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DrcqbfCyRo2ZcsxjKr4cyRfonSe.gif' alt='' width='965' height='auto'></p>
+<ol>
+<li>Pass dataSource directly in Options    \r</li>
+</ol>
+<p>直接传入dataSource，一般在<a href="https://visactor.io/vtable/guide/data/async_data">异步懒加载数据</a>的时候会用到。Vtable 会直接改变实例上的 dataSource，由于 BaseTable 内部对 datasource 进行了代理，这个操作将会触发 createSceneGraph 和 render 方法；BaseTable 上的 render 方法，本质上就是调用 Stage 上的 render 方法，将 canvas 绘制到指定元素。    </p>
+<ul>
+<li>packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/V7AfbFnXloVP4dxhfnTcXX97nhe.gif' alt='' width='1000' height='auto'></p>
+<ol>
+<li>Neither records nor dataSource and records are provided in Options</li>
+</ol>
+<p>In both cases, setRecords is called. In setRecords, we see two familiar methods, createSceneGraph and render. In this logical judgment, the rendering of the table is completed.    \r</p>
+<ul>
+<li>packages\vtable\src\ListTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GpQ7b4OMNoP98Exn7tKcLiT5nEc.gif' alt='' width='1000' height='auto'></p>
+<hr />
+<p>After analyzing the general processing flow of dataSource, let's go back and see what createSceneGraph does internally:    \r</p>
+<ol>
+<li>
+<p>It can be seen that special handling is done internally for the pivot table, and a SceneProxy is instantiated. The <code>proxy.ts</code> file defines a <code>SceneProxy</code> class, which is responsible for calculating the maximum number of rows and columns in the scene tree, progressive loading of the scene tree, and creating the first screen group, among other logic.    </p>
+</li>
+<li>
+<p>packages\vtable\src\scenegraph\scenegraph.ts    </p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/UXcFb3zvfo18RKxRDCFckqVHnZc.gif' alt='' width='1000' height='auto'></p>
+<ol>
+<li>
+<p>After the proxy instance is initialized, the <code>createGroupForFirstScreen</code> method is called. The <code>createGroupForFirstScreen</code> function is mainly used to initialize the <strong>first screen rendering area of the Canvas table</strong>. It is responsible for calculating the number of rows and columns needed for the first screen, constructing the header, freezing rows and columns, filling core drawing units (Groups) such as the main area, creating and adjusting the styles of cell elements, dynamically calculating row and column sizes, handling the layout of frozen areas according to configuration, and implementing block rendering strategies, achieving high-performance initial rendering.    </p>
+</li>
+<li>
+<p>packages\vtable\src\scenegraph\scenegraph.ts    </p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/UsM0brFm4omOHexxWyqcDQrGndc.gif' alt='' width='700' height='auto'></p>
+<ul>
+<li>packages\vtable\src\scenegraph\group-creater\progress\create-group-for-first-screen.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/DqH9bfBibo3iVhxWOHIc32vSnHE.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>packages\vtable\src\scenegraph\group-creater\progress\create-group-for-first-screen.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Eym7bijCdoCMz1xtyKTcDdeEnHd.gif' alt='' width='879' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XH0zbfQhloobUQxC7v5coALanhc.gif' alt='' width='1000' height='auto'></p>
+<ol>
+<li>
+<p>After completing the creation of the first screen group, afterScenegraphCreated is called to automatically adjust the row height and column width, completing the adjustment of the scene graph for the render method.    </p>
+</li>
+<li>
+<p>packages\vtable\src\scenegraph\group-creater\progress\create-group-for-first-screen.ts    </p>
+</li>
+</ol>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YC5abzMZIorJBjxpefIcXP9knah.gif' alt='' width='846' height='auto'></p>
+<hr />
+<p>After completing the rendering of the table and the initialization of each component, trigger the INITIALIZED callback through fireListeners in the last row of ListTable to complete the final step of the lifecycle, thus completing the initialization.    </p>
+<ul>
+<li>packages\vtable\src\ListTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NzqGbDR0wowsMXxnnF8cysySnkf.gif' alt='' width='1000' height='auto'></p>
+<ul>
+<li>General flowchart    </li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MtUYwkfgehXJOmbBNdhct1fknMh.gif" /></p>
+<h3 id="update-process">Update Process</h3>
+<p>VTable 提供了五种方法用于更新配置，本次我们从最常用的 <a href="https://visactor.io/vtable/api/Methods#updateOption">updateOption</a> 方法切入。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/E4BJbIjOuoYfMex4hTDcwGA0nIb.gif' alt='' width='383' height='auto'></p>
+<p>Through breakpoint analysis, it was found that the updateOption method of the parent class BaseTable of ListTable was directly called at the beginning.    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ms9YbMRMfo1EqbxIN1mc0znnnkd.gif' alt='' width='674' height='auto'></p>
+<p>Enter BaseTable, first extract the common attributes of tables <code>ListTable</code> and <code>PivotTable</code> from options, then update the pixel ratio and padding. Next, update various attributes, including <code>widthMode</code>, <code>heightMode</code>, etc.</p>
+<ul>
+<li>packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/PBvObXtlBoEMzfxB8BXciyVnn1c.gif' alt='' width='1000' height='auto'></p>
+<p>It will also clear configurations such as row height and column width.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/VgktbCIPBoezGrx44BYcVi6jnAh.gif' alt='' width='1000' height='auto'></p>
+<p>Adjust theme and Icon configuration.    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MG9IbtcJ5o49q7x6Bd8cS59inXj.gif' alt='' width='1000' height='auto'></p>
+<p>Adjust the background color.    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Gkl4bDF9UoBzoKxG0JncCC1ZnSh.gif' alt='' width='762' height='auto'></p>
+<p>Release the old title, legend, emptyTip, and layoutMap instances, while calling <code>sceneGraph.clearCells</code> to clear the cells.    </p>
+<ul>
+<li>packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CrR8bKRGyoWnUixnBh4cxIYgnne.gif' alt='' width='533' height='auto'></p>
+<ul>
+<li>packages\vtable\src\scenegraph\scenegraph.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/HAvEbOjZmoEdudx8f1ZcACz6nnh.gif' alt='' width='554' height='auto'></p>
+<p>According to the new configuration, calling <code>updateComponent</code>, <code>updateComponent</code> internally will call <code>scenegraph.updateComponent</code>, and in scenegraph, it continues to call <code>updateStyle</code> to update the styles of components outside the table. This update includes scrollbars, drag reference lines, and frozen column shadows, etc.</p>
+<ul>
+<li>packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Il93br7msob846xrCh2c9iacnKg.gif' alt='' width='521' height='auto'></p>
+<ul>
+<li>packages\vtable\src\scenegraph\scenegraph.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Gje5bgINnoyTMAxbsfKcWZmfng6.gif' alt='' width='340' height='auto'></p>
+<ul>
+<li>packages/vtable/src/scenegraph/component/table-component.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/EdtXbzZcGo2a4Mxo9kHc3wbSngg.gif' alt='' width='1000' height='auto'></p>
+<p>After updating the external component styles, call updateOptionSetState to refresh the configuration in the State, including highlight mode, frozen column status, hover and select status.    </p>
+<ul>
+<li>packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NEMnbIktooOlYgxAGaZcUECmnVb.gif' alt='' width='627' height='auto'></p>
+<ul>
+<li>packages\vtable\src\state\state.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GJiFb62pUoOq3jxWLNDcQdJNnJe.gif' alt='' width='741' height='auto'></p>
+<p>Then recalculate the width and height of the <code>canvas</code> through <code>this._updateSize</code>. Then call <code>this.eventManager.updateEventBinder</code> to update the binding of scroll events and text adhesion.</p>
+<ul>
+<li>packages\vtable\src\event\event.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MZIUbSxteoxDDZx9tnpcvhWMncf.gif' alt='' width='938' height='auto'></p>
+<p>Inside <code>updateEventBinder</code>, it will also update the hover event state for the bound mini-map type.    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/OAGMbAZK4o40TJxSHOvcuFtwnyd.gif' alt='' width='499' height='auto'></p>
+<ul>
+<li>packages\vtable\src\event\sparkline-event.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/B2Bhbt6eKo4juUxHOBOcv2bOn3m.gif' alt='' width='1000' height='auto'></p>
+<hr />
+<p>Next, update the configurations for legend, tooltip, dropdown menu, etc. in sequence;    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ObF7bZOD9o5xWhxYhQXcJ04zntU.gif' alt='' width='851' height='auto'></p>
+<p>Clear cell styles, column width, and row height cache;    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/PA6YbELhhomnZMxhdiHcVhInn4b.gif' alt='' width='610' height='auto'></p>
+<p>更新自定义单元格合并规则（<a href="https://visactor.io/vtable/option/ListTable#customMergeCell">customMergeCell</a>）    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/M2BbbCMQHoM5GpxGmLlcnLz1nCf.gif' alt='' width='840' height='auto'></p>
+<ul>
+<li>packages\vtable\src\core\utils\get-custom-merge-cell-func.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Pl6HbKPAjoRgNCxHHXkcUrqYnef.gif' alt='' width='998' height='auto'></p>
+<p>Finally, resize the canvas. At this point, the updateOption inside BaseTable is complete, returning to the inside of ListTable;</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Fp9abgIxzoWqOkx4n1vcl20en9T.gif' alt='' width='588' height='auto'></p>
+<p>First, the pagination configuration, sortState, dataConfig, showHeader, and columns configuration were updated;    \r</p>
+<ul>
+<li>packages\vtable\src\ListTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WeAGbLDuDoqjDCxH2wgciQ0gnFM.gif' alt='' width='901' height='auto'></p>
+<p>Then use <code>generateAggregationForColumn</code> to update the aggregation configuration for each column;    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/BG2Gb9iNuoOyZdx3Q8JcOXJXn7b.gif' alt='' width='603' height='auto'></p>
+<p>Handle transposition, call <code>refreshHeader</code> to update the header, update column width configuration;    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SpZWbrRPgo4sIWxjdKXcSd54ndd.gif' alt='' width='841' height='auto'></p>
+<p>Clear <code>releaseList</code>;    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/YXnqboICFo700lx7XVZc2gX3n5c.gif' alt='' width='906' height='auto'></p>
+<p>Adjusting the dataSource, or calling setRecords, or directly calling the render method, as mentioned earlier, all three methods can directly trigger table rendering. By this time, the table update is basically complete.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QQiHbD2PDow9jMxVXC6c47NfnSD.gif' alt='' width='824' height='auto'></p>
+<p>After updating the data source, the <code>title</code> and <code>emptyTip</code> instances were regenerated. It should be noted that the old <code>title</code> and <code>emptyTip</code> were already released during the updateOption process in BaseTable;</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Bz6Pbtd6noUJ1sxLwGbc6ZzHnae.gif' alt='' width='929' height='auto'></p>
+<p>Due to the asynchronous rendering operations contained internally, VTable ensures that the table component rendering is completed when await updateOption by returning a Promise at the end of updateOption. At this point, the full update of VTable is complete.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XxcDbN0VRocTaJxQI7vcm9jdnXe.gif' alt='' width='706' height='auto'></p>
+<ul>
+<li>General flowchart    </li>
+</ul>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CfZow5lBdhVkpsb63MCcf2hGnke.gif" /></p>
+<h3 id="destruction-process">Destruction Process</h3>
+<p>Understanding the update mechanism is key to maintaining data, and complete lifecycle management also requires a standardized destruction process. When tables are no longer needed, they should be proactively released through the destruction process to avoid memory leaks and resource waste.</p>
+<p>VTable 实例提供了 <a href="https://visactor.io/vtable/api/Methods#release">release</a> 方法用于销毁表格事例。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GG58bIa2Jof3EWxESDJcwI0qnHd.gif' alt='' width='1000' height='auto'></p>
+<p>By searching in the file, it can be found that release is defined in the BaseTable class. At the beginning, it checks whether it is in the process of being destroyed through the isReleased field to avoid repeated unloading of instances. The next three lines of code respectively destroy the tooltipHandler and menuHandler instances.    </p>
+<ul>
+<li>VTable\packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/L8kvbAWFjo4rB5x1bvUcxYrtnCg.gif' alt='' width='568' height='auto'></p>
+<p>Then the release method of the parent class is called. As mentioned above, BaseTable inherits from EventTarget, so essentially it calls <code>EventTarget.release</code> to release all subscribed events.</p>
+<ul>
+<li>VTable\packages\vtable\src\event\EventTarget.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/R89hbhvLvokiPFx2WnpchywenHh.gif' alt='' width='601' height='auto'></p>
+<p>Subsequently, release the EventHandler instance, eventManager, focusControl, legends, title, emptyTip, layoutMap, stage, and proxy in sequence. After completing the release, call parentElement.removeChild to remove the mounted DOM element.    \r</p>
+<div style="padding:5px;background-color: rgb(255, 245, 235);border-color: rgb(255, 245, 235);">The Stage.release method is located within VRender, primarily used to destroy the entire Stage and clear the chart. At this step, the chart content has already disappeared.    
+</div>
+<ul>
+<li>VTable\packages\vtable\src\core\BaseTable.ts    </li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/W7Xbb6aqvo8nQ5xJZtCcN4Ydnuf.gif' alt='' width='850' height='auto'></p>
+<p>After releasing the above components, update the isReleased status to avoid repeated release operations; clear the scene tree and internalProps. This completes the entire destruction process of the table component.    \r</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/JDmHbyk2joDSP5xt0bYcDUi2nmD.gif' alt='' width='661' height='auto'></p>
+<h3 id="summary">Summary</h3>
+<h4 id="1-initialization-process">1. Initialization Process</h4>
+<p><strong>Core Process</strong>    </p>
+<ul>
+<li>
+<p><strong>Entry</strong>: <code>ListTable</code>/<code>PivotTable</code> constructor inherits <code>BaseTable</code>, processes configuration parameters, and then calls <code>super()</code> to enter parent class initialization.    </p>
+</li>
+<li>
+<p><strong>Event Initialization</strong>: <code>BaseTable</code> inherits <code>EventTarget</code> to implement an event subscription mechanism, supporting events like <code>resize</code>.    </p>
+</li>
+<li>
+<p><strong>DOM Mounting</strong>: Create a root element <code>div</code> and mount it to the container, serving as the container for table rendering.    </p>
+</li>
+<li>
+<p><strong>Scene Graph Construction</strong>: Create <code>VRender Stage</code> through the <code>scenegraph</code> module to manage the rendering tree and first-screen rendering logic.    </p>
+</li>
+<li>
+<p>First screen rendering: <code>createGroupForFirstScreen</code> creates the header, freezes rows and columns, main area elements, and dynamically calculates row and column dimensions.</p>
+</li>
+<li>
+<p>Proxy rendering: <code>SceneProxy</code> manages progressive rendering strategies to optimize performance.    </p>
+</li>
+<li>
+<p><strong>Data Source Processing</strong>: Trigger <code>createSceneGraph</code> and <code>render</code> based on <code>dataSource</code> or <code>records</code> to complete the initial rendering.    </p>
+</li>
+<li>
+<p><strong>Callback Trigger</strong>: Trigger the <code>INITIALIZED</code> event through <code>fireListeners</code>, marking the completion of initialization.    </p>
+</li>
+</ul>
+<p><strong>Key Document</strong>    </p>
+<ul>
+<li>
+<p><code>ListTable.ts</code>/<code>PivotTable.ts</code>: Entry class, handles table type differences.    </p>
+</li>
+<li>
+<p><code>BaseTable.ts</code>: Core configuration processing, DOM mounting, scene graph/state/event manager initialization.    </p>
+</li>
+<li>
+<p><code>scenegraph.ts</code>: Scene tree management, interacts with <code>VRender</code>.    </p>
+</li>
+<li>
+<p><code>create-group-for-first-screen.ts</code>: Implementation of the first screen rendering logic.    </p>
+</li>
+</ul>
+<hr />
+<h4 id="2-update-process">2. Update Process</h4>
+<p><strong>Core Process</strong>    </p>
+<ul>
+<li>
+<p><strong>Entry Method</strong>: <code>updateOption</code> triggers a full update.    </p>
+</li>
+<li>
+<p><strong>Configuration Update</strong>:    </p>
+</li>
+<li>
+<p>Update general properties (theme, size mode, background, etc.).    \r</p>
+</li>
+<li>
+<p>Clear cache (row height, column width, cell style).    \r</p>
+</li>
+<li>
+<p>Release old components (title, legend, layout mapping).    </p>
+</li>
+<li>
+<p><strong>Scene Reconstruction</strong>:    </p>
+</li>
+<li>
+<p>Call <code>sceneGraph.clearCells</code> to clear cells.    </p>
+</li>
+<li>
+<p>Recreate components (scrollbars, freeze shadows) and update styles.    \r</p>
+</li>
+<li>
+<p><strong>State Synchronization</strong>: Update interaction states such as highlight, selection, and freeze.    \r</p>
+</li>
+<li>
+<p><strong>Asynchronous Rendering</strong>: Ensure rendering completion with <code>Promise</code>, supports <code>await</code> synchronization.    </p>
+</li>
+</ul>
+<p><strong>Key Document</strong>    </p>
+<ul>
+<li>
+<p><code>BaseTable.ts</code>: Configuration update main logic.    </p>
+</li>
+<li>
+<p><code>state.ts</code>: State management module.    </p>
+</li>
+<li>
+<p><code>sparkline-event.ts</code>: Sparkline event handling.    </p>
+</li>
+</ul>
+<hr />
+<h4 id="3-destruction-process">3. Destruction Process</h4>
+<p><strong>Core Process</strong>    </p>
+<ul>
+<li>
+<p><strong>Entry Method</strong>: <code>release()</code>    </p>
+</li>
+<li>
+<p><strong>Resource Release</strong>:    </p>
+</li>
+<li>
+<p>Remove event listeners: Unsubscribe all by using <code>EventTarget.release()</code>.    </p>
+</li>
+<li>
+<p>Destroy DOM elements: remove the root node and Canvas.    </p>
+</li>
+<li>
+<p>Clean up components: Release instances of <code>Tooltip</code>, <code>Menu</code>, etc.    </p>
+</li>
+<li>
+<p><strong>Memory Reclamation</strong>: Clear the scene tree, data references, trigger GC.    \r</p>
+</li>
+</ul>
+<p><strong>Key Design</strong>    </p>
+<ul>
+<li>
+<p>Defensive judgment: Avoid repeated destruction by using the <code>isReleased</code> flag.    </p>
+</li>
+<li>
+<p>Hierarchical release: Clean up step by step from child components to parent class to ensure no residual references.    \r</p>
+</li>
+</ul>
+<p><strong>Key Document</strong>    </p>
+<ul>
+<li>
+<p><code>BaseTable.ts</code>: Implementation of the <code>release()</code> method.    </p>
+</li>
+<li>
+<p><code>EventTarget.ts</code>: Event system destruction logic.    </p>
+</li>
+</ul>
+<h1 id="this-document-is-provided-by-the-following-personnel">This document is provided by the following personnel</h1>
+<p>taiiiyang（https://github.com/taiiiyang）    </p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【实战】10分钟完成一个动态信息图</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">背景</h1>
+<p>动态信息图是一种强大的可视化表达方式,它能够将复杂的数据和信息转化为直观、生动的图形化展示。通过动态信息图,我们可以:</p>
+<ol>
+<li>更好地讲述数据故事,让枯燥的数据变得生动有趣</li>
+<li>提升信息传递效率,帮助受众快速理解核心信息</li>
+<li>增强表现力和互动性,提供沉浸式的用户体验</li>
+<li>实现数据的实时更新和动态展示</li>
+</ol>
+<p>本文将详细介绍如何使用 VStory 制作一个动态信息图,帮助大家快速上手这个强大的工具。</p>
+<h1 id="_2">准备工作</h1>
+<h2 id="vstory">了解VStory</h2>
+<p>可以先前往 VStory 官网了解一下 VStory ，对其中的基本概念有所了解https://www.visactor.com/vstory/guide/tutorial_docs/Getting_Started</p>
+<h2 id="clone">Clone 仓库与本地环境</h2>
+<p><strong>首先，全局安装 </strong><a href="https://rushjs.io/pages/intro/get_started/"><strong>@microsoft/rush</strong></a><strong>：</strong></p>
+<pre class="codehilite"><code>npm i --global @microsoft/rush
+</code></pre>
+
+<p><strong>然后将代码克隆到本地机器：</strong></p>
+<pre class="codehilite"><code>git clone [git@github.com](mailto:git@github.com):VisActor/VStory.git
+cd VStory
+</code></pre>
+
+<p>也可以选择<a href="https://desktop.github.com/download/"> Github Desktop </a></p>
+<p><strong>安装依赖</strong></p>
+<pre class="codehilite"><code>// 注意，在项目根目录执行
+rush update
+</code></pre>
+
+<p><strong>开始 vstory 的本地开发</strong></p>
+<pre class="codehilite"><code>rush story
+</code></pre>
+
+<p>成功后使用浏览器打开 http://localhost:6789/ 可以看到如下画面</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/vstory/20250312-163446.mp4' alt='' width='1000' height='auto'></p>
+<p>可以进入 <strong>infographic</strong> 下查看已经制作完成的信息图</p>
+<h1 id="_3">开始制作</h1>
+<h2 id="_4">确定做什么</h2>
+<p>可以根据自己感兴趣的领域或者当前的新闻时事选材。信息图是通过含数据的多种可视化内容来进行数据故事讲述的图表。</p>
+<p>这里我准备通过图表介绍deepseek发布开源模型后对Ai市场的冲击。并介绍为什么会产生这样的影响。</p>
+<h2 id="_5">收集数据</h2>
+<p>根据目的，我需要收集相关数据：在deepseek发布开源模型后，美股发生了什么变化。</p>
+<p>询问 AI 得到相关信息：</p>
+<ul>
+<li>
+<p>DeepSeek于<strong>2025年1月20日</strong>正式发布了其最新开源模型<strong>DeepSeek R1</strong>。该模型以极低的训练成本（仅约600万美元）实现了与OpenAI o1模型相媲美的性能，并在全球范围内引发轰动 </p>
+</li>
+<li>
+<p>开源模型发布后逐渐火爆，一周后的<strong>1月27日</strong>（美国当地时间）美股科技板块因DeepSeek的冲击全面暴跌，英伟达股价单日下跌近17%，创下美股历史最大单日市值跌幅纪录，微软、AMD等公司股价也大幅受挫 </p>
+</li>
+</ul>
+<p>从财经网站收集1月27日相关的准确数据</p>
+<table>
+<thead>
+<tr>
+<th>公司名称</th>
+<th>股票代码</th>
+<th>24日收盘价</th>
+<th>27日收盘价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>英伟达</td>
+<td>NVDA</td>
+<td>142.62</td>
+<td>118.42</td>
+</tr>
+<tr>
+<td>博通</td>
+<td>AVGO</td>
+<td>244.70</td>
+<td>202.13</td>
+</tr>
+<tr>
+<td>AMD</td>
+<td>AMD</td>
+<td>122.84</td>
+<td>115.01</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_6">准备图形内容</h2>
+<h3 id="_7">数据展示</h3>
+<p>我这里选择使用图表展示这些数据，询问AI，用什么图表类型可以更好的展示。得到下面的推荐</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/TyfIbPoswoHOybxiM1KcjSgVnGc.gif' alt='' width='1000' height='auto'></p>
+<p>现在我去 <a href="https://www.visactor.com/vchart">VChart官网</a>，通过 VChart 绘制这个图表，不需要下载vchart，可以直接在官网提供的在线编辑能力上调试。</p>
+<p>先找到<a href="https://www.visactor.com/vchart/demo/bar-chart/group-column">并列</a><a href="https://www.visactor.com/vchart/demo/bar-chart/group-column">柱状图的例子（发现在vchart中叫分组柱状图）</a></p>
+<p>然后调整图表的展示效果</p>
+<ol>
+<li>
+<p>修改图表的数据为我想要展示的数据</p>
+</li>
+<li>
+<p>缩小数据范围令数据变化幅度更清晰</p>
+</li>
+<li>
+<p>去掉数值轴，单股价格对跌幅比例而言没有太大意义</p>
+</li>
+<li>
+<p>添加标注，每支股票的跌幅都标记出来</p>
+</li>
+</ol>
+<p>最终图表效果如下。记录下这个配置 spec 。</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/ZbYGbbrIDoVIbpxeqPWcq7nEnid.gif' alt='' width='1000' height='auto'></p>
+<h3 id="32">3.2 标题与内容介绍</h3>
+<p>通过 ai 生成符合我想法的标题与文本</p>
+<pre class="codehilite"><code>**中文标题：**
+
+《DeepSeek重锤AI芯片股：两大巨头单日市值蒸发超17%》
+
+（副标题：从24日到27日，看算法革命如何击穿硬件护城河）
+
+
+**英文标题：**
+
+DeepSeek's Shockwaves: AI Giants Lose $170B in 72 Hours
+
+(Subtitle: When Algorithms Crack the Silicon Fortress)
+
+
+**分析文本（中文）：**
+
+DeepSeek的技术突破正在改写市场对算力价值的评估体系。三家核心算力供应商的同步暴跌（英伟达-17%/博通-17.4%/AMD-6.4%）揭示了一个残酷现实：AI大模型的效率跃升可能使传统GPU堆叠路线沦为&quot;算力泡沫&quot;。尤其值得警惕的是，英伟达作为万亿市值龙头的断崖式下跌，实际上反映了资本对&quot;算法优化替代硬件升级&quot;技术路径的投票——当训练效率不再依赖芯片数量，整个AI基础设施的投资逻辑正在被颠覆。
+
+
+**Analysis Text (English):**
+
+DeepSeek's breakthrough exposes a seismic shift in computing economics. The synchronized collapse of chip leaders signals that AI's next phase may bypass brute-force hardware scaling. NVIDIA's historic plunge—its worst performance since the crypto-mining crash—mirrors Wall Street's awakening: when algorithms can achieve 10x training efficiency, the $3 trillion semiconductor industry must reinvent its value proposition. This isn't a correction, but a Copernican revolution in AI infrastructure.
+</code></pre>
+
+<h3 id="34">3.4 再来一个背景图</h3>
+<p>通过 ai 创建一个与内容相关的背景图</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/TSS6bLjk6o0bJ9xcM17cwM03nMe.gif' alt='' width='1000' height='auto'></p>
+<h3 id="_8">设计内容布局与展示效果</h3>
+<p>让 AI 给出一个基础的布局建议</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/MOVrbiMUlooHRlxWQTYcRcMznuc.gif' alt='' width='1000' height='auto'></p>
+<p>总结布局效果</p>
+<ol>
+<li>
+<p>顶部一个大的标题</p>
+</li>
+<li>
+<p>副标题在图表正上方</p>
+</li>
+<li>
+<p>描述在图表右侧。</p>
+</li>
+</ol>
+<p>考虑到没有更多内容，图表的尺寸和文本内容的大小需要注意，不要给底部过多空白。</p>
+<h2 id="_9">开始制作</h2>
+<h3 id="demo">第一步，新建demo</h3>
+<p>在项目的这个目录下新建一个你自己的 demo 文件。</p>
+<pre class="codehilite"><code>packages/vstory/demo/src/demos/infographic
+</code></pre>
+
+<p>比如这是我新建的文件</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VhxrbhEKooj40OxJduMcVg2Zn0b.gif' alt='' width='888' height='auto'></p>
+<p>然后可以先复制一份其他的信息图内容到你的文件里，删除dsl的内容，它大概长这样</p>
+<pre class="codehilite"><code>import React, { useEffect } from 'react';
+import { IStoryDSL, Player, Story } from '../../../../../vstory-core/src';
+import { registerAll } from '../../../../src';
+
+registerAll();
+export const DeepseekShockwave = () =&gt; {
+  const id = 'DeepseekShockwave';
+  useEffect(() =&gt; {
+    const container = document.getElementById(id);
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 1024;
+    container?.appendChild(canvas);
+
+    const dsl: IStoryDSL = {
+      acts: [],
+      characters: []
+    };
+
+    const story = new Story(dsl, {
+      canvas,
+      width: 1024, // 我准备做一个 1024 X 700 的长方形信息图
+      height: 700,
+      scaleX: 'auto',
+      scaleY: 'auto'
+    });
+    const player = new Player(story);
+    story.init(player);
+    player.play(-1);
+
+    return () =&gt; {
+      story.release();
+    };
+  }, []);
+
+  return &lt;div style={{ width: '100%', height: '100%' }} id={id}&gt;&lt;/div&gt;;
+};
+</code></pre>
+
+<p>添加你的demo到app目录。 app.tsx 在如下位置</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/MwIwb9XDeopC3SxVumHc7KLjnVh.gif' alt='' width='1000' height='auto'></p>
+<p>然后在 menus 的 Infographic 下添加你的内容，注意先在 app.tsx 里导入你的组件</p>
+<pre class="codehilite"><code>import { DeepseekShockwave } from './demos/infographic/deepseek-shockwave';
+</code></pre>
+
+<p>我添加的内容如下</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/UvH1bMQ8po3cg5xDSbEcA2S6nLe.gif' alt='' width='916' height='auto'></p>
+<p>好了，现在你可以在启动调试后的右侧菜单中看到你的 demo 了</p>
+<h3 id="_10">添加元素</h3>
+<p>我们先将需要展示的元素都添加上，随便给它们一个位置。元素添加在character上</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VLMAbJeNhobbZbxQRNdcpH15nF9.gif' alt='' width='766' height='auto'></p>
+<p><strong>背景</strong></p>
+<p>首先添加图片资源</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/IX0Ybk8OrolrULxTe36c7hksnBG.gif' alt='' width='954' height='auto'></p>
+<p>注意规则：图片资源必须放到下面这个目录</p>
+<pre class="codehilite"><code>packages/vstory/demo/src/assest/infographic/${yourDemoName}
+</code></pre>
+
+<p>然后添加一个图片类型的元素</p>
+<pre class="codehilite"><code>// 引入图片元素
+import bg from '../../assets/infographic/deepseek-shockwave/bg.png';
+
+characters: [
+        {
+          id: 'background', // 元素 id 后面会用到
+          type: 'Image', // 类型
+          zIndex: 0,  // 层级
+          position: { // 元素的位置大小
+            x: 0,
+            y: 0,
+            width: 1024,
+            height: 700
+          },
+          options: {
+            graphic: {
+              image: bg, 
+              fillOpacity: 0.4 // 透明度
+            }
+          }
+        },
+]
+</code></pre>
+
+<p><strong>图表</strong></p>
+<pre class="codehilite"><code>// 引入图片元素
+import bg from '../../assets/infographic/deepseek-shockwave/bg.png';
+
+characters: [
+    // ... others
+    {
+      id: 'chart',
+      type: 'VChart',
+      zIndex: 1,
+      position: { //先随便给一位置吧
+        x: 50,
+        y: 50,
+        width: 400, // 注意要给宽高
+        height: 400
+      },
+      options: {
+        spec: spec // 之前内容准备时的图表配置
+      }
+    }
+]
+</code></pre>
+
+<p><strong>文本</strong></p>
+<pre class="codehilite"><code>// 引入图片元素
+import bg from '../../assets/infographic/deepseek-shockwave/bg.png';
+
+characters: [
+    // ... others
+    {
+      id: 'title',
+      type: 'Text',
+      zIndex: 1,
+      position: { x: 512, y: 0, width: 1024, height: 100 },
+      options: {
+        graphic: {
+          text: `DeepSeek's shockwave: AI's technological revolution`,
+          fill: 'black',
+          fontSize: 48,
+          textAlign: 'center',
+          fontWeight: 'bolder'
+        }
+      }
+    },
+]
+</code></pre>
+
+<p>全部元素添加完之后。</p>
+<p>给它们配置一个展示动作。（动画我们最后再配置）</p>
+<pre class="codehilite"><code>const dsl: IStoryDSL = {
+  acts: [
+    {
+      id: 'defaultAct',
+      scenes: [
+        {
+          id: 'defaultScene',
+          actions: [
+            {
+            // 给所有元素都先给一展示动作，不设置具体动画属性的话，它们会直接展示
+              characterId: ['background', 'title', 'subTitle', 'desc1', 'desc2', 'chart'],
+              characterActions: [
+                {
+                  action: 'appear'
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+    ...character
+}
+</code></pre>
+
+<p>你应该可以看到一个凌乱的信息图</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/SluCbT2cpo5zxcxxxZpcy3KWn5f.gif' alt='' width='1000' height='auto'></p>
+<h3 id="_11">布局与微调</h3>
+<p>现在我们需要调整元素到它对应的位置，调整属性让它看起来协调一些</p>
+<ul>
+<li>
+<p>可以通过 character 的 position 属性来调整元素位置与大小</p>
+</li>
+<li>
+<p>文本的 text 属性可以数组，这样你可以通过下面的形式进行手动换行</p>
+</li>
+</ul>
+<pre class="codehilite"><code> text: [`When Algorithms Crack`, '\n', `the Silicon Fortress`], 
+</code></pre>
+
+<ul>
+<li>具体的属性配置项在这里 https://www.visactor.com/vstory/guide/tutorial_docs/VStory_Concepts/character</li>
+</ul>
+<p>简单的调整位置，文本颜色与大小之后现在这个信息图已经快要完成了</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/WQ9EbBFpSo4cnOx0kSrcFVSenpb.gif' alt='' width='1000' height='auto'></p>
+<h3 id="_12">艺术再加工</h3>
+<p>这一部分仁者见仁智者见智，比如可以添加图形，水印，给文字添加背景等等。</p>
+<h3 id="_13">添加动画</h3>
+<p>刚刚我们在添加元素时，在action里添加了一个统一的 <code>appear</code> 动作。现在我们给元素单独配置不同的动画效果</p>
+<p>以右侧文本为例：</p>
+<pre class="codehilite"><code>const dsl: IStoryDSL = {
+  acts: [
+    {
+      id: 'defaultAct',
+      scenes: [
+        {
+          id: 'defaultScene',
+          actions: [
+            {
+              characterId: ['desc1'],
+              characterActions: [
+                {
+                  action: 'appear',
+                  startTime: 1000, // 开始动画的时间
+                  payload: [
+                    {
+                      animation: {
+                        duration: 800, // 持续时间
+                        easing: 'linear', // 差值方法
+                        effect: 'wipe' // 效果
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+           // ... other actions
+           ]
+         }
+       }
+     ]
+   }
+   // ... characters 
+</code></pre>
+
+<p>具体动画配置文档在这里 https://www.visactor.com/vstory/guide/tutorial_docs/VStory_Concepts/action</p>
+<h3 id="_14">最终效果</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/F9uubwszKoVdaExeBHWcn9F2nsg.gif' alt='' width='1000' height='auto'></p>
+<h1 id="_15">上传</h1>
+<ol>
+<li>
+<p>从 develop 拉新分支，提交 pr 的 target 也是 develop。</p>
+</li>
+<li>
+<p>提交pr时，选择 demo update 并邀请 Reviewers ：<a href="https://github.com/xuefei1313">xuefei1313</a> or <a href="https://github.com/neuqzxy">neuqzxy</a> or <a href="https://github.com/xiaoluoHe">xiaoluoHe</a></p>
+</li>
+</ol>
+<p><a href="https://github.com/VisActor/VStory/pull/243">参考 pr </a></p>
+<p><a href="https://www.visactor.io/vstory/contributing/">如何提交pr</a></p>
+<h1 id="_16">欢迎交流</h1>
+<ul>
+<li>
+<p>VisActor Github：https://github.com/VisActor（欢迎star）</p>
+</li>
+<li>
+<p>VStory Github：https://github.com/VisActor/VStory（欢迎star）</p>
+</li>
+<li>
+<p>VisActor 飞书交流群：https://applink.larkoffice.com/client/chat/chatter/add_by_link?link_token=43bu05e4-4cf6-41f0-82de-f20d83c2535e</p>
+</li>
+</ul>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/V3BRb5MRTookttxZl3VcdDk8nDj.gif' alt='' width='264' height='auto'></p>
+<p>Discord：<a href="https://link.juejin.cn/?target=https%3A%2F%2Fdiscord.gg%2F3wPyxVyH6m">discord.gg/3wPyxVyH6m</a></p>
+<p>微信公众号：<a href="https://link.juejin.cn/?target=https%3A%2F%2Fp3-juejin.byteimg.com%2Ftos-cn-i-k3u1fbpfcp%2Ff28519302ee94940a8159fc52d375aaa~tplv-k3u1fbpfcp-jj-mark%3A0%3A0%3A0%3A0%3Aq75.image%23%3Fw%3D258%26h%3D258%26s%3D8552%26e%3Dwebp%26b%3Dfefefe">打开链接扫码</a></p>
+<p>Twiter：<a href="https://link.juejin.cn/?target=https%3A%2F%2Ftwitter.com%2Fxuanhun1">twitter.com/xuanhun1</a></p>
+</body>
+</html>

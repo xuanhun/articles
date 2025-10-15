@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>32.VTable表格组件的溢出文字弹框tooltip是否支持选中文本及内容超长滚动效果？</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VTable表格组件的溢出文字弹框tooltip是否支持选中文本及内容超长滚动效果？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>利用了vtable表格组件的tooltip能力，也就是在单元格内容超长时，鼠标hover到该单元格即可显示出内容弹窗。</br>
+但是，我发现这个弹框的内容无法被选中，因为鼠标离开单元格想要移动到tooltip上时，tooltip里面就消失了，根本没有办法移动上去。且当内容长度超长时，弹框会被撑得特别特别大，导致效果很丑，期望内容很长时可以让我滚动查看内容。VTable是否有能力可以实现我需要的效果？</br></p>
+<h2 id="_3">解决方案</h2>
+<p>VTable提供了解决该问题的配置解法，第一个问题，正常情况下鼠标只要离开溢出文本的那个单元格，<code>tooltip</code>就会立马消失，所以导致的没有办法移动到tooltip上去，所以tooltip的相关配置中增加了<code>overflowTextTooltipDisappearDelay</code>来延缓tootip消失的时间。当配置了这个之后，鼠标就有时间去移动到tooltip上啦！这样也就解决了选中复制文本的需求。（i<strong>con的tooltip的用法也是类似的哦！</strong>）</br></p>
+<pre class="codehilite"><code>  /** tooltip相关配置 */
+  tooltip?: {
+    /** html目前实现较完整 先默认html渲染方式 */
+    renderMode?: 'html'; // 目前暂不支持canvas方案
+    /** 是否显示缩略文字提示框。 代替原来hover:isShowTooltip配置 暂时需要将renderMode配置为html才能显示，canvas的还未开发*/
+    isShowOverflowTextTooltip?: boolean;
+**    /** 缩略文字提示框 延迟消失时间 */**
+**    overflowTextTooltipDisappearDelay?: number;**
+    /** 是否将 tooltip 框限制在画布区域内，默认开启。针对renderMode:&quot;html&quot;有效 */
+    confine?: boolean;
+  };&lt;/br&gt;
+</code></pre>
+
+<p>限制tooltip弹出框的尺寸，可以配置在tooltip的样式中，具体样式定义：</br></p>
+<pre class="codehilite"><code>/**
+ * 气泡框，按钮的的解释信息
+ */
+export type TooltipStyle = {
+  fontFamily?: string;
+  fontSize?: number;
+  color?: string;
+  padding?: number[];
+  bgColor?: string;
+**  maxWidth?: number;**
+**  maxHeight?: number;**
+};&lt;/br&gt;
+</code></pre>
+
+<p>配置时放到theme中来指定：</br></p>
+<pre class="codehilite"><code>const option={
+   tooltip: {
+      renderMode: 'html',
+      isShowOverflowTextTooltip: true,
+      overflowTextTooltipDisappearDelay: 1000
+    },
+    theme:{
+        tooltipStyle:{
+            **maxWidth：200，**
+            **maxHeight：100**
+        }
+    }
+}&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<p>可以粘贴到官网编辑器上进行测试：https://visactor.io/vtable/demo/component/tooltip</br></p>
+<pre class="codehilite"><code>let tableInstance;
+fetch('https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/North_American_Superstore_data.json')
+  .then(res =&gt; res.json())
+  .then(data =&gt; {
+    const columns = [
+      {
+        field: 'Order ID',
+        title: 'Order ID',
+        width: 'auto'
+      },
+      {
+        field: 'Customer ID',
+        title: 'Customer ID',
+        width: 'auto'
+      },
+      {
+        field: 'Product Name',
+        title: 'Product Name',
+        width: '200'
+      },
+      {
+        field: 'Category',
+        title: 'Category',
+        width: 'auto'
+      },
+      {
+        field: 'Sub-Category',
+        title: 'Sub-Category',
+        width: 'auto'
+      },
+      {
+        field: 'Region',
+        title: 'Region',
+        width: 'auto'
+      },
+      {
+        field: 'City',
+        title: 'City',
+        width: 'auto'
+      },
+      {
+        field: 'Order Date',
+        title: 'Order Date',
+        width: 'auto'
+      },
+      {
+        field: 'Quantity',
+        title: 'Quantity',
+        width: 'auto'
+      },
+      {
+        field: 'Sales',
+        title: 'Sales',
+        width: 'auto'
+      },
+      {
+        field: 'Profit',
+        title: 'Profit',
+        width: 'auto'
+      }
+    ];
+
+    const option = {
+      records: data,
+      columns,
+      widthMode: 'standard',
+      tooltip: {
+        renderMode: 'html',
+        isShowOverflowTextTooltip: true,
+        overflowTextTooltipDisappearDelay: 1000
+      },
+      theme:{
+          tooltipStyle:{
+              maxWidth:200,
+              maxHeight:60
+          }
+      }
+    };
+    tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID), option);
+    window['tableInstance'] = tableInstance;
+
+  });&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/SJwXbCPGWoYbDAxgGmTc3zaEnug.gif' alt='' width='1512' height='1092'></p>
+<p>完整示例：https://www.visactor.io/vtable/demo/component/tooltip</br></p>
+<h2 id="_6">相关文档</h2>
+<p>相关api：https://www.visactor.io/vtable/api/Methods#showTooltip</br>
+教程：https://www.visactor.io/vtable/guide/components/tooltip</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

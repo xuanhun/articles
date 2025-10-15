@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2-How_can_I_customize_the_display_of_fields_in_data_in_Tooltip_in_VChart</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-can-i-customize-the-display-of-fields-in-data-in-tooltip-in-vchart">How can I customize the display of fields in data in Tooltip in VChart?</h1>
+<h1 id="question-description">Question Description</h1>
+<p>Seemly to（https://visactor.io/vchart/demo/bar-chart/group-stack-percentage-column）I hope Tooltip can customize the fields in the displayed data
+<img alt="demo" src="/vchart/faq/97-0.png" /></p>
+<h1 id="solution">Solution</h1>
+<p>The solutions for different chart libraries are different. Based on the demo you provided, you can directly modify the content configuration of tooltip in VChart to achieve this</p>
+<pre class="codehilite"><code class="language-ts">{
+  tooltip: {
+    mark: {
+      content: [
+        { key: '类别', value: datum =&gt; datum.age },
+        { key: datum =&gt; datum.age, value: datum =&gt; datum.population }
+      ];
+    }
+  }
+}
+</code></pre>
+
+<h1 id="code-example">Code Example</h1>
+<pre class="codehilite"><code class="language-ts">{
+  type: 'bar',
+  data: [
+    {
+      id: 'barData',
+      values: [
+        {
+          State: 'AL',
+          age: 'Under 5 Years',
+          population: 310504,
+          type: 'a'
+        },
+        {
+          State: 'AL',
+          age: '5 to 13 Years',
+          population: 552339,
+          type: 'a'
+        },
+        {
+          State: 'AL',
+          age: '14 to 17 Years',
+          population: 259034,
+          type: 'a'
+        },
+        {
+          State: 'AL',
+          age: '18 to 24 Years',
+          population: 450818,
+          type: 'b'
+        },
+        {
+          State: 'AL',
+          age: '25 to 44 Years',
+          population: 1231572,
+          type: 'c'
+        },
+        {
+          State: 'AL',
+          age: '45 to 64 Years',
+          population: 1215966,
+          type: 'd'
+        },
+        {
+          State: 'AL',
+          age: '65 Years and Over',
+          population: 641667,
+          type: 'd'
+        },
+        {
+          State: 'AK',
+          age: 'Under 5 Years',
+          population: 52083,
+          type: 'a'
+        },
+        {
+          State: 'AK',
+          age: '5 to 13 Years',
+          population: 85640,
+          type: 'a'
+        },
+        {
+          State: 'AK',
+          age: '14 to 17 Years',
+          population: 42153,
+          type: 'a'
+        },
+        {
+          State: 'AK',
+          age: '18 to 24 Years',
+          population: 74257,
+          type: 'b'
+        },
+        {
+          State: 'AK',
+          age: '25 to 44 Years',
+          population: 198724,
+          type: 'c'
+        },
+        {
+          State: 'AK',
+          age: '45 to 64 Years',
+          population: 183159,
+          type: 'd'
+        },
+        {
+          State: 'AK',
+          age: '65 Years and Over',
+          population: 50277,
+          type: 'd'
+        },
+        {
+          State: 'AZ',
+          age: 'Under 5 Years',
+          population: 515910,
+          type: 'a'
+        },
+        {
+          State: 'AZ',
+          age: '5 to 13 Years',
+          population: 828669,
+          type: 'a'
+        },
+        {
+          State: 'AZ',
+          age: '14 to 17 Years',
+          population: 362642,
+          type: 'a'
+        },
+        {
+          State: 'AZ',
+          age: '18 to 24 Years',
+          population: 601943,
+          type: 'b'
+        },
+        {
+          State: 'AZ',
+          age: '25 to 44 Years',
+          population: 1804762,
+          type: 'c'
+        },
+        {
+          State: 'AZ',
+          age: '45 to 64 Years',
+          population: 1523681,
+          type: 'd'
+        },
+        {
+          State: 'AZ',
+          age: '65 Years and Over',
+          population: 862573,
+          type: 'd'
+        },
+        {
+          State: 'AR',
+          age: 'Under 5 Years',
+          population: 202070,
+          type: 'a'
+        },
+        {
+          State: 'AR',
+          age: '5 to 13 Years',
+          population: 343207,
+          type: 'a'
+        },
+        {
+          State: 'AR',
+          age: '14 to 17 Years',
+          population: 157204,
+          type: 'a'
+        },
+        {
+          State: 'AR',
+          age: '18 to 24 Years',
+          population: 264160,
+          type: 'b'
+        },
+        {
+          State: 'AR',
+          age: '25 to 44 Years',
+          population: 754420,
+          type: 'c'
+        },
+        {
+          State: 'AR',
+          age: '45 to 64 Years',
+          population: 727124,
+          type: 'd'
+        },
+        {
+          State: 'AR',
+          age: '65 Years and Over',
+          population: 407205,
+          type: 'd'
+        },
+        {
+          State: 'CA',
+          age: 'Under 5 Years',
+          population: 2704659,
+          type: 'a'
+        },
+        {
+          State: 'CA',
+          age: '5 to 13 Years',
+          population: 4499890,
+          type: 'a'
+        },
+        {
+          State: 'CA',
+          age: '14 to 17 Years',
+          population: 2159981,
+          type: 'a'
+        },
+        {
+          State: 'CA',
+          age: '18 to 24 Years',
+          population: 3853788,
+          type: 'b'
+        },
+        {
+          State: 'CA',
+          age: '25 to 44 Years',
+          population: 10604510,
+          type: 'c'
+        },
+        {
+          State: 'CA',
+          age: '45 to 64 Years',
+          population: 8819342,
+          type: 'd'
+        },
+        {
+          State: 'CA',
+          age: '65 Years and Over',
+          population: 4114496,
+          type: 'd'
+        },
+        {
+          State: 'CO',
+          age: 'Under 5 Years',
+          population: 358280,
+          type: 'a'
+        },
+        {
+          State: 'CO',
+          age: '5 to 13 Years',
+          population: 587154,
+          type: 'a'
+        },
+        {
+          State: 'CO',
+          age: '14 to 17 Years',
+          population: 261701,
+          type: 'a'
+        },
+        {
+          State: 'CO',
+          age: '18 to 24 Years',
+          population: 466194,
+          type: 'b'
+        },
+        {
+          State: 'CO',
+          age: '25 to 44 Years',
+          population: 1464939,
+          type: 'c'
+        },
+        {
+          State: 'CO',
+          age: '45 to 64 Years',
+          population: 1290094,
+          type: 'd'
+        },
+        {
+          State: 'CO',
+          age: '65 Years and Over',
+          population: 511094,
+          type: 'd'
+        },
+        {
+          State: 'CT',
+          age: 'Under 5 Years',
+          population: 211637,
+          type: 'a'
+        },
+        {
+          State: 'CT',
+          age: '5 to 13 Years',
+          population: 403658,
+          type: 'a'
+        },
+        {
+          State: 'CT',
+          age: '14 to 17 Years',
+          population: 196918,
+          type: 'a'
+        },
+        {
+          State: 'CT',
+          age: '18 to 24 Years',
+          population: 325110,
+          type: 'b'
+        },
+        {
+          State: 'CT',
+          age: '25 to 44 Years',
+          population: 916955,
+          type: 'c'
+        },
+        {
+          State: 'CT',
+          age: '45 to 64 Years',
+          population: 968967,
+          type: 'd'
+        },
+        {
+          State: 'CT',
+          age: '65 Years and Over',
+          population: 478007,
+          type: 'd'
+        }
+      ]
+    }
+  ],
+  xField: ['State', 'type'],
+  yField: 'population',
+  seriesField: 'age',
+  stack: true,
+  percent: true,
+  legends: {
+    visible: true,
+    reversed: true
+  },
+  tooltip: {
+    mark: {
+      content: [
+        {key: '类别', value: (datum) =&gt; datum.age},
+        {key: (datum) =&gt; datum.age, value: (datum) =&gt; datum.population}
+      ]
+    }
+  },
+  color: ['#98abc5', '#8a89a6', '#7b6888', '#6b486b', '#a05d56', '#d0743c', '#ff8c00'],
+  axes: [
+    {
+      orient: 'left',
+      label: {
+        formatMethod: val =&gt; {
+          return `${(val * 100).toFixed(2)}%`;
+        }
+      }
+    }
+  ]
+}
+</code></pre>
+
+<h1 id="results">Results</h1>
+<p>Online demo：https://codesandbox.io/s/tooltip-custom-6czn8z
+<img alt="result" src="/vchart/faq/97-1.png" /></p>
+<h1 id="related-documentation">Related Documentation</h1>
+<p>Tooltip Tutorial：https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Tooltip
+Related api：https://visactor.io/vchart/option/barChart#tooltip.mark.content(Object%7CObject%5B%5D).key
+github：https://github.com/VisActor/VChart</p>
+</body>
+</html>

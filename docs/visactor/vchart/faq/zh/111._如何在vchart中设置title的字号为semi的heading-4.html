@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>111. 如何在vchart中设置title的字号为semi的heading-4？</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">问题标题</h1>
+<p>如何在vchart中设置title的字号为semi的heading-4？</br></p>
+<h1 id="_2">问题描述</h1>
+<p>我正在使用@visactor/vchart图表库进行数据可视化。但我遇到了一个问题，我想在vchart中设置title的字号为semi的heading-4字号，但我不知道如何将这个变量传入。</br></p>
+<h1 id="_3">解决方案</h1>
+<p>新版的vchart提供了一个名为vchart-semi-theme的包，它可以自动爬取页面上的 semi css 变量，因此图表的大部分色值都可以使用这个功能。至于字号，虽然目前这个包并未直接提供引入 semi 变量的功能，但你可以手动修改 spec 或者注册主题来达到目标。</br></p>
+<p>使用方法如下：</br>
+1. 首先安装vchart-semi-theme包</br>
+2. 使用文档：https://visactor.bytedance.net/vchart/guide/tutorial_docs/Theme/Theme_Extension</br>
+3. 需要看一些示例可以参考：https://vp4y9p.csb.app/</br></p>
+<p>注意：由于vchart-semi-theme的使用需要爬取页面的css变量，因此请确保你的页面中包含了需要的semi css变量。</br></p>
+<h1 id="_4">相关文档</h1>
+<p>VChart 官网：https://visactor.bytedance.net/vchart</br>
+vchart-semi-theme 使用文档：https://visactor.bytedance.net/vchart/guide/tutorial_docs/Theme/Theme_Extension</br>
+在线Demo：https://vp4y9p.csb.app/</br></p>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2.4不同图元类型渲染流程</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">单元格概述</h2>
+<p>Cell，即单元格，是表格中的基本显示单位、是数据展示的最小可视化单元，在SceneGraph中作为独立的渲染单元存在。在VTable场景树模块中，每个Cell展示数据，或展示文本、链接，或展示可交互的元素例如Radio，button，依赖于不同的CellType，cellType的存在描述了Cell的展示形态和交互逻辑，它不仅仅是数据的简单呈现方式，更是一种灵活的数据表达策略。VTable 通过定义丰富的单元格类型，为用户提供了多维度、高度定制化的数据展示方案。    </p>
+<p>VTable 支持七种核心单元格类型：文本（text）、链接（link）、图片（image）、视频（video）、进度条（progressbar）、迷你图（sparkline、）图表（chart）;    </p>
+<p>关于如何配置CellType，可以查阅：    </p>
+<blockquote>
+<h2 id="_2">相关源码位置</h2>
+<ul>
+<li>package/vtable/src/scenegraph/group-creater/cell-type文件夹下的内容：本文包括radio-cell和CheckBox-cell    </li>
+<li>package/vtable/src/scenegraph/group-creater/cell-helper.ts：VTable 渲染引擎中单元格处理的核心文件,提供了 用于根据不同列类型创建单元格(<code>createCell</code>)、负责单元格的动态更新(<code>updateCell</code>和 <code>updateCellContent</code>)等功能；    </li>
+<li>package/vtable/src/scenegraph/group-creater/column-helper.ts：基于createCell单元格创建实现了复合列表ComplexColumn的合并、渲染处理；    </li>
+</ul>
+</blockquote>
+<h2 id="_3">特殊图元渲染详解</h2>
+<h3 id="checkbox">Checkbox</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CXNkbnMNfoiT8GxPwpwcsme7nJh.gif' alt='' width='116' height='auto'></p>
+<p>复选框类型单元格适用于在表格中用于提供多选选项，并允许用户选择或取消选择一个或多个项目。    </p>
+<hr />
+<ul>
+<li>
+<p>系统首先从数据源提取原始值（支持布尔值、字符串或包含<code>checked</code>/<code>disable</code>/<code>text</code>属性的对象），通过<code>getCellValue</code>和<code>stateManager.syncCheckedState</code>方法同步选中状态，支持<code>indeterminate</code>半选状态。同时合并列定义的复选框参数（如<code>size</code>、<code>spaceBetweenTextAndIcon</code>）与全局主题配置<code>cellTheme</code>，并调用<code>getHierarchyOffset</code>计算层级缩进，适配树形表头等复杂结构。    </p>
+</li>
+<li>
+<p>基于VRender引擎创建单元格容器，通过<code>dealWithIconLayout</code>处理左侧/右侧图标布局。实例化<code>CheckBox</code>组件时，根据数据判定选中状态（优先读取<code>checked</code>属性）、禁用状态（<code>disable</code>属性或列配置函数）以及自定义图标（如<code>checkIconImage</code>替换默认勾选样式）。文本内容通过<code>autoWrapText</code>和<code>lineClamp</code>实现自动换行与行数限制。    </p>
+</li>
+<li>
+<p>利用VRender的边界计算能力，测量复选框图标（默认尺寸按<code>size/1.4</code>比例）和文本区域。根据<code>textAlign</code>和<code>textBaseline</code>属性，在扣除<code>padding</code>和<code>hierarchyOffset</code>的内嵌区域中实现9种对齐方式。例如，<code>textAlign: 'right'</code>时，复选框整体右对齐，文本紧贴图标右侧。    </p>
+</li>
+</ul>
+<h3 id="radio">Radio</h3>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/S7VbbyC0KoSpL2xt7muc6qDHnre.gif' alt='' width='188' height='auto'></p>
+<p>单选框类型单元格适用于用户在表格中的多个项目中选中一个。    </p>
+<hr />
+<p>当表格需要渲染单选单元格时，需要从数据解析与样式的组合两方面来解读：    </p>
+<ul>
+<li>
+<p>首先是从数据源获取原始值、并列定义中的样式参数（如按钮尺寸、颜色）和全局主题配置等相关配置，然后根据列设置的<code>radioDirectionInCell</code>确定水平或垂直排列方向，并计算层级缩进控制布局的展示。    </p>
+</li>
+<li>
+<p>接着进入到渲染组件的流程，大致逻辑是，基于VRender的边界计算能力，先测量单个选项的文本宽度和图标区域，再根据排列方向累加间距（<code>spaceBetweenRadio</code>），最终确定单选组件的总占位尺寸。    </p>
+</li>
+<li>
+<p>接着结合单元格的<code>textAlign</code>和<code>textBaseline</code>属性，将单选组整体在扣除padding的内嵌区域中对齐，支持居中、右对齐等对齐方式，优化了单选图元里表格的布局选择。    </p>
+</li>
+</ul>
+<h2 id="_4">总结</h2>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

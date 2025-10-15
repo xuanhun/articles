@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3.1 基本表格表头结构</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">开篇</h2>
+<p>基本表格不同于透视表格的复杂，只有行和列的区分，表头的结构也较为简单，接下来来看下关于基本表格的表头结构相关部分。    </p>
+<h2 id="_2">场景树相关</h2>
+<p>VTable 是以场景树的形式管理表格各个模块的，对于基本表格的表头，主要是涉及到了下面几个节点：    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/UkqRbiVtHonLpMxi9k0cOdmGnTf.gif' alt='' width='957' height='auto'></p>
+<ol>
+<li>colHeaderGroup     </li>
+</ol>
+<p>列表头节点：负责管理整个列表头，表头部分不会随着滚动而改变位置；    </p>
+<ol>
+<li>columnGroup    </li>
+</ol>
+<p>列Group：每一列为单独的一个容器，基本上每列都会有着自己的样式配置；    </p>
+<ol>
+<li>cellGroup    </li>
+</ol>
+<p>单元格节点：每一个单元格都会单独维护一份，内部包含了需要绘制的所有图元节点；    </p>
+<ol>
+<li>rightTopCornerGroup    </li>
+</ol>
+<p>右侧冻结列表头： 当配置右侧冻结列的时候，对右侧的冻结列表头单独维护一份；    </p>
+<ol>
+<li>cornerHeaderGroup    </li>
+</ol>
+<p>左侧冻结列表头：维护左侧冻结列的表头部分，相当于角表头；    </p>
+<h2 id="_3">布局模块</h2>
+<p>基本表格表头布局相关的模块单独维护在 <code>SimpleHeaderLayoutMap</code> 类中，内部包含了诸多布局相关的逻辑以及辅助函数等，最重要的是下面几个子模块。    </p>
+<h3 id="_4">原始列定义存储</h3>
+<p>关于原始的列定义单独在 <code>interProps</code> 上维护了一份，而在 <code>LayoutMap</code> 中又单独维护了一份 <code>_columns</code>，不同的点在于，对于树形结构，<code>_columns</code>仅仅会维护一份叶子节点，该字段主要是用于获取列数以及获取列定义的操作。    </p>
+<p>为了达成列隐藏的功能，VTable 内部隐藏的节点不会放在 <code>_columns</code> 中，而是单独存放在 <code>_columnsIncludeHided</code> 中，这里面包含了所有的叶子节点。    </p>
+<h3 id="_5">维度树</h3>
+<p>对于这样一个多级表头，可以以一个维度树的形式来维护。不过在基本表格内部，维护一个树形结构的代价太大了，VTable 为此采取了另外一种方案。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/I9xUbUGs0o1GkrxqFKycpFjUn3e.gif' alt='' width='472' height='auto'></p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ZqY4bUgLMojIWSxP5x1cQ3vwnNh.gif' alt='' width='734' height='auto'></p>
+<h3 id="_6">树形结构替代方案</h3>
+<p>既然树形结构实现难度过大， 那么有什么办法能够降低处理树形结构的复杂度呢？VTable 内部是这么解决的：    </p>
+<p>对于表头，将列的定义进行拍平，为每一列定义一个索引，建立索引与列定义的映射表；同时以表格的布局生成一份二维的表头 ID 矩阵，在对应的行列处生成对应的索引，使用行列号获取id，再根据 id 就能获得对应单元格上的列定义。    </p>
+<p>拍平后的列定义映射表维护在 <code>layoutMap._headerObjectMap</code> 中，二维的数据索引维护在 <code>layouMap._headerCellIds</code> 中。    </p>
+<p>我们以上面的树形结构为例，    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TS5ubIMU2oe3QtxMRKEcWXYvnkf.gif' alt='' width='447' height='auto'></p>
+<p>_headerCellIds 长这样    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/GIetbByq9oZTAwxPm7Vc8Au2nlc.gif' alt='' width='459' height='auto'></p>
+<p>对应的 _headerObjectsMap 映射表：    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/RTINb9ccuoT5t0xsUVhcq4Eun2d.gif' alt='' width='1000' height='auto'></p>
+<p>通过将树形结构进行解耦，拆成每行每列对应的 id 的数据索引表 和 id 对应的列定义的映射表，除了需要在表头结构发生变化额外对表头ID矩阵进行维护之外，在列定义的获取的简便性和存储方面的性能都是远胜于直接存储树形结构。    </p>
+<h3 id="_7">合并单元格范围缓存</h3>
+<p>在基本表格表头存在合并表头的情况下， 会有根据行列号获取当前单元格是处在哪个范围内的需求，如果频繁的去根据原始结构进行判断，将会造成极大的性能浪费，为此 <code>LayoutMap</code> 内部存储了一份合并单元格范围的缓存<code>_cellRangeMap</code>，该映射表以 <code>${col}_${row}</code> 为key，当前单元格所处的 cellRange 为 value。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Bcw9bgiuIomGzWxS1mLckMBCnTe.gif' alt='' width='380' height='auto'></p>
+<p>后续如果有需要根据行列号获取所处范围的需求，便可以直接根据该映射表去获取。需要注意的是当表头位置拖拽后，这个缓存的行列号已不准确，需要进行重置。    </p>
+<h2 id="_8">模块生成</h2>
+<p>上面介绍了关于 <code>LayoutMap</code> 中几个重要的模块及其用法，下面来看下各个模块在初始化的时候是如何生成的：    </p>
+<h3 id="id">表头ID矩阵</h3>
+<p>由于表头ID矩阵和表头定义映射的生成都是在同一个函数 <code>_addHeader</code>中完成的，所以直接上手去理解该功能函数难度较高，这里先将两部分逻辑拆开来看，先来看下关于数据索引表部分的生成：    </p>
+<p>以上图的树形表头举例，来看下 <code>_headerCellIds</code>  的生成逻辑。    </p>
+<pre class="codehilite"><code class="language-Typescript">  const columns = [
+    {
+      field: 'id',
+      title: 'ID',
+    },
+    {
+      title: 'Name',
+      columns: [
+        {
+          field: 'name1',
+          title: 'name1',
+        },
+        {
+          title: 'name-level-2',
+          columns: [
+            {
+              field: 'name2',
+              title: 'name2',
+            },
+            {
+              title: 'name3',
+              field: 'name3',
+            }
+          ]
+        }
+      ]
+    }
+  ];    
+</code></pre>
+
+<h4 id="_9">功能简化</h4>
+<p>这里是简化后的关于 <code>_headerCellIds</code> 的生成逻辑：    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\simple-header-layout.ts
+const _columns = [];
+let seqId = 0;
+const _headerCellIds = [];
+
+function _addHeaders(row, column, roots) {
+  const rowCells = _newRow(row);
+  column.forEach(hd =&gt; {
+    const col = _columns.length;
+    const id = seqId++;
+    for (let r = row - 1; r &gt;= 0; r--) {
+      _headerCellIds[r] &amp;&amp; (_headerCellIds[r][col] = roots[r]);
+    }
+    rowCells[col] = id;
+    if (hd.columns) {
+      _addHeaders(row + 1, hd.columns, [...roots, id]);
+    } else {
+      _columns.push(hd);
+      seqId++;
+      for (let r = row + 1; r &lt; _headerCellIds.length; r++) {
+        _headerCellIds[r][col] = id;
+      }
+    }
+  });
+}    
+</code></pre>
+
+<h4 id="_10">单行索引生成</h4>
+<p>在具体对逻辑进行解析之前，先来看下是如何通过行号对当前行的 rowCells 进行关联的：    </p>
+<p>在生成行的时候，会分两种情况：    </p>
+<ol>
+<li>
+<p>如果当前行已经存在了，会根据上一行的数据，对当前行进行补全，同时返回当前行的地址；    </p>
+</li>
+<li>
+<p>如果当前行不存在，会生成 newRow ，将 newRow 关联到 _headerCellIds[row] 上，再将上一层的信息进行同步到 newRow 中，返回 newRow 的地址，这样就能在对 rowCells 修改的时候，同步修改到 <code>_headerCellIds</code> 中。    </p>
+</li>
+</ol>
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/IYoIw7tCOhmXCjbPWeicPZZOnPh.gif" /></p>
+<h4 id="_headercellids">_headerCellIds  变化</h4>
+<p>这里是 <code>_addHeaders</code> 过程中，<code>_headerCellIds</code> 发生的变化：    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/O0gBbczpPoJllKxJFf3cyLYWnZc.gif' alt='' width='1000' height='auto'></p>
+<h4 id="_11">生成流程</h4>
+<p>可以看到，最后生成的 _headerCellIds 的列数是由 columns 树的广度决定、而行数则是由树的深度决定的。    </p>
+<p>生成过程主要是通过深度优先遍历，在遍历列之前，会先生成 rowCells 与 _headerCellIds 进行关联。    </p>
+<p>在遍历列的过程中，处理当前节点前，如果遇到上层同一列有节点的情况下，会将上层同一列的节点进行更新。    </p>
+<p>在处理完上一层之后，对本行本列的索引进行更新。    </p>
+<p>如果存在子树，会继续递归，更新roots，roots 表示的从根节点到当前节点的路径。    </p>
+<p>如果没有子树，会对本列下方的节点进行更新，随后进入下一次遍历。在递归完成后，代表着 _headerCellIds 的更新完成了。    </p>
+<h3 id="_12">表头映射</h3>
+<p>表头映射相对于表头ID矩阵的生成比较简单，就是一个递归的过程。    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\simple-header-layout.ts
+      function _addHeaders(row, column) {
+        const results = [];
+        column.forEach((hd) =&gt; {
+          const id = seqId++;
+          const cell = {
+            id,
+            title: hd.title ?? hd.caption,
+            ...
+          };
+          results[id] = cell;
+          if (hd.columns) {
+            _addHeaders(row + 1, hd.columns).forEach((c) =&gt; results.push(c));
+          } else {
+            seqId++;
+          }
+        });
+        return results;
+      }    
+</code></pre>
+
+<p><img alt="" src="https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/FBeUwdZechOoUwbhKDCch1k8nof.gif" /></p>
+<p>递归完成后的 _headerObjectsIncludeHided 长这样：    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TJbLbQDsnoiLa1xJDf7cPVmQnOf.gif' alt='' width='1000' height='auto'></p>
+<p>随后通过 reduce 进行处理，生成 _headerObjectMap    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\layout\simple-header-layout.ts
+this._headerObjectMap = this._headerObjects.reduce((o, e) =&gt; {
+  o[e.id] = e;
+  return o;
+}, {});    
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TbbLbz5Tpos0xUxFBXQcT3ROn7b.gif' alt='' width='1000' height='auto'></p>
+<h2 id="_13">结语</h2>
+<p>基本表格的结构划分相对于透视表来说会更简单，只需要维护列表头即可。    </p>
+<p>表头结构被划分为了几个重要的模块：    </p>
+<ul>
+<li>
+<p>_headerCellIds：负责管理当前行列号下对应的列定义的索引；    </p>
+</li>
+<li>
+<p>_headerObjectMap：列索引与列定义的映射表；    </p>
+</li>
+<li>
+<p>_columns：维护表头结构的叶子节点；    </p>
+</li>
+</ul>
+<h1 id="_14">本文档由以下人员提供</h1>
+<p>taiiiyang( https://github.com/taiiiyang)     </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

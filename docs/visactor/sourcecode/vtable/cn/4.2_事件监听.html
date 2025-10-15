@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4.2 事件监听</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">简介</h2>
+<p>事件模块作为 VTable 中交互功能的入口模块，主要监听了两部分的事件：    </p>
+<ol>
+<li>
+<p>外部事件的监听，场景树相关的事件。    </p>
+</li>
+<li>
+<p>原生 DOM 事件的监听。    </p>
+</li>
+</ol>
+<p>本文将从上面两个角度进行分析，讲述 VTable 的事件具体监听了哪些事件。    </p>
+<h2 id="_2">监听收口</h2>
+<p>绝大部分的事件监听都是在 <code>EventManager</code> 模块中完成的，其中主要的收口位于 <code>bindOuterEvent</code>，接下来将通过该函数来剖析关于 VTable 中关于事件的监听部分。    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\event.ts
+export class EventManager {
+// ...
+  bindOuterEvent() {
+    bindTableGroupListener(this);
+    bindContainerDomListener(this);
+    bindScrollBarListener(this);
+    bindTouchListener(this);
+    bindGesture(this);
+  }
+}    
+</code></pre>
+
+<p><code>bindOuterEvent</code> 分为五个部分：    </p>
+<ul>
+<li>
+<p>bindTableGroupListener： 主要是监听外部事件，场景树相关事件；    </p>
+</li>
+<li>
+<p>bindContainerDomListener：监听原生DOM事件；    </p>
+</li>
+<li>
+<p>bindScrollBarListener：监听外部滚动条事件；    </p>
+</li>
+<li>
+<p>bindTouchListener：监听移动端触摸事件，内部会同时监听原生 DOM 和 外部事件；    </p>
+</li>
+<li>
+<p>bindGesture：监听双击事件，触发关于双击的自定义事件；    </p>
+</li>
+</ul>
+<p>下面将详细对这几个模块进行分析。    </p>
+<h2 id="dom">DOM 相关事件</h2>
+<h3 id="_3">表格容器</h3>
+<p><code>bindContainerDomListener</code> 内部负责监听原生 DOM 事件，主要是监听下面两个对象。    </p>
+<h4 id="document">document 相关</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TQlVbfkwJoaVcjxj8rRcDLD5n7f.gif' alt='' width='1000' height='auto'></p>
+<h4 id="_4">表格容器</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/SJXPbVJ6OosUU3xYmFHcC6Z7nJe.gif' alt='' width='1000' height='auto'></p>
+<h4 id="_5">源码</h4>
+<ul>
+<li>bindContainerDomListener    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">// vtable\src\event\listener\container-dom.ts
+// 容器级事件
+handler.on(table.getElement(), 'blur', ...);       // 失去焦点
+handler.on(table.getElement(), 'keydown', ...);     // 键盘事件（快捷键）
+handler.on(table.getElement(), 'copy', ...);        // 复制操作
+handler.on(table.getElement(), 'paste', ...);       // 粘贴操作
+handler.on(table.getElement(), 'contextmenu', ...); // 右键菜单
+// 全局指针事件
+document.body.addEventListener('pointerdown', ...);   // 全局按下
+document.addEventListener('pointerup', ...);          // 全局释放 
+document.body.addEventListener('pointermove', ...);   // 全局移动
+// 容器尺寸变化
+handler.on(table.getContainer(), 'resize', ...);     // 容器resize    
+</code></pre>
+
+<h3 id="_6">移动端事件</h3>
+<ul>
+<li>bindTouchListener    </li>
+</ul>
+<p><code>bindTouchListener</code> 监听的是移动端事件，主要是为了兼容移动端的表格移动功能。    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/MwKPbYOhlo9TlnxazQUcW4s5nzs.gif' alt='' width='668' height='auto'></p>
+<ul>
+<li>源码    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\touch.ts
+window.addEventListener('touchmove', (e) =&gt; {    // 触摸移动
+    // 1. 阻止默认滚动行为
+    // 2. 计算滑动距离（deltaX/deltaY）
+    // 3. 调用handleWhell实现表格内容滚动
+});
+
+window.addEventListener('touchend', (e) =&gt; {      // 触摸结束
+    // 触发惯性滚动
+});
+
+window.addEventListener('touchcancel', (e) =&gt; {
+    // 清空移动端 touch 事件相关参数
+});    
+</code></pre>
+
+<h2 id="_7">场景树相关</h2>
+<h3 id="_8">场景树基础事件</h3>
+<p>场景树分为三个部分来进行监听，下面分别来进行讲解：    </p>
+<h4 id="tablegroup">tableGroup</h4>
+<p>表格整体 Group 容器相关，主要是去监听于 VRender 提供的事件；    </p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/NRAVbWUdlo3lAPxpQjecFGAHnbf.gif' alt='' width='1000' height='auto'></p>
+<h4 id="stage">stage 事件</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/R93yb6CmaoLmAhxr5mycBGQQn0e.gif' alt='' width='974' height='auto'></p>
+<h4 id="_9">全局事件</h4>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Ahc0bAi4DokixyxJz2JcTaubnYe.gif' alt='' width='717' height='auto'></p>
+<h4 id="_10">源码</h4>
+<ul>
+<li>bindTableGroupListener    </li>
+</ul>
+<pre class="codehilite"><code class="language-javascript">// packages\vtable\src\event\listener\table-group.ts
+// 表格组基础事件
+table.scenegraph.tableGroup.addEventListener('pointermove', ...); // 指针移动
+table.scenegraph.tableGroup.addEventListener('pointerdown', ...); // 指针按下
+table.scenegraph.tableGroup.addEventListener('pointerup', ...);   // 指针释放
+table.scenegraph.tableGroup.addEventListener('pointerover', ...);   // 指针进入区域内部
+table.scenegraph.tableGroup.addEventListener('pointerenter', ...);   // 指针穿过区域边界
+table.scenegraph.tableGroup.addEventListener('pointerleave', ...);   // 指针离开区域
+table.scenegraph.tableGroup.addEventListener('pointertap', ...);   // 指针点击
+table.scenegraph.tableGroup.addEventListener('rightdown', ...);   // 右键点击
+table.scenegraph.tableGroup.addEventListener('wheel', ...);       // 滚轮事件
+table.scenegraph.tableGroup.addEventListener('checkbox_state_change', ...); // 多选框状态改变
+table.scenegraph.tableGroup.addEventListener('radio_checked', ...); // 单选框状态改变
+
+// stage 相关
+table.scenegraph.stage.addEventListener('pointerdown', ...);
+table.scenegraph.stage.addEventListener('pointerup', ...);
+table.scenegraph.stage.addEventListener('pointertap', ...);
+table.scenegraph.stage.addEventListener('pointermove', ...);
+
+// vglobal
+vglobal.addEventListener('pointerup', globalPointerupCallback);
+vglobal.addEventListener('pointerdown', globalPointerdownCallback);    
+</code></pre>
+
+<h3 id="_11">滚动条相关事件</h3>
+<p><code>bindScrollBarListener</code> 中监听了 VRender 的<code>ScrollBar</code> 组件提供的事件。    </p>
+<p>VTable 存在两种滚动条，分别是水平滚动条 <code>hScrollBar</code> ，垂直滚动条 <code>vScrollBar</code> 。这两种滚动条监听的事件类型都是相同的。以垂直滚动条为例，主要监听下面几个事件：    </p>
+<ul>
+<li>
+<p>pointerover    </p>
+</li>
+<li>
+<p>pointerout    </p>
+</li>
+<li>
+<p>pointerup    </p>
+</li>
+<li>
+<p>pointermove    </p>
+</li>
+<li>
+<p>pointerupoutside    </p>
+</li>
+<li>
+<p>scrollDown    </p>
+</li>
+<li>
+<p>scrollDrag    </p>
+</li>
+<li>
+<p>scrollUp    </p>
+</li>
+</ul>
+<hr />
+<ul>
+<li><code>bindScrollBarListener</code>    </li>
+</ul>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\scroll-bar.ts
+// 垂直滚动条事件
+scenegraph.component.vScrollBar.addEventListener('pointerover', (e) =&gt; {  // 指针悬停
+    stateManager.showVerticalScrollBar(); // 显示滚动条
+});
+scenegraph.component.vScrollBar.addEventListener('pointerout', (e) =&gt; {   // 鼠标移出
+    stateManager.hideVerticalScrollBar(); // 隐藏滚动条
+});
+scenegraph.component.vScrollBar.addEventListener('pointerdown', (e) =&gt; { // 鼠标按下
+    // 1. 阻止事件冒泡
+    // 2. 触发MOUSEDOWN_TABLE事件
+});
+// 滚动条拖动事件
+scenegraph.component.vScrollBar.addEventListener('scrollDrag', ((e) =&gt; {
+    // 1. 同步表格滚动位置
+    // 2. 更新画布渲染
+}));
+scenegraph.component.vScrollBar.addEventListener('scrollDown', (e) =&gt; {
+    // 点击滚动条，更新滚动状态
+});
+// 鼠标从滚动条上抬起事件，清除滚动状态
+scenegraph.component.vScrollBar.addEventListener('scrollUp', (e:) =&gt; {})    
+</code></pre>
+
+<h3 id="_12">移动端事件</h3>
+<p><code>bindTouchListener</code> 中单独为 <code>tableGroup</code> 注册了一份 <code>touchstart</code> 的回调，用来初始化移动端 touch 的信息。    </p>
+<pre class="codehilite"><code class="language-Typescript">// packages\vtable\src\event\listener\touch.ts
+// 基础触摸事件
+table.scenegraph.tableGroup.addEventListener('touchstart', (e: FederatedPointerEvent) =&gt; {
+    // 记录触摸点坐标和时间戳
+    eventManager.touchMovePoints.push({...});
+});
+</code></pre>
+
+<h2 id="_13">结语</h2>
+<p>VTable 有着十分复杂的交互系统，而实现这些交互依赖的最重要的一个模块就是事件模块，在事件模块中，监听了几十种事件，包括了自定义事件和外部事件。    </p>
+<p>正是因为 VTable 有着如此健全的事件监听功能，才能实现这么多丝滑的交互。    </p>
+<h1 id="_14">本文档由以下人员提供</h1>
+<p>taiiiyang（https://github.com/taiiiyang）    </p>
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

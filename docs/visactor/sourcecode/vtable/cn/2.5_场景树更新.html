@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2.5 场景树更新</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1"><strong>触发更新</strong></h2>
+<p>场景树的更新会发生在什么情况下呢？一般来说是在数据改变驱动、用户交互、布局改变 三种情况下触发更新事件流程：    </p>
+<ul>
+<li>
+<p><strong>数据驱动</strong>：当表格的属性发生变化，宽、高、图元变化的时候：分别触发<code>updateColWidth</code> / <code>updateRowHeight</code> / <code>updateCell</code>    </p>
+</li>
+<li>
+<p><strong>用户交互</strong>：用户与表格产生交互：触发<code>resize</code>（拖拽列宽）/ <code>updateSortIcon</code>（排序图标）    </p>
+</li>
+<li>
+<p><strong>布局改变</strong>：设备尺寸、展示模式变更触发布局上的变化，也会导致表格的更新：<code>dealWidthMode</code>（自适应布局）    </p>
+</li>
+</ul>
+<h2 id="_2">更新流程</h2>
+<h5 id="1-setattribute"><strong>1. 属性修改（核心方法：</strong><code>**setAttribute**</code><strong>，）​</strong></h5>
+<p>直接修改图元属性（如位置、尺寸、样式）    </p>
+<ul>
+<li><strong>列宽更新</strong>：通过 <code>setAttribute</code> 修改列容器的 <code>width</code> 属性。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">updateColWidth(col: number, deltaX: number) {
+  const columnGroup = this.getColGroup(col);
+  columnGroup.setAttribute('width', newWidth); *// 直接修改列宽（触发脏标记）*
+  this.updateContainer(true);                  *// 触发布局更新*
+}    
+</code></pre>
+
+<ul>
+<li><strong>行高更新</strong>：调整行容器的 <code>height</code> 属性，同步更新垂直布局。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">updateRowHeight(row: number, deltaY: number) {
+  const rowGroup = this.getRowGroup(row);
+  rowGroup.setAttribute('height', newHeight); *// 修改行高*
+  this._updateContainerHeight(row, deltaY);    *// 联动容器高度*    
+</code></pre>
+
+<hr />
+<h5 id="2-updatecontainerdealwidthmode"><strong>2. 布局重计算（核心方法：</strong><code>**updateContainer**</code><strong>/</strong><code>**dealWidthMode**</code><strong>）​</strong></h5>
+<p>基于属性变化重新计算容器坐标和尺寸，具体来说是通过 <code>_needUpdateContainer</code> 标记控制更新流程，这样可以确保仅当需要更新时依次执行布局计算（列宽/坐标调整）、尺寸同步（表格/冻结区）、组件状态（滚动条）等步骤，接着渲染提交（<code>updateNextFrame</code>），通过 <code>stage.renderNextFrame</code> 触发渲染引擎（渲染下一帧）    </p>
+<pre class="codehilite"><code class="language-xml">  updateContainer(async: boolean = false) {
+    if (async) {
+      if (!this._needUpdateContainer) {
+        this._needUpdateContainer = true;
+        setTimeout(() =&gt; {
+          this.updateContainerSync();
+        }, 0);
+      }
+    } else {
+      this._needUpdateContainer = true;
+      this.updateContainerSync();
+    }
+  }
+
+ updateContainerSync() {
+    if (!this._needUpdateContainer) {
+      return;
+    }
+    this._needUpdateContainer = false;
+    this.updateContainerAttrWidthAndX();
+    this.updateTableSize();
+    this.component.updateScrollBar();
+
+    this.updateDomContainer();
+
+    this.updateNextFrame();
+  }
+</code></pre>
+
+<p><strong>自适应布局</strong>：动态分配剩余空间，覆盖手动调整结果。我的解读重点是<code>dealHeightMode</code>和<code>dealwitdhMode</code>:    </p>
+<p><code>dealWidthMode()</code> 方法负责处理表格列宽的自适应布局与自动填充逻辑：当开启 <code>widthMode: 'adaptive'</code> 时，首先清空历史列宽缓存，计算行表头及右侧冻结列的固定总宽度，将画布剩余空间按比例分配给非冻结列；若启用 <code>autoFillWidth</code> 则检测内容总宽度是否小于画布宽度，若不足则对非冻结列进行等比放大。完成列宽计算后，遍历主体区域（<code>bodyGroup</code>）、列头区域（<code>colHeaderGroup</code>）、行头区域（<code>rowHeaderGroup</code>）及角头区域（<code>cornerHeaderGroup</code>）的子列元素，累加各列实际宽度并动态设置容器总宽度，最后调整列头与主体的坐标位置，确保列头紧贴角头右侧、主体区域紧贴行头右侧，形成完整的水平布局流，最终通过容器属性更新驱动渲染引擎同步视觉表现。    </p>
+<p><code>dealHeightMode</code>处理高度和处理宽度上的逻辑是高度类似、对称的。二者都符合表格自适应布局的核心思想；    </p>
+<hr />
+<h5 id="3-vrender"><strong>3. 脏标记（VRender 内部机制）​</strong></h5>
+<p>标记需重绘的图元，避免全量渲染。脏标记是一种<strong>性能优化技术</strong>，用于标识需要更新的数据或对象，避免全量计算或渲染，从而提升效率。在图形渲染中，它通过跟踪变化的部分，仅处理“脏”区域，而非整个场景。    </p>
+<hr />
+<h5 id="4-rendernextframe"><strong>4. 异步渲染提交（核心方法：</strong><code>**renderNextFrame**</code><strong>）​</strong></h5>
+<ul>
+<li><strong>统一提交入口</strong>：所有更新最终调用 <code>stage.renderNextFrame()</code>。    </li>
+</ul>
+<pre class="codehilite"><code class="language-xml">updateNextFrame() {
+  this.stage.renderNextFrame();
+}    
+</code></pre>
+
+<p># 本文档由以下人员修正整理 
+ <a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

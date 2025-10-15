@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1-Setting-Up-the-Development-Environment</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <hr />
+<p>title: 1-Setting-Up-the-Development-Environment</p>
+<h2 id="key-words-visactor-vchart-vtable-vstory-vmind-vgrammar-vrender-visualization-chart-data-table-graph-gis-llm">key words: VisActor, VChart, VTable, VStory, VMind, VGrammar, VRender, Visualization, Chart, Data, Table, Graph, GIS, LLM</h2>
+<h1 id="github">Github</h1>
+<h2 id="11-register-an-account">1.1 Register an Account</h2>
+<p>The VisActor team usually develops and maintains issues on GitHub. Please visit <a href="https://github.com/">GitHub</a>, click the <code>Sign up</code> button on the top right to register your account, and start your journey into open source.</p>
+<p>If you are unable to access GitHub due to certain restrictions, please let us know and use <a href="https://gitee.com/VisActor/VChart">Gitee</a> for project development.</p>
+<h2 id="12-fork-the-project">1.2 Fork the Project</h2>
+<p>First, you need to fork this project. Go to the <a href="https://github.com/VisActor/VChart">VChart project page</a> and click the Fork button on the top right.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/LQbyb5XWgoV8w2x3D5uc8bIkn1c.gif' alt='' width='1000' height='auto'></p>
+<p>The project will appear as xxxx (your GitHub username)/vchart in your GitHub account.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/OuwMbtoyPof0S8xrisscWJ3Hneb.gif' alt='' width='849' height='auto'></p>
+<h1 id="local-development-environment">Local Development Environment</h1>
+<h2 id="21-install-git">2.1 Install Git</h2>
+<p>Since the code is hosted on GitHub, we use git for version control.</p>
+<p>Git is a version control system that helps track and manage code changes in software development projects. It aids developers in recording and managing code history, making team collaboration, code version control, and code merging easier. With Git, you can track each version of every file, switching and comparing between different versions easily. Git also offers branch management features, enabling simultaneous multiple parallel development tasks.</p>
+<ul>
+<li>
+<p>Visit the Git official website: <a href="https://git-scm.com/">https://git-scm.com/</a></p>
+</li>
+<li>
+<p>Download the latest version of the Git installer.</p>
+</li>
+<li>
+<p>Run the downloaded installer and follow the prompts in the installation wizard.</p>
+</li>
+<li>
+<p>After installation, you can verify the installation by using <code>git version</code> in the command line.</p>
+</li>
+</ul>
+<pre class="codehilite"><code>HM4G2J09L6:~ xuanhun$ git version
+**git version 2.39.2 (Apple Git-143)**
+</code></pre>
+
+<h2 id="22-install-a-development-tool-recommended-vscode">2.2 Install a Development Tool (Recommended: VSCode)</h2>
+<p>VisActor predominantly uses a frontend tech stack. There are many tools available for frontend development, but we recommend using VSCode. Of course, you can use any development tool you prefer.</p>
+<p>If you're not familiar with VSCode, it might be helpful to read the official documentation: https://vscode.js.cn/docs/setup/setup-overview</p>
+<h2 id="23-install-doubao-marscode-ai-programming-assistant">2.3 Install Doubao <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Marscode AI Programming Assistant</a></h2>
+<p>Doubao MarsCode Programming Assistant is an AI coding assistant from Doubao that provides AI features represented by intelligent code completion. It supports mainstream programming languages and IDEs, offering suggestions for writing a single line of code or an entire function during development. In addition, it offers features like code explanation, unit test generation, and problem fixing, improving development efficiency and quality. For more information, please refer to the <a href="https://www.marscode.cn/home?utm_source=developer&amp;utm_medium=oss&amp;utm_campaign=visactor_a">Doubao MarsCode Programming Assistant documentation</a>.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DLaKb4PysoADAZx0x1RcYjXbnBe.gif' alt='' width='760' height='auto'></p>
+<p>With Marscode, VisActor developers can more easily understand code, write documentation, develop features, and perform unit testing. Detailed examples will be provided in specific task contribution guides.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/BQeib7E2gonoOaxLPqjcRtAYngh.gif' alt='' width='1000' height='auto'></p>
+<h2 id="24-clone-the-code-to-local">2.4 Clone the Code to Local</h2>
+<p>Enter the VChart folder and add the remote address for VChart.</p>
+<pre class="codehilite"><code>git remote add upstream https://github.com/VisActor/VChart.git
+</code></pre>
+
+<p>Get the latest source code for VChart.</p>
+<pre class="codehilite"><code>git pull upstream develop
+</code></pre>
+
+<h1 id="initialize-the-project">Initialize the Project</h1>
+<p>First, globally install <a href="https://rushjs.io/pages/intro/get_started/"><u>@microsoft/rush</u></a></p>
+<pre class="codehilite"><code>$ npm i --global @microsoft/rush
+</code></pre>
+
+<p>Then, execute the command to view the demo</p>
+<pre class="codehilite"><code># Install dependencies
+$ rush update
+# Start the demo page for vchart
+$ rush start
+# Start the demo page for react-vchart
+$ rush react
+# Start the local documentation site
+$ rush docs
+</code></pre>
+
+<h1 id="next-steps">Next Steps</h1>
+<p>At this point, you have completed the preparations for developing the code. Please continue reading the next tutorial to begin working on different types of tasks.</p>
+<p>github: <a href="https://link.juejin.cn/?target=https%3A%2F%2Fgithub.com%2FVisActor">github.com/VisActor</a></p>
+<p>VisActor WeChat subscription message (you can join the WeChat group via the subscription menu):</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/KLjmbz9TtoGzPIxarv7cmhpgnSY.gif' alt='' width='258' height='auto'></p>
+<p>VisActor official website: <a href="https://link.juejin.cn/?target=https%3A%2F%2Fwww.visactor.io%2Fvtable">www.visactor.io/</a></p>
+<p>Feishu group:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Cv9xb0zzLoUWyaxMVgccWuGPn7d.gif' alt='' width='264' height='auto'></p>
+<p>discord: https://discord.com/invite/3wPyxVyH6m</p>
+<h1 id="this-document-was-contributed-by">This Document Was Contributed By</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

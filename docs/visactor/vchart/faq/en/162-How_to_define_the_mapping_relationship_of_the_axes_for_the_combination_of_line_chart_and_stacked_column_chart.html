@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>162-How_to_define_the_mapping_relationship_of_the_axes_for_the_combination_of_line_chart_and_stacked_column_chart</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-define-the-mapping-relationship-of-the-axes-for-the-combination-of-line-chart-and-stacked-column-chart">How to define the mapping relationship of the axes for the combination of line chart and stacked column chart?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>In a column-line combination chart, there are 2 lines. I hope that the lower line and the column correspond to the left axis, and the top one corresponds to the right axis first. How should I configure it in vchart?</p>
+<h2 id="solution">Solution</h2>
+<p>In VChart, the axis and series can flexibly configure the corresponding relationship. The seriesId configured on the axis can be configured as an array of series ids or a single series id</p>
+<ol>
+<li>Divide the line data into two parts. If there are already two parts, you don’t need to process them. Assume that their IDs are line0 and line1 respectively, and the ID of the column is bar0.</li>
+<li>Set the seriesId of the left axis to ['line0','bar0'] and the seriesId of the right axis to ['line1'].</li>
+</ol>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const spec = {
+  type: 'common',
+  seriesField: 'color',
+  data: [
+    {
+      id: 'data0',
+      values: [
+        { x: 'Monday', type: 'Breakfast', y: 15 },
+        { x: 'Monday', type: 'Lunch', y: 25 },
+        { x: 'Tuesday', type: 'Breakfast', y: 12 },
+        { x: 'Tuesday', type: 'Lunch', y: 30 },
+        { x: 'Wednesday', type: 'Breakfast', y: 15 },
+        { x: 'Wednesday', type: 'Lunch', y: 24 },
+        { x: 'Thursday', type: 'Breakfast', y: 10 },
+        { x: 'Thursday', type: 'Lunch', y: 25 },
+        { x: 'Friday', type: 'Breakfast', y: 13 },
+        { x: 'Friday', type: 'Lunch', y: 20 },
+        { x: 'Saturday', type: 'Breakfast', y: 10 },
+        { x: 'Saturday', type: 'Lunch', y: 22 },
+        { x: 'Sunday', type: 'Breakfast', y: 12 },
+        { x: 'Sunday', type: 'Lunch', y: 19 }
+      ]
+    },
+    {
+      id: 'data1',
+      values: [
+        { x: 'Monday', type: 'Wine', y: 22 },
+        { x: 'Tuesday', type: 'Wine', y: 23 },
+        { x: 'Wednesday', type: 'Wine', y: 13 },
+        { x: 'Thursday', type: 'Wine', y: 12 },
+        { x: 'Friday', type: 'Wine', y: 10 },
+        { x: 'Saturday', type: 'Wine', y: 20 },
+        { x: 'Sunday', type: 'Wine', y: 10 }
+      ]
+    },
+    {
+      id: 'data2',
+      values: [
+        { x: 'Monday', type: 'Beverages', y: 132 },
+        { x: 'Tuesday', type: 'Beverages', y: 143 },
+        { x: 'Wednesday', type: 'Beverages', y: 143 },
+        { x: 'Thursday', type: 'Beverages', y: 132 },
+        { x: 'Friday', type: 'Beverages', y: 130 },
+        { x: 'Saturday', type: 'Beverages', y: 130 },
+        { x: 'Sunday', type: 'Beverages', y: 150 }
+      ]
+    }
+  ],
+  series: [
+    {
+      type: 'bar',
+      id: 'bar',
+      dataIndex: 0,
+      seriesField: 'type',
+      dataIndex: 0,
+      xField: ['x', 'type'],
+      yField: 'y'
+    },
+    {
+      type: 'line',
+      id: 'line0',
+      dataId: 'data1',
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      stack: false
+    },
+    {
+      type: 'line',
+      id: 'line1',
+      dataId: 'data2',
+      seriesField: 'type',
+      xField: 'x',
+      yField: 'y',
+      stack: false
+    }
+  ],
+  axes: [
+    { orient: 'left', seriesId: ['line0', 'bar'] },
+    { orient: 'right', seriesId: 'line1' },
+    ,
+    { orient: 'bottom', label: { visible: true }, type: 'band' }
+  ],
+  legends: {
+    visible: true,
+    orient: 'bottom'
+  }
+};
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+<li><a href="https://www.visactor.io/vchart/option/barChart-axes-linear#seriesId(string%7Cnumber%7C(string%20%7C%20number)%5B%5D)">Axis configuration</a></li>
+</ul>
+</body>
+</html>

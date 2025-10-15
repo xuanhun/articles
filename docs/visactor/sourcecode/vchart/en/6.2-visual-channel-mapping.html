@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6.2 Visual Channel Mapping</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="introduction">Introduction</h1>
+<p><strong>Visual mapping</strong> is the bridge between data and images, mapping the "data model" to the "image model" and selecting suitable visual variables for different types of data. For example, if we use a bar chart to represent the average scores of boys and girls in a class, we can map the gender attribute in the data to the color attribute in the image, and map the score attribute in the data to the height (Y-axis coordinate) attribute of the bar chart in the image. Below, we analyze how data is mapped to the final image through a simple use case.</p>
+<h1 id="mapping-process-of-graphical-elements">Mapping Process of Graphical Elements</h1>
+<h3 id="usage-example">Usage Example</h3>
+<pre class="codehilite"><code class="language-xml">const spec = {
+  type: 'line',
+  data: [
+    {
+      id: 'lineData',
+      values: [
+        { date: 'Monday', class: 'class No.1', score: 20 },
+        { date: 'Monday', class: 'class No.2', score: 30 },
+
+        { date: 'Tuesday', class: 'class No.1', score: 25 },
+        { date: 'Tuesday', class: 'class No.2', score: 28 }
+      ]
+    }
+  ],
+  seriesField: 'class',
+  xField: 'date',
+  yField: 'score',
+  point: {
+    style: {
+      fill: 'blue'
+    }
+  }
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();    
+</code></pre>
+
+<p>This example creates a line type glyph series to display 4 data points, where points with the same <code>class</code> attribute will be connected into a line. The <code>date</code> attribute is mapped to the X-axis coordinate, and the <code>score</code> attribute is mapped to the Y-axis coordinate. The effect is as follows:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/D03sbfO7ZoVYJexhYNBcTEKFn5O.gif' alt='' width='1000' height='auto' /></p>
+<h3 id="creation-of-primitives">Creation of Primitives</h3>
+<p>Below we analyze through code how <code>renderSync()</code> parses the configuration <code>spec</code> and generates various primitives on the graph. Overall, <code>renderSync()</code> includes the following three stages: pre-rendering, rendering, and post-rendering.</p>
+<pre class="codehilite"><code class="language-Typescript">  // packages/vchart/src/core/vchart.ts
+  protected ***_renderSync*** = (option: IVChartRenderOption = {}) =&gt; {
+    const self = this as unknown as IVChart;
+    if (!this.***_beforeRender***(option)) {
+      return self;
+    }
+    this._compiler?.***render***(option.morphConfig);
+    this.***_afterRender***();
+    return self;
+  };    
+</code></pre>
+
+<p>The rendering process belongs to the domain of <code>VGrammar</code>, and after rendering, the main focus is on updating the animation state. We mainly focus on the <strong>pre-render preparation</strong> related to the graphics, including initializing chart configurations, instantiating charts, and compiling rendering instructions.    </p>
+<h5 id="1-initialize-chart-configurations">1. Initialize Chart Configurations</h5>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ERfmbtkInownmyxZQQnc5guYnWe.gif' alt='' width='1000' height='auto' /></p>
+<pre class="codehilite"><code class="language-Typescript">  // packages/vchart/src/core/vchart.ts
+  private ***_initChartSpec***(spec: any, actionSource: VChartRenderActionSource) {
+    // 如果用户注册了函数，在配置中替换相应函数名为函数内容
+    if (VChart.***getFunctionList***() &amp;&amp; VChart.***getFunctionList***().length) {
+      spec = ***functionTransform***(spec, VChart);
+    }
+    this._spec = spec;
+    // 创建图表配置转换器，并转换为common chart的配置
+    if (!this._chartSpecTransformer) {
+      this._chartSpecTransformer = Factory.***createChartSpecTransformer***(
+        this._spec.type,
+        this.***_getChartOption***(this._spec.type)
+      );
+    }
+    this._chartSpecTransformer?.***transformSpec***(this._spec);
+    // 转换模型配置
+    this._specInfo = this._chartSpecTransformer?.***transformModelSpec***(this._spec);
+  }    
+</code></pre>
+
+<p>First, replace the function name registered by the user with the corresponding function entity. Then, according to the chart type, create the corresponding chart configuration converter to convert the configuration of this type of chart into the configuration of the <code>common</code> type chart. This includes creating a default <code>series</code> based on the chart type and completing the user-defined <code>series</code> configuration:</p>
+<pre class="codehilite"><code class="language-xml">    // packages/vchart/src/chart/cartesian/cartesian-transformer.ts
+    const defaultSeriesSpec = this.***_getDefaultSeriesSpec***(spec);
+    if (!spec.series || spec.series.length === 0) { // 没有用户定义的系列 采用默认
+      spec.series = [defaultSeriesSpec];
+    } else {
+      spec.series.***forEach***((s: ISeriesSpec) =&gt; {
+        if (!this.***_isValidSeries***(s.type)) { // 判断用户定义系列是否有效
+          return;
+        }
+        Object.***keys***(defaultSeriesSpec).***forEach***(k =&gt; { // 补全配置
+          if (!(k in s)) {
+            s[k] = defaultSeriesSpec[k];
+          }
+        });
+      });
+    }    
+</code></pre>
+
+<h5 id="2-instantiate-the-chart">2. Instantiate the Chart</h5>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/ReF1bJdAboNSp9xF7MzckFuqnfe.gif' alt='' width='1000' height='auto' /></p>
+<p>Next, create a chart object of the corresponding type. The chart object here does not refer to the <code>VChart</code> object created below. <code>VChart</code> encapsulates the chart, serving as the entry point for user operations, responsible for global management and external interfaces of the chart;</p>
+<pre class="codehilite"><code class="language-xml">const vchart = new VChart(spec, { dom: CONTAINER_ID });    
+</code></pre>
+
+<p>The instantiated chart here is responsible for the specific chart construction (such as creating and managing series, components) and internal logic processing (managing data flow, global mapping, graphic element states, etc.).    </p>
+<pre class="codehilite"><code class="language-Typescript">  // packages/vchart/src/core/vchart.ts
+  private ***_initChart***(spec: any) {
+    // 创建真正的图表对象
+    const chart = Factory.***createChart***(spec.type, spec, this.***_getChartOption***(spec.type));
+    this._chart = chart;
+    // 进行图表初始化
+    this._chart.***setCanvasRect***(this._currentSize.width, this._currentSize.height);
+    this._chart.***created***();
+    this._chart.***init***();
+    this._event.***emit***(ChartEvent.initialized, {
+      chart,
+      vchart: this
+    });
+  }    
+</code></pre>
+
+<p>The core steps are <code>created</code> and <code>init</code>, the former creates various elements according to <code>spec</code>, such as <code>region</code>, <code>series</code>, <code>components</code>, and the latter initializes each element. We focus on the graphic elements in the creation of <code>series</code>.    </p>
+<pre class="codehilite"><code class="language-xml">  // packages/vchart/src/series/base/base-series.ts
+  ***created***(): void {
+    ...
+    this.***initMark***();
+    ...
+  }    
+</code></pre>
+
+<p>Since the type of our chart is <code>line</code>, there is a default <code>line</code> series. We look at the implementation of <code>initMark</code> in the <code>line-series</code>:    </p>
+<pre class="codehilite"><code class="language-xml">  // packages/vchart/src/series/line/line.ts
+  ***initMark***(): void {
+    ...
+    const seriesMark = this._spec.seriesMark ?? *'line'*;
+    this.***initLineMark***(progressive, seriesMark === *'line'*);
+    this.***initSymbolMark***(progressive, seriesMark === *'point'*);
+  }    
+</code></pre>
+
+<p>It was found that indeed the <code>line</code> primitives and <code>symbol</code> primitives continued to be created:</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Gatvbh3ZjoiplrxHsmxcIRiqn0P.gif' alt='' width='878' height='auto' /></p>
+<p>After a series of function calls (<code>LineLikeSeriesMixin.initLineMark</code> -&gt; <code>BaseSeries._createMark</code> -&gt; <code>BaseModel._createMark</code> -&gt; <code>Factory.createMark</code>), it finally reaches the constructor of the corresponding graphic element, which is the "implementation of specific graphic elements" mentioned earlier.</p>
+<h5 id="3-compile-rendering-instructions"><strong>3. Compile Rendering Instructions</strong></h5>
+<p>Compile various <code>VChart</code> models (<code>region</code>, <code>series</code>, <code>component</code>) into renderable <code>VGrammar</code> syntax elements, involving the content of the <code>VGrammar</code> syntax layer, which will not be analyzed in detail.</p>
+<h3 id="mapping-of-graphic-element-visual-configuration">Mapping of Graphic Element Visual Configuration</h3>
+<p>In the <code>BaseMark</code> class, graphic elements achieve the mapping from data to visual channels through a series of methods and logic. This can be roughly divided into two processes: the storage of attributes and the calculation of attribute values. The former simply parses the user-defined <code>spec</code> and stores it in the style sheets of various states of the graphic element, during which some simple conversions are made; the latter is where the user of the graphic element truly obtains and calculates specific attribute values when laying out the graphic element.</p>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/TY20bP0vooVKUExiYCrc19uVnRT.gif' alt='' width='638' height='auto' /></p>
+<h4 id="step1-store-style">Step1 Store Style</h4>
+<h5 id="1-initialize-style">1. Initialize Style</h5>
+<p>Initialize the default style of the graphic element, call the <code>setStyle</code> method to set the default value for the <code>normal</code> state:</p>
+<pre class="codehilite"><code class="language-xml">private ***_initStyle***(): void {
+  const defaultStyle = this.***_getDefaultStyle***();
+  this.***setStyle***(defaultStyle, *'normal'*, 0);
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>Default styles include <code>visible</code>: true, <code>x</code>: 0, <code>y</code>: 0, etc.    </p>
+</li>
+<li>
+<p>These default values ensure that the elements render correctly even without user-defined styles.    </p>
+</li>
+</ul>
+<p>The <code>initStyleWithSpec</code> method initializes styles based on the user-provided <code>spec</code>:    </p>
+<pre class="codehilite"><code class="language-Typescript">initStyleWithSpec(spec: IMarkSpec&lt;T&gt;, key?: string) {
+  if (!spec) return;
+
+  if (isValid(spec.id)) this._userId = spec.id;
+  if (isBoolean(spec.interactive)) this._markConfig.interactive = spec.interactive;
+  if (isValid(spec.zIndex)) this._markConfig.zIndex = spec.zIndex;
+  if (isBoolean(spec.visible)) this.setVisible(spec.visible);
+
+  this._initSpecStyle(spec, this.stateStyle, key);
+}    
+</code></pre>
+
+<ul>
+<li>
+<p>Parse user-defined attributes such as <code>interactive</code>, <code>zIndex</code>, <code>visible</code>, etc.</p>
+</li>
+<li>
+<p>Call the <code>_initSpecStyle</code> method to handle <code>style</code> and <code>state</code>. This part mainly involves calling <code>setStyle</code> to set the corresponding style for each state (including the initial <code>normal</code> state) and storing the state information in the state manager. We explain the state in detail.</p>
+</li>
+</ul>
+<p>The above methods all call the core function <code>setStyle</code>, which is used to set styles for specified states:</p>
+<pre class="codehilite"><code class="language-Typescript">  ***setStyle***&lt;U extends keyof T&gt;(
+    style: Partial&lt;IMarkStyle&lt;T&gt;&gt;, // 样式
+    state: StateValueType = *'normal'*, // 状态
+    level: number = 0, // 状态层级 当处于不同状态产生冲突时 根据层级设置样式
+    stateStyle = this.stateStyle // 存储状态样式
+  ): void {
+    if (***isNil***(style)) {
+      return;
+    }
+    if (stateStyle[state] === undefined) {
+      stateStyle[state] = {};
+    }
+    const isUserLevel = this.***isUserLevel***(level);
+    Object.***keys***(style).***forEach***((attr: string) =&gt; {
+      let attrStyle = style[attr] as MarkInputStyle&lt;T[U]&gt;;
+      if (***isNil***(attrStyle)) {
+        return;
+      }
+      // 过滤和转化样式
+      attrStyle = this.***_filterAttribute***(attr as any, attrStyle, state, level, isUserLevel, stateStyle);
+      // 设置样式
+      this.***setAttribute***(attr as any, attrStyle, state, level, stateStyle);
+      /*  在setAttribute中设置属性计算方式/样式
+          stateStyle[state][attr] = {
+            level,
+            style,
+            referer: undefined
+          };
+      */
+    });
+  }    
+</code></pre>
+
+<h5 id="2-filter-and-transform-styles">2. Filter and Transform Styles</h5>
+<p>The <code>_filterAttribute</code> called in <code>setStyle</code> is used to filter and transform individual style attributes, ensuring that the style attributes conform to internal usage standards. These transformations are relatively simple, as noted in the comments.</p>
+<pre class="codehilite"><code class="language-Typescript">  protected ***_filterAttribute***&lt;U extends keyof T&gt;(
+    attr: U,
+    style: MarkInputStyle&lt;T[U]&gt;,
+    state: StateValueType,
+    level: number,
+    isUserLevel: boolean,
+    stateStyle = this.stateStyle
+  ): StyleConvert&lt;T[U]&gt; {
+    // *** **将visual spec转换为 scale 类型的 mark style** ***
+    // 用于后续计算属性值
+    let newStyle = this.***_styleConvert***(style);
+
+    if (isUserLevel) {
+      switch (attr) {
+        case *'angle'*:
+          // 角度值转弧度值
+          newStyle = this.***convertAngleToRadian***(newStyle);
+          break;
+        case *'innerPadding'*:
+        case *'outerPadding'*:
+          // VRender 的 padding 定义基于 centent-box 盒模型，默认正方向是向外扩，与 VChart 不一致。这里将 padding 符号取反
+          newStyle = this.***_transformStyleValue***(newStyle, (value: number) =&gt; -value);
+          break;
+        case *'curveType'*:
+          // 根据direction返回'*monotoneY*'(*Direction.horizontal*)或'*monotoneX*'
+          newStyle = this.***_transformStyleValue***(newStyle, (value: string) =&gt;
+            ***curveTypeTransform***(value, (this._option.model as any).direction)
+          );
+          break;
+      }
+    }
+    return newStyle;
+  }    
+</code></pre>
+
+<p>It is particularly important to note that in <code>styleConvert</code>, some styles that need to be converted to <code>scale</code> type are transformed for subsequent attribute value calculations. For example, convert <code>yField: 'score'</code> to:    </p>
+<pre class="codehilite"><code class="language-xml">{
+  scale, // 映射对象，用于数据到视觉通道的映射，可以理解为一个函数，输入数据对应的值，输出视觉通道的值
+  field: 'score', // 数据字段名，表示映射的输入字段。
+  changeDomain: true // 布尔值，表示是否允许动态更新比例尺的定义域（domain）
+};    
+</code></pre>
+
+<p>This is a <code>scale</code> type style, where the first field <code>scale</code> calculates the value of the data corresponding field <code>datum['score']</code> as the <code>y</code> coordinate of the graphic element.    </p>
+<h4 id="step2-calculate-attribute-values">Step2 Calculate Attribute Values</h4>
+<p><code>BaseMark</code> provides an interface <code>getAttribute</code> for its users to calculate and obtain attribute values based on actual data.    </p>
+<pre class="codehilite"><code class="language-xml">  ***getAttribute***&lt;U extends keyof T&gt;(key: U, datum: Datum, state: StateValueType = *'normal'*, opt?: IAttributeOpt) {
+    return this.***_computeAttribute***(key, state)(datum, opt);
+  }    
+</code></pre>
+
+<p>Here, the <code>compteAttribute(key, state)</code> returns a function for calculating an attribute, where <code>key</code> is the attribute name and <code>state</code> is the current state; <code>(datum, opt)</code> is used as the parameter for this function, returning the calculation result, consistent with our above description of <strong>“the method of storing attribute calculations”</strong>.    </p>
+<pre class="codehilite"><code class="language-Typescript">  protected ***_computeAttribute***&lt;U extends keyof T&gt;(key: U, state: StateValueType) {
+    let stateStyle = this.stateStyle[state]?.[key];
+    if (!stateStyle) {
+      stateStyle = this.stateStyle.normal[key];
+    }
+    const baseValueFunctor = this.***_computeStateAttribute***(stateStyle, key, state);
+    const hasPostProcess = ***isFunction***(stateStyle?.***postProcess***);
+    const hasExCompute = key in this._computeExChannel;
+    // ... 
+    // 叠加后处理函数和额外计算函数
+    // ...
+    return baseValueFunctor;
+  }    
+</code></pre>
+
+<p>Continuing to delve into <code>computeStateAttribute</code>, you will find that an attribute calculation function is constructed here. The input of this function is <code>(datum, opt)</code>, and the output is the calculated attribute value. If the attribute value is a constant (unrelated to the data, fixed on <code>spec</code>), then this constructed function directly returns <code>style</code>; what really needs to be calculated are some complex styles and mappings from data to visuals~~(recycling theme)~~.</p>
+<pre class="codehilite"><code class="language-Typescript">  protected ***_computeStateAttribute***&lt;U extends keyof T&gt;(stateStyle: any, key: U, state: StateValueType) {
+    if (!stateStyle) { // 处理空样式
+      return (datum: Datum, opt: IAttributeOpt) =&gt; undefined as any;
+    }
+    if (stateStyle.referer) { // 处理引用样式
+      return stateStyle.referer.***_computeAttribute***(key, state);
+    }
+    if (!stateStyle.style) { // 处理空样式
+      return (datum: Datum, opt: IAttributeOpt) =&gt; stateStyle.style;
+    }
+    // =====================================================================
+    // **处理函数样式**：如果 stateStyle.style 是函数，调用该函数计算属性值。
+    if (typeof stateStyle.style === *'function'*) {
+      return (datum: Datum, opt: IAttributeOpt) =&gt;
+        stateStyle.***style***(datum, this._attributeContext, opt, this.***getDataView***());
+    }
+    // **渐变色处理**，支持各个属性回调
+    if (GradientType.***includes***(stateStyle.style.gradient)) {
+      return this.***_computeGradientAttr***(stateStyle.style);
+    }
+    // **内外描边处理**，支持各个属性回调
+    if ([*'outerBorder'*, *'innerBorder'*].***includes***(key as string)) {
+      return this.***_computeBorderAttr***(stateStyle.style);
+    }
+    // **处理映射样式**：如果 stateStyle.style 包含映射关系（scale），根据数据字段映射值。
+    if (***isValidScaleType***(stateStyle.style.scale?.type)) {
+      return (datum: Datum, opt: IAttributeOpt) =&gt; {
+        let data = datum;
+        if (this.model.modelType === *'series'* &amp;&amp; (this.model as ISeries).***getMarkData***) {
+          data = (this.model as ISeries).***getMarkData***(datum);
+        }
+        return stateStyle.style.scale.***scale***(data[stateStyle.style.field]);
+      };
+    }
+    // =====================================================================
+    // **处理常量样式**：如果 stateStyle.style 是常量值，直接返回该值。
+    return (datum: Datum, opt: IAttributeOpt) =&gt; {
+      return stateStyle.style;
+    };
+  }    
+</code></pre>
+
+<p>Emphasize the <code>scale</code> style, which includes the data-to-visual mapping part. Continuing with the above example, we have already constructed a <code>scale</code> style:    </p>
+<pre class="codehilite"><code class="language-xml">style: {
+  scale, 
+  field: 'score',
+  changeDomain: true,
+}    
+</code></pre>
+
+<p>If we need to calculate the <code>y</code> coordinate of the graphic element, first obtain the data bound to the graphic element (see Chapter 5 VChart Data Processing), and then use the <code>scale</code> mapping object to input <code>data['score']</code> to get the corresponding <code>y</code> value. For more information about <code>scale</code>, see Chapter 7 VChart Scale.</p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

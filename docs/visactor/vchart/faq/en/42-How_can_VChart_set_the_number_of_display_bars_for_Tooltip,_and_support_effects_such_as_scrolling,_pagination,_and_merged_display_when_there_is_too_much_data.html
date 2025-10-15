@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>42-How_can_VChart_set_the_number_of_display_bars_for_Tooltip,_and_support_effects_such_as_scrolling,_pagination,_and_merged_display_when_there_is_too_much_data</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-can-vchart-set-the-number-of-display-bars-for-tooltip-and-support-effects-such-as-scrolling-pagination-and-merged-display-when-there-is-too-much-data">How can VChart set the number of display bars for Tooltip, and support effects such as scrolling, pagination, and merged display when there is too much data?</h1>
+<h1 id="question-description">Question Description</h1>
+<p>Seemly to（ https://visactor.io/vchart/demo/line-chart/null-value-line ）I hope Tooltip can display multiple lines
+<img alt="demo" src="/vchart/faq/98-0.png" /></p>
+<h1 id="solution">Solution</h1>
+<p>The solutions for different chart libraries are different. Based on the demo you provided, you can directly modify the HTML tooltip style in VChart to achieve this
+<img alt="demo" src="/vchart/faq/98-1.png" /></p>
+<h1 id="code-example">Code Example</h1>
+<pre class="codehilite"><code class="language-ts">{
+  type: &quot;area&quot;,
+  data: {
+    values: [
+      { type: &quot;Nail polish&quot;, country: &quot;Africa&quot;, value: 4229 },
+      { type: &quot;Nail polish&quot;, country: &quot;EU&quot;, value: 4376 },
+      { type: &quot;Nail polish&quot;, country: &quot;China&quot;, value: 3054 },
+      { type: &quot;Nail polish&quot;, country: &quot;USA&quot;, value: 12814 },
+      { type: &quot;Eyebrow pencil&quot;, country: &quot;Africa&quot;, value: 3932 },
+      { type: &quot;Eyebrow pencil&quot;, country: &quot;EU&quot;, value: 3987 },
+      { type: &quot;Eyebrow pencil&quot;, country: &quot;China&quot;, value: 5067 },
+      { type: &quot;Eyebrow pencil&quot;, country: &quot;USA&quot;, value: 13012 },
+      { type: &quot;Rouge&quot;, country: &quot;Africa&quot;, value: 5221 },
+      { type: &quot;Rouge&quot;, country: &quot;EU&quot;, value: 3574 },
+      { type: &quot;Rouge&quot;, country: &quot;China&quot;, value: 7004 },
+      { type: &quot;Rouge&quot;, country: &quot;USA&quot;, value: 11624 },
+      { type: &quot;Lipstick&quot;, country: &quot;Africa&quot;, value: 9256 },
+      { type: &quot;Lipstick&quot;, country: &quot;EU&quot;, value: 4376 },
+      { type: &quot;Lipstick&quot;, country: &quot;China&quot;, value: 9054 },
+      { type: &quot;Lipstick&quot;, country: &quot;USA&quot;, value: 8814 },
+      { type: &quot;Eyeshadows&quot;, country: &quot;Africa&quot;, value: 3308 },
+      { type: &quot;Eyeshadows&quot;, country: &quot;EU&quot;, value: 4572 },
+      { type: &quot;Eyeshadows&quot;, country: &quot;China&quot;, value: 12043 },
+      { type: &quot;Eyeshadows&quot;, country: &quot;USA&quot;, value: 12998 },
+      { type: &quot;Eyeliner&quot;, country: &quot;Africa&quot;, value: 5432 },
+      { type: &quot;Eyeliner&quot;, country: &quot;EU&quot;, value: 3417 },
+      { type: &quot;Eyeliner&quot;, country: &quot;China&quot;, value: 15067 },
+      { type: &quot;Eyeliner&quot;, country: &quot;USA&quot;, value: 12321 },
+      { type: &quot;Foundation&quot;, country: &quot;Africa&quot;, value: 13701 },
+      { type: &quot;Foundation&quot;, country: &quot;EU&quot;, value: 5231 },
+      { type: &quot;Foundation&quot;, country: &quot;China&quot;, value: 10119 },
+      { type: &quot;Foundation&quot;, country: &quot;USA&quot;, value: 10342 },
+      { type: &quot;Lip gloss&quot;, country: &quot;Africa&quot;, value: 4008 },
+      { type: &quot;Lip gloss&quot;, country: &quot;EU&quot;, value: 4572 },
+      { type: &quot;Lip gloss&quot;, country: &quot;China&quot;, value: 12043 },
+      { type: &quot;Lip gloss&quot;, country: &quot;USA&quot;, value: 22998 },
+      { type: &quot;Mascara&quot;, country: &quot;Africa&quot;, value: 18712 },
+      { type: &quot;Mascara&quot;, country: &quot;EU&quot;, value: 6134 },
+      { type: &quot;Mascara&quot;, country: &quot;China&quot;, value: 10419 },
+      { type: &quot;Mascara&quot;, country: &quot;USA&quot;, value: 11261 }
+    ]
+  },
+  tooltip: {
+    className: &quot;tooltip&quot;
+  },
+  title: {
+    visible: true,
+    text: &quot;100% stacked area chart of cosmetic products sales&quot;
+  },
+  percent: true,
+  xField: &quot;type&quot;,
+  yField: &quot;value&quot;,
+  seriesField: &quot;country&quot;,
+  legends: [{ visible: true, position: &quot;middle&quot;, orient: &quot;bottom&quot; }],
+  axes: [
+    {
+      orient: &quot;left&quot;,
+      label: {
+        formatMethod(val) {
+          return `${(val * 100).toFixed(2)}%`;
+        }
+      }
+    }
+  ]
+}
+</code></pre>
+
+<h1 id="results">Results</h1>
+<p>Online demo：https://codesandbox.io/s/tooltip-multirow-n3y7d3
+<img alt="result" src="/vchart/faq/98-2.png" /></p>
+<h1 id="related-documentation">Related Documentation</h1>
+<p>Tooltip Tutorial：https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Tooltip
+Related api：https://visactor.io/vchart/option/barChart#tooltip.visible
+github：https://github.com/VisActor/VChart</p>
+</body>
+</html>

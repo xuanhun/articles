@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4. 如何对数据指定字段进行排序</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>如何对数据指定字段进行排序</br></p>
+<h2 id="_2">问题描述</h2>
+<h2 id="_3">对于下面这个折线图，时间排序只能在外部排吗？</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/QHuIbiPwUoDv09x2RCYc4e3Nneg.gif' alt='' width='1554' height='1098'></p>
+<h2 id="_4">解决方案</h2>
+<p>数据配置的时候可以根据字段进行排序，字段类型分为离散类型和连续类型，需要根据字段类型配置排序以及排序顺序</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/VITRbqgDyox6ekxn8jQcjenWnMe.gif' alt='' width='2850' height='1328'></p>
+<h2 id="_5">代码示例</h2>
+<pre class="codehilite"><code>const spec = {
+  type: 'line',
+  data: {
+    values: [
+      { date: '2023-01-01', type: 'Product A', value: 99.9 },
+      { date: '2023-01-02', type: 'Product C', value: 93.4 },
+      { date: '2023-01-01', type: 'Product B', value: 96.6 },
+      { date: '2023-01-02', type: 'Product A', value: 96.7 },
+      { date: '2023-01-02', type: 'Product B', value: 91.1 },
+      { date: '2023-01-03', type: 'Product A', value: 100.2 },
+      { date: '2023-01-03', type: 'Product B', value: 99.4 },
+      { date: '2023-01-03', type: 'Product C', value: 91.7 },
+      { date: '2023-01-04', type: 'Product A', value: 104.7 },
+      { date: '2023-01-05', type: 'Product B', value: 96 },
+      { date: '2023-01-05', type: 'Product C', value: 92.3 },
+      { date: '2023-01-06', type: 'Product A', value: 95.6 },
+      { date: '2023-01-06', type: 'Product B', value: 89.1 },
+      { date: '2023-01-09', type: 'Product B', value: 100.6},
+      { date: '2023-01-09', type: 'Product C', value: 103.8},
+      { date: '2023-01-04', type: 'Product C', value: 93.1 },
+      { date: '2023-01-04', type: 'Product B', value: 108.1 },
+      { date: '2023-01-07', type: 'Product A', value: 95.3 },
+      { date: '2023-01-07', type: 'Product B', value: 89.2 },
+      { date: '2023-01-07', type: 'Product C', value: 95.7 },
+      { date: '2023-01-08', type: 'Product A', value: 96.1 },
+      { date: '2023-01-08', type: 'Product B', value: 97.6 },
+      { date: '2023-01-09', type: 'Product A', value: 96.1 },
+      { date: '2023-01-10', type: 'Product A', value: 101.6 },
+      { date: '2023-01-10', type: 'Product B', value: 108.3 },
+      { date: '2023-01-10', type: 'Product C', value: 108.9 }
+    ],
+    fields: {
+      date: {
+        type: 'ordinal', // 数据维度 date 的类型是离散类型
+        sortIndex: 1 // 数据会按照 date 进行排序
+      },
+    }
+  },
+  xField: 'date',
+  yField: 'value',
+  seriesField: 'type',
+  point: {
+    visible: false
+  },
+  line: {
+    style: {
+      lineWidth: 2
+    }
+  },
+  legends: { visible: true },
+  axes: [
+    {
+      orient: 'bottom',
+      // paddingInner: 1,
+      // paddingOuter: 0,
+      trimPadding: true
+    }
+  ]
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_6">结果展示</h2>
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/FYI1byDssoXjUwxXKfxcsbDdn1f.gif' alt='' width='1450' height='1046'></p>
+<h2 id="related-documents">Related documents</h2>
+<p>Related configuration: https://www.visactor.io/vchart/option/barChart<em>#data(IDataType%7CIDataType%5B%5D).IDataValues.fields</em></br>
+  GitHub: https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>38. VTable表格组件如何在透视表中渐进加载子节点</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>VTable表格组件如何在透视表中渐进加载子节点？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>使用VTable表格组件，如何在透视表中渐进加载子节点，点击父节点的展开按钮后，再动态加载子节点的信息</br></p>
+<h2 id="_3">解决方案</h2>
+<p>VTable提供<code>setTreeNodeChildren</code>API，用来更新透视结构某个节点的子节点状态，可以用来实现渐进加载功能</br>
+1. 维度树配置</br>
+正常情况下，维度树（columnTree/rowTree）中，<code>children</code>属性为一个数组，为该节点的子节点信息</br></p>
+<pre class="codehilite"><code>{
+    dimensionKey: 'name',
+    value: 'a',
+    children: [
+        {
+            dimensionKey: 'name-1',
+            value: 'a-1',
+            children: [
+                // ......
+            ]
+        },
+        // ......
+    ]
+}&lt;/br&gt;
+</code></pre>
+
+<p>如何需要动态加载子节点信息，可以配置<code>children</code>属性为<code>true</code>，此时该节点在表格中会作为父节点显示，但是点击单元格内的展开按钮，会触发相关事件，但是表格不会有任何主动变化。</br>
+1. 监听事件</br>
+展开按钮点击后，会触发<code>VTable.ListTable.EVENT_TYPE.TREE_HIERARCHY_STATE_CHANGE</code>事件，需要监听这个事件，使用<code>setTreeNodeChildren</code>API更新子节点信息和对应增加的数据</br></p>
+<pre class="codehilite"><code>const { TREE_HIERARCHY_STATE_CHANGE } = VTable.ListTable.EVENT_TYPE;
+instance.on(TREE_HIERARCHY_STATE_CHANGE, args =&gt; {
+  if (args.hierarchyState === VTable.TYPES.HierarchyState.expand &amp;&amp; !Array.isArray(args.originData.children)) {
+    setTimeout(() =&gt; {
+      const newData = [
+        // ......
+      ];
+      const children = [
+        {
+          dimensionKey: 'name-1',
+          value: 'a-1',
+        },
+        {
+          dimensionKey: 'name-1',
+          value: 'a-2'
+        }
+      ];
+      instance.setTreeNodeChildren(children, newData, args.col, args.row);
+    }, 200);
+  }
+});&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<p>demo：https://visactor.io/vtable/demo/table-type/pivot-table-tree-lazy-load</br></p>
+<h2 id="_5">相关文档</h2>
+<p>相关api：https://visactor.io/vtable/option/PivotTable#rowHierarchyType('grid'%20%7C%20'tree')</br>
+教程：https://visactor.io/vtable/guide/table_type/Pivot_table/pivot_table_tree</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>25. 使用VTable表格组件的自定义渲染写法时，怎么让文本根据单元格宽度自动省略？</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>使用VTable表格组件的自定义渲染写法时，怎么让文本根据单元格宽度自动省略？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>产品中使用到了VTable的自定义渲染，其中单元格包括了icon和text元素，期望在初始时列宽可以根据内容自动计算，如果手动拖拽列宽当缩小列宽时文字可以自动省略。而不是按钮悬浮在文字上，不知道怎么写才可以缩小列宽使文字变成<code>...</code>省略符</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/M1kcbqs1ZoIwcDxBgvych63unGb.gif' alt='' width='934' height='764'></p>
+<h2 id="_3">解决方案</h2>
+<p>我们使用VTable提供的customLayout写法，这种自定义写法可以自动布局，且有自动测量宽度使适应单元格宽度的效果。具体写法如下：</br></p>
+<pre class="codehilite"><code>  customLayout: (args) =&gt; {
+        const { table,row,col,rect } = args;
+        const record = table.getRecordByCell(col,row);
+        const  {height, width } = rect ?? table.getCellRect(col,row);
+        const container = new VTable.CustomLayout.Group({
+          height,
+          width,
+          display: 'flex',
+          flexWrap:'no-wrap',
+          alignItems: 'center',
+          justifyContent: 'flex-front'
+       });
+        const bloggerAvatar = new VTable.CustomLayout.Image({
+          id: 'icon0',
+          width: 20,
+          height: 20,
+          image:record.bloggerAvatar,
+          cornerRadius: 10,
+        });
+        container.add(bloggerAvatar);
+        const bloggerName = new VTable.CustomLayout.Text({
+          text:record.bloggerName,
+          fontSize: 13,
+          x:20,
+          fontFamily: 'sans-serif',
+          fill: 'black',
+          maxLineWidth:width===null?undefined:width-20+1
+        });
+        container.add(bloggerName);
+        return {
+          rootContainer: container,
+          renderDefault: false,
+        };
+      }&lt;/br&gt;
+</code></pre>
+
+<p>customLayout需要返回一个rootContainer，通常是一个Group类型的对象来作为承载其他内容的容器。这里这点设置了<code>flexWrap</code>内部元素（icon和text）不换行，水平和垂直对齐方式<code>alignItems</code> 和 <code>justifyContent</code>。Group中有个图片和文本<code>Image</code>和<code>Text</code>。如果需要文本空间被压缩是能自动省略出现...，则需要配置上<code>maxLineWidth</code>，这里有个特殊的点是，当<code>column</code>设置的<code>width</code>是<code>'auto'</code> 的情况下，<code>customLayout</code>函数接收到的参数单元格宽度<code>width</code>的值是<code>null</code>，所以这里需要判断是否为<code>null</code>，如果<code>null</code>则设置<code>maxLineWidth</code>为<code>undefined</code>来让单元格的宽度自动撑开，非<code>null</code>的话那就根据<code>width</code>这个值来设置<code>maxLineWidth</code>，这里减掉20是避让了图片的宽度，另外+1是缓冲值可以忽略。</br></p>
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>  const option = {
+    columns:[
+      {
+        field: 'bloggerId',
+        title:'order number'
+      }, 
+      {
+        field: 'bloggerName',
+        title:'anchor nickname',
+        width:'auto',
+        style:{
+          fontFamily:'Arial',
+          fontWeight:500
+        },
+      customLayout: (args) =&gt; {
+        const { table,row,col,rect } = args;
+        const record = table.getRecordByCell(col,row);
+        const  {height, width } = rect ?? table.getCellRect(col,row);
+        const container = new VTable.CustomLayout.Group({
+          height,
+          width,
+          display: 'flex',
+          flexWrap:'no-wrap',
+          alignItems: 'center',
+          justifyContent: 'flex-front'
+       });
+        const bloggerAvatar = new VTable.CustomLayout.Image({
+          id: 'icon0',
+          width: 20,
+          height: 20,
+          image:record.bloggerAvatar,
+          cornerRadius: 10,
+        });
+        container.add(bloggerAvatar);
+        const bloggerName = new VTable.CustomLayout.Text({
+          text:record.bloggerName,
+          fontSize: 13,
+          x:20,
+          fontFamily: 'sans-serif',
+          fill: 'black',
+          maxLineWidth:width===null?undefined:width-20+1
+        });
+        container.add(bloggerName);
+        return {
+          rootContainer: container,
+          renderDefault: false,
+        };
+      }
+    },
+    {
+      field: 'fansCount',
+      title:'fansCount',
+      fieldFormat(rec){
+        return rec.fansCount + 'w'
+      },
+      style:{
+        fontFamily:'Arial',
+        fontSize:12,
+        fontWeight:'bold'
+      }
+    }, 
+    ],
+   records:[
+   {
+      'bloggerId': 1,
+      &quot;bloggerName&quot;: &quot;Virtual Anchor Xiaohua duoduo&quot;,
+      &quot;bloggerAvatar&quot;: &quot;https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/custom-render/flower.jpg&quot;,
+      &quot;introduction&quot;: &quot;Hi everyone, I am Xiaohua, the virtual host. I am a little fairy who likes games, animation and food. I hope to share happy moments with you through live broadcast.&quot;,
+      &quot;fansCount&quot;: 400,
+      &quot;worksCount&quot;: 10,
+      &quot;viewCount&quot;: 5,
+      &quot;city&quot;: &quot;Dream City&quot;,
+      &quot;tags&quot;: [&quot;game&quot;, &quot;anime&quot;, &quot;food&quot;]
+    },
+    {
+      'bloggerId': 2,
+      &quot;bloggerName&quot;: &quot;Virtual anchor little wolf&quot;,
+      &quot;bloggerAvatar&quot;: &quot;https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/custom-render/wolf.jpg&quot;,
+      &quot;introduction&quot;: &quot;Hello everyone, I am the virtual anchor Little Wolf. I like music, travel and photography, and I hope to explore the beauty of the world with you through live broadcast.&quot;,
+      &quot;fansCount&quot;: 800,
+      &quot;worksCount&quot;: 20,
+      &quot;viewCount&quot;: 15,
+      &quot;city&quot;: &quot;City of Music&quot;,
+      &quot;tags&quot;: [&quot;music&quot;, &quot;travel&quot;, &quot;photography&quot;]
+      }
+    ],
+    defaultRowHeight:30
+  };
+
+const tableInstance = new VTable.ListTable(document.getElementById(CONTAINER_ID),option);
+window['tableInstance'] = tableInstance;&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>直接将示例代码中代码粘贴到官网编辑器中即可呈现。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/UdDMbnncsoQDpNxvljUclN9UnmJ.gif' alt='' width='388' height='142'></p>
+<h2 id="_6">相关文档</h2>
+<p>customLayout用法教程：https://visactor.io/vtable/guide/custom_define/custom_layout</br>
+customLayout用法demo：https://visactor.io/vtable/demo/custom-render/custom-cell-layout</br>
+相关api：https://visactor.io/vtable/option/ListTable-columns-text#customLayout</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>

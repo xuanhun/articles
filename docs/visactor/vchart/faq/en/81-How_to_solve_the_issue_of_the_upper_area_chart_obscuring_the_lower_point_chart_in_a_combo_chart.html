@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to deal with the issue of an uppermost area chart obscuring the lowermost scatter chart in a composite chart?</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="question-title">Question Title</h1>
+<p>How to deal with the issue of an uppermost area chart obscuring the lowermost scatter chart in a composite chart?</br></p>
+<h1 id="question-description">Question Description</h1>
+<p>I have created a composite chart using VChart, which includes two sub-graphs, both of type area chart. Because the second sub-graph is plotted on top of the first one, its area covers the data points of the first sub-graph, making it impossible for the data points of the first sub-graph to trigger hover and click events. I would like to ask if there is any way to solve this problem?</br>
+The chart configuration goes as follows:</br></p>
+<pre class="codehilite"><code>const spec = {
+&quot;data&quot;: [...],
+&quot;series&quot;: [
+{
+&quot;id&quot;: &quot;area&quot;,
+&quot;type&quot;: &quot;area&quot;,
+&quot;xField&quot;: &quot;time&quot;,
+&quot;yField&quot;: &quot;value&quot;,
+&quot;seriesField&quot;: &quot;groupName&quot;,
+...
+},
+{
+&quot;id&quot;: &quot;compare&quot;,
+&quot;type&quot;: &quot;area&quot;,
+&quot;name&quot;: &quot;compare&quot;,
+&quot;xField&quot;: &quot;time&quot;,
+&quot;yField&quot;: &quot;compareValue&quot;,
+&quot;seriesField&quot;: &quot;groupName&quot;,
+...
+&quot;interactive&quot;: {
+&quot;line&quot;: false,
+&quot;area&quot;: false
+}
+}
+]
+}
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderAsync();&lt;/br&gt;
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/DQZ6b7CXioh1pjxYJvgc3cG1nBt.gif' alt='' width='2990' height='1132'></p>
+<h1 id="solution">Solution</h1>
+<p>This issue can be addressed by setting the line.interactive and area.interactive attributes of the second area chart series to false. The configuration is as follows:</br></p>
+<pre class="codehilite"><code>{
+&quot;data&quot;: [...],
+&quot;series&quot;: [
+{
+&quot;id&quot;: &quot;area&quot;,
+&quot;type&quot;: &quot;area&quot;,
+&quot;xField&quot;: &quot;time&quot;,
+&quot;yField&quot;: &quot;value&quot;,
+&quot;seriesField&quot;: &quot;groupName&quot;,
+...
+},
+{
+&quot;id&quot;: &quot;compare&quot;,
+&quot;type&quot;: &quot;area&quot;,
+&quot;name&quot;: &quot;compare&quot;,
+&quot;xField&quot;: &quot;time&quot;,
+&quot;yField&quot;: &quot;compareValue&quot;,
+&quot;seriesField&quot;: &quot;groupName&quot;,
+...
+&quot;line&quot;:{
+&quot;interactive&quot;:false
+},
+&quot;area&quot;:{
+&quot;interactive&quot;:false
+},
+}
+]
+}&lt;/br&gt;
+</code></pre>
+
+<p><img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/QT7Eb3H1QojtJZx89eWcRymhntf.gif' alt='' width='3134' height='1454'></p>
+<p>This way, the second area sub-chart will not respond to interactive events, and user hover and click events can trigger the data points of the first area sub-chart through the second area sub-chart.</br></p>
+<h1 id="results">Results</h1>
+<p>By using the above configuration and rendering the chart, you will find that the lines and areas of the second sub-chart will no longer respond to mouse operations, so the hover and click of the first sub-chart can be successfully triggered.</br>
+For online effects reference: https://codesandbox.io/s/common-chart-interactive-jtmc92?file=/src/index.ts</br></p>
+<h1 id="related-documentation">Related Documentation</h1>
+<p>Related api: https://www.visactor.io/vchart/api/API/vchart</br>
+Github: https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

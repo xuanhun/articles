@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>42. vchart如何配置折线图的点稀疏一点</br></title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="_1">问题标题</h1>
+<p>vchart折线图在大数据的情况下点太密集了，如何配置折线图的点稀疏一点</br></p>
+<h1 id="_2">问题描述</h1>
+<p>在使用vchart的时候，我碰到了一个问题。我正在制作一个折线图，但是数据有很多，导致折线图的点非常密集，我想问一下能够通过采样等形式让点稀疏一点吗？</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/B43zbvhr4o2E2rxxha5cYJUpn3d.gif' alt='' width='1334' height='1058'></p>
+<h1 id="_3">解决方案</h1>
+<h2 id="1">方案1</h2>
+<p>采样可以实现这个功能。可以通过配置sampling和samplingFactor来实现，通过sampling配置，可以使用不同的采样算法对点进行采样，支持的采样类型有：</br>
+*  <code>'lttb'</code>: 采用 Largest-Triangle-Three-Bucket 算法，可以最大程度保证采样后线条的趋势，形状和极值。</br>
+*  <code>'min'</code>: 取过滤点的最小值</br>
+*  <code>'max'</code>: 取过滤点的最大值</br>
+*  <code>'sum'</code>: 取过滤点的和</br>
+*  <code>'average'</code>: 取过滤点的平均值</br>
+通过samplingFactor可以配置采样的强度，在[0,1]范围内，samplingFactor越小采样强度越大</br>
+可以参考：https://visactor.io/vchart/option/lineChart#sampling</br></p>
+<h2 id="2">方案2</h2>
+<p>可以通过markOverlap: true,来仅对点进行隐藏</br>
+可以参考：https://visactor.io/vchart/option/lineChart#markOverlap</br></p>
+<h1 id="_4">代码示例</h1>
+<pre class="codehilite"><code>const spec = {
+  type: 'line',
+  data: {
+    values: new Array(10000).fill(0).map((_, i) =&gt; ({ time: i, value: Math.random() * 10000 }))
+  },
+  sampling: 'lttb',
+  samplingFactor: 0.6,
+  point: {
+    style: {
+      stroke: false
+    }
+  },
+  xField: 'time',
+  yField: 'value'
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();
+
+// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;&lt;/br&gt;
+</code></pre>
+
+<h1 id="_5">结果展示</h1>
+<p>代码运行后，数据点被采样的更加稀疏。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/HYy9bINFGoKyZ8xXgiict9zHnDf.gif' alt='' width='1330' height='1048'></p>
+<p>在线demo：https://codesandbox.io/p/sandbox/line-chart-single-selected-forked-4px87p?file=%2Fsrc%2Findex.ts%3A18%2C2</br></p>
+<h1 id="_6">相关文档</h1>
+<ul>
+<li>VChart 线段的采样配置：https://visactor.io/vchart/option/lineChart#sampling</br></li>
+<li>VChart 点的防重叠配置：https://visactor.io/vchart/option/lineChart#markOverlap</br></li>
+<li>VChart github：https://github.com/VisActor/VChart</br></li>
+</ul>
+</body>
+</html>

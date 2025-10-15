@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abnormal Y-axis display in the area chart of vchart library, where lower values appear higher</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>Question Title</br>
+Issues with Y-axis display in vchart's area chart</br></p>
+<p>Problem Description</br>
+I encountered an issue with display of y-axis values when using the vchart library to draw an area chart. Specifically, the visually taller chart corresponds to a smaller value. For example, I have two data points, one at 2.8w and the other at 3w6. However, on the chart, 3w6 appears visually shorter than 2.8w which I find perplexing. I do not know how to address this issue, and it hinders user experience.</br>
+At present, the code I used is shown below:</br></p>
+<pre class="codehilite"><code>{
+type: 'area',
+data: {
+fields: {
+country: {
+domain: ['China', 'USA', 'EU', 'Africa'],
+sortIndex: 0
+}
+},
+values: [
+//...data values
+]
+},
+title: {
+visible: true,
+text: 'Stacked area chart of cosmetic products sales'
+},
+xField: 'type',
+yField: 'value',
+seriesField: 'country',
+legends: [{ visible: true, position: 'middle', orient: 'bottom' }],
+tooltip: {
+dimension: {
+updateContent: data =&gt; {
+let sum = 0;
+data.forEach(datum =&gt; {
+sum += +datum.value;
+});
+data.push({
+hasShape: 'false',
+key: 'Total',
+value: sum
+});
+return data;
+}
+}
+}
+};&lt;/br&gt;
+</code></pre>
+
+<p>Image References:</br></p>
+<p>Image 1</br></p>
+<p>Image 2</br></p>
+<p>Solution</br>
+The key to solving this issue lies in the "stack" attribute in the area chart of the vchart library. After careful observation, I realized that the problem was due to the stacking feature of the area chart.</br></p>
+<p>Firstly, we need to understand the role of stacking in area charts. When stacking is enabled, values from different series will pile up. If you want to display difference or comparison between two series, you should disable stacking. However, if you want to show an overall trend that consists of two or more elements, stacking should be enabled. Therefore, whether to enable stacking or not should be based on your visualisation demands.</br></p>
+<p>By default, area charts enable stacking. If you think this may impact your chart interpretation, feel free to disable it.</br></p>
+<pre class="codehilite"><code>{
+type: 'area',
+//...omit remaining specs
+title: {
+visible: true,
+text: 'Stacked area chart of cosmetic products sales'
+},
+stack: false,
+xField: 'type',
+yField: 'value',
+seriesField: 'country',
+legends: [{ visible: true, position: 'middle', orient: 'bottom' }]
+};&lt;/br&gt;
+</code></pre>
+
+<p>Result Demonstration</br>
+With stacking disabled, the Y-axis of the chart will reflect the actual data values, avoiding visually taller charts representing smaller values.</br>
+Check out an online demo here: https://codesandbox.io/p/sandbox/line-chart-shows-on-the-left-most-of-canvas-forked-kgj8sj</br></p>
+<p>Relevant Documents</br>
+Related API: https://visactor.bytedance.net/vchart/option/areaChart#stack</br>
+GitHub: https://github.com/VisActor/VChart</br></p>
+</body>
+</html>

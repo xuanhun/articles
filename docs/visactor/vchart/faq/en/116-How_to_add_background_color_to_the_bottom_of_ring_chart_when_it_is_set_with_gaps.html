@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>116-How_to_add_background_color_to_the_bottom_of_ring_chart_when_it_is_set_with_gaps</title>
+    <meta name="keywords" content="">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="how-to-customize-the-position-of-gauge-indicator-in-vchart">How to customize the position of gauge indicator in VChart?</h1>
+<h2 id="question-description">Question Description</h2>
+<p>In the design, there is a gap set between each piece of the ring chart, and there is also a gray background ring under the interval. How can this effect be achieved?
+<img alt="design" src="/vchart/faq/21-0.png" />
+<img alt="detail" src="/vchart/faq/21-1.png" /></p>
+<h2 id="solution">Solution</h2>
+<p>This effect can be achieved using the common chart of VChart. The common chart can be configured with two pie series, where the first series has only one data to simulate the background ring, and the second series is a regular pie series. Note:</p>
+<ul>
+<li><code>padAngle</code>: Configure the angle of the interval;</li>
+<li><code>innerRadius</code>/<code>outerRadius</code>: Configure the inner and outer radius. Both series need to have the same inner and outer radius;</li>
+<li>Do not reverse the order of the series between each other, because the series configured later has a higher z-index;</li>
+<li>It is recommended to turn off animation and tooltip interaction for the background series.</li>
+</ul>
+<h2 id="code-example">Code Example</h2>
+<p>```javascript livedemo
+const spec = {
+  type: 'common',
+  data: [
+    {
+      id: 'id0',
+      values: [
+        { type: '0~9', value: '39.12' },
+        { type: '10~19', value: '43.01' },
+        { type: '20~29', value: '43.91' },
+        { type: '30~39', value: '45.4' },
+        { type: '40~49', value: '40.89' },
+        { type: '50~59', value: '42.48' },
+        { type: '60~69', value: '39.63' },
+        { type: '70~79', value: '25.17' },
+        { type: '80 and over', value: '12.29' }
+      ]
+    },
+    {
+      id: 'id1',
+      values: [{ type: '0~9', value: '1' }]
+    }
+  ],
+  series: [
+    {
+      type: 'pie',
+      id: 'background',
+      dataIndex: 1,
+      outerRadius: 0.8,
+      innerRadius: 0.67,
+      valueField: 'value',
+      categoryField: 'type',
+      animation: false,
+      tooltip: { visible: false },
+      pie: {
+        style: {
+          fill: 'rgb(237,239,242)'
+        }
+      }
+    },
+    {
+      type: 'pie',
+      dataIndex: 0,
+      outerRadius: 0.8,
+      innerRadius: 0.67,
+      valueField: 'value',
+      padAngle: 2,
+      categoryField: 'type',
+      pie: {
+        style: {
+          cornerRadius: 20
+        },
+        state: {
+          hover: {
+            outerRadius: 0.82,
+            innerRadius: 0.65
+          }
+        }
+      }
+    }
+  ],
+  title: {
+    visible: true,
+    text: 'Population Distribution by Age in the United States, 2021 (in millions)',
+    textStyle: {
+      fontFamily: 'Times New Roman'
+    }
+  },
+  legends: {
+    visible: true,
+    orient: 'left',
+    seriesIndex: [1]
+  }
+};</p>
+<p>const vchart = new VChart(spec, { dom: CONTAINER_ID });
+vchart.renderSync();</p>
+<p>// Just for the convenience of console debugging, DO NOT COPY!
+window['vchart'] = vchart;
+```</p>
+<h2 id="quote">Quote</h2>
+<ul>
+<li><a href="https://visactor.io/vchart/guide/tutorial_docs/Chart_Types/Combination">Related tutorial</a></li>
+<li><a href="https://visactor.io/vchart/demo/pie-chart/nested-pie?keyword=pieChart">Related API</a></li>
+<li><a href="https://github.com/VisActor/VChart">github</a></li>
+</ul>
+</body>
+</html>

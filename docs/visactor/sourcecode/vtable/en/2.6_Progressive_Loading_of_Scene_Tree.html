@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2.6 Progressive Loading of Scene Tree</title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <p>ProgressProxy is a core submodule of the Scenegraph module in VTable, primarily responsible for performance optimization in scenarios with large data volumes. This module ensures smooth rendering and interactive experience under large data volumes by controlling the creation and update process of scene nodes. This article aims to explore the practical characteristics of ProgressProxy by reading the source code.    \r</p>
+<h2 id="progressive-loading-implementation-plan">Progressive Loading Implementation Plan</h2>
+<h3 id="control-the-number-of-rendered-nodes-for-progressive-creation">Control the Number of Rendered Nodes for Progressive Creation</h3>
+<blockquote>
+<p>Code location: <code>VTable\packages\vtable\src\scenegraph\group-creater\progress\proxy.ts</code>    </p>
+</blockquote>
+<p>We know that Vtable has optimized the first screen loading, and the idea of optimizing the first screen actually has something in common with the optimizations we do in daily development. It basically boils down to two directions: the first is to reduce the number of rendering nodes, and the second is to improve the rendering speed. Next, we will introduce how to limit the number of nodes.    \r</p>
+<p>In the constructor of SceneProxy, the control logic for the number of nodes created for the first screen, <code>createGroupForFirstScreen()</code>, is mainly reflected in the configuration of rowLimit and colLimit. Here, the maximum number of rows and columns maintained in the scene tree is limited. By limiting the number of nodes maintained simultaneously, memory usage and rendering pressure are reduced, ensuring smooth performance even under large data volumes.</p>
+<pre class="codehilite"><code class="language-Typescript">constructor(table: BaseTableAPI) {
+  this.table = table;
+
+  if (this.table.isPivotChart()) {
+    this.rowLimit = Math.max(100, Math.ceil((table.tableNoFrameHeight * 2) / table.defaultRowHeight));
+    this.colLimit = Math.max(100, Math.ceil((table.tableNoFrameWidth * 2) / table.defaultColWidth));
+  } else if (this.table.isAutoRowHeight()) {
+    this.rowLimit = Math.max(100, Math.ceil((table.tableNoFrameHeight * 2) / table.defaultRowHeight));
+  } else if (this.table.widthMode === 'autoWidth') {
+    this.colLimit = Math.max(100, Math.ceil((table.tableNoFrameWidth * 2) / table.defaultColWidth));
+  } else {
+    this.rowLimit = Math.max(200, Math.ceil((table.tableNoFrameHeight * 2) / table.defaultRowHeight));
+    this.colLimit = Math.max(100, Math.ceil((table.tableNoFrameWidth * 2) / table.defaultColWidth));
+  }
+}    
+</code></pre>
+
+<p>The configured formula is for example: <code>100, Math.ceil((table.tableNoFrameHeight * 2) / table.defaultRowHeight)</code>    </p>
+<p>Such a calculation involves dividing the visible area height of the table by the row height, which is the number of rows and columns that need to be displayed in real-time, then multiplying by two and using 100 as a fallback. The purpose of multiplying by two is to set a buffer, loading twice the number of nodes. While minimizing the number of rendered nodes, it also reserves space for scrolling up and down, ensuring that there is enough buffer before and after scrolling to avoid blank spaces due to loading delays.</p>
+<h3 id="specific-implementation-details-of-incremental-creation">Specific Implementation Details of Incremental Creation</h3>
+<p>After configuring <code>rowLimit</code> and <code>colLimit</code>, how is progressive loading implemented?    </p>
+<p>After reading, it was found that the core logic of progressive rendering lies in <code>setY</code> and <code>setX</code>, which are used to handle scrolling and progressive rendering in the vertical/horizontal directions, respectively. The main function is to dynamically update the rows of the table based on the scroll position, ensuring that the rows in the currently visible area are correctly rendered, while releasing the rows in the invisible area to save memory. Here, taking the vertical direction's SetY as an example:</p>
+<pre class="codehilite"><code class="language-Typescript"> async setY(y: number, isEnd = false) {
+    const yLimitTop =
+      this.table.getRowsHeight(this.bodyTopRow, this.bodyTopRow + (this.rowEnd - this.rowStart + 1)) / 2;
+    const yLimitBottom = this.table.getAllRowsHeight() - yLimitTop;
+
+    const screenTop = this.table.getTargetRowAt(y + this.table.scenegraph.colHeaderGroup.attribute.height);
+    if (screenTop) {
+      this.screenTopRow = screenTop.row;
+    }
+
+    if (y &lt; yLimitTop &amp;&amp; this.rowStart === this.bodyTopRow) {
+      // 执行真实body group坐标修改
+      this.updateDeltaY(y);
+      this.updateBody(y - this.deltaY);
+    } else if (y &gt; yLimitBottom &amp;&amp; this.rowEnd === this.bodyBottomRow) {
+      // 执行真实body group坐标修改
+      this.updateDeltaY(y);
+      this.updateBody(y - this.deltaY);
+    } else if (
+      (!this.table.scenegraph.bodyGroup.firstChild ||
+        this.table.scenegraph.bodyGroup.firstChild.type !== 'group' ||
+        this.table.scenegraph.bodyGroup.firstChild.childrenCount === 0) &amp;&amp;
+      (!this.table.scenegraph.rowHeaderGroup.firstChild ||
+        this.table.scenegraph.rowHeaderGroup.firstChild.type !== 'group' ||
+        this.table.scenegraph.rowHeaderGroup.firstChild.childrenCount === 0)
+    ) {
+      this.updateDeltaY(y);
+      // 兼容异步加载数据promise的情况 childrenCount=0 如果用户立即调用setScrollTop执行dynamicSetY会出错
+      this.updateBody(y - this.deltaY);
+    } else {
+      // 执行动态更新节点
+      this.dynamicSetY(y, screenTop, isEnd);
+    }
+  }    
+</code></pre>
+
+<p>The method itself first calculates the top limit <code>yLimitTop</code> and the bottom limit <code>yLimitBottom</code> when scrolling, and maintains the index of the current top line of the screen, which is the starting index for rendering, indicating from which line to start rendering. Combined with the previous context, by obtaining the starting index for rendering and the maximum number of lines restricted for rendering, we can slice out the local data we need to render from the massive rendering data.    </p>
+<p>After obtaining the starting coordinates for rendering, implement rendering through some update methods in the source code that start with 'update'.</p>
+<h3 id="dynamic-updates">Dynamic Updates</h3>
+<blockquote>
+<p>Code location: <code>VTable\packages\vtable\src\scenegraph\group-creater\progress\update-positon</code>    </p>
+</blockquote>
+<p><code>dynamicSetY</code> method will dynamically load or unload rows based on the scroll position, ensuring that the rows in the currently visible area are rendered correctly while releasing the rows in the non-visible area to save memory.</p>
+<pre class="codehilite"><code class="language-Typescript">export async function dynamicSetY(y: number, screenTop: RowInfo | null, isEnd: boolean, proxy: SceneProxy) {
+  if (!screenTop) {
+    return;
+  }
+  const screenTopRow = screenTop.row;
+  const screenTopY = screenTop.top;
+
+  let deltaRow;
+  if (isEnd) {
+    deltaRow = proxy.bodyBottomRow - proxy.rowEnd;
+  } else {
+    deltaRow = screenTopRow - proxy.referenceRow;
+  }
+  move(deltaRow, screenTopRow, screenTopY, y, proxy);
+  if (isEnd) {
+    const cellGroup = proxy.table.scenegraph.highPerformanceGetCell(proxy.colStart, proxy.rowEnd, true);
+    if (cellGroup.role === 'cell') {
+      const deltaY =
+        cellGroup.attribute.y +
+        cellGroup.attribute.height -
+        (proxy.table.tableNoFrameHeight - proxy.table.getFrozenRowsHeight() - proxy.table.getBottomFrozenRowsHeight()) -
+        y;
+      proxy.deltaY = -deltaY;
+      proxy.updateBody(y - proxy.deltaY);
+    }
+  }
+  // proxy.table.scenegraph.updateNextFrame();
+}    
+</code></pre>
+
+<p>The core design of the dynamicSetY method lies in achieving efficient and smooth progressive rendering by dynamically adjusting the row rendering range of the table. Its principle is based on real-time calculation of the scroll position and dynamic updating of row offsets, ensuring that the rows in the currently visible area are correctly rendered while releasing the rows in the non-visible area to save memory. The method first obtains the information of the current screen's top row through screenTop and determines whether it is scrolling or has ended based on the isEnd parameter, thereby calculating the row offset deltaRow. Then, it calls the move method to dynamically adjust the row rendering range of the table according to the row offset, ensuring that the table content is synchronized with the scroll position. At the end of scrolling, the method further calculates the vertical offset deltaY and updates the coordinates of the body group to ensure the complete display of the table content. During large data volume scrolling, the <code>ProgressProxy</code> module will dynamically update the scene nodes. During scrolling, in the direction of the scroll, some cells will update their position in the scene tree and update the elements within the cells to complete the scrolling effect.</p>
+<h2 id="summary">Summary</h2>
+<p>We have concluded that the secret to VTable maintaining high performance and a smooth user experience in large data scenarios lies in the ProgressProxy module, which controls the table to render only the data within the visible range. It continuously calculates and dynamically updates interactions and data updates during scrolling, making it one of the core modules for optimizing the performance of the table component.</p>
+<h1 id="this-document-was-revised-and-organized-by-the-following-personnel">This document was revised and organized by the following personnel</h1>
+<p><a href="https://github.com/xuanhun">玄魂</a></p>
+</body>
+</html>

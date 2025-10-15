@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>41. How VChart line charts support emphasizing a certain point</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title"><strong>Title</strong></h1>
+<p>Does vchart support emphasizing a certain point in a line chart?</br></p>
+<h1 id="description"><strong>Description</strong></h1>
+<p>I'm using vchart to create a line chart and I'm wondering if it's possible to emphasize a certain point in the chart.</br></p>
+<h1 id="solution"><strong>Solution</strong></h1>
+<p>Yes, it's possible to achieve this. You can use the <code>opacity</code> and <code>size</code> options to highlight a certain point based on its data. By setting the opacity and size of the point, it will stand out more.</br>
+You can refer to the following link for more information on how to configure the mark function of a chart element: <a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fguide%2Ftutorial_docs%2FChart_Concepts%2FSeries%2FMark">https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Series/Mark</a></br></p>
+<h1 id="code-example"><strong>Code Example</strong></h1>
+<pre class="codehilite"><code>const spec = {
+  type: 'line',
+  data: {
+    values: [
+      { type: 'Nail polish', country: 'Africa', value: 4229 },
+      { type: 'Nail polish', country: 'EU', value: 4376 },
+      { type: 'Nail polish', country: 'China', value: 3054 },
+      { type: 'Nail polish', country: 'USA', value: 12814 },
+      { type: 'Eyebrow pencil', country: 'Africa', value: 3932 },
+      { type: 'Eyebrow pencil', country: 'EU', value: 3987 },
+      { type: 'Eyebrow pencil', country: 'China', value: 5067 },
+      { type: 'Eyebrow pencil', country: 'USA', value: 13012 },
+      { type: 'Rouge', country: 'Africa', value: 5221 },
+      { type: 'Rouge', country: 'EU', value: 3574 },
+      { type: 'Rouge', country: 'China', value: 7004 },
+      { type: 'Rouge', country: 'USA', value: 11624 },
+      { type: 'Lipstick', country: 'Africa', value: 9256 },
+      { type: 'Lipstick', country: 'EU', value: 4376 },
+      { type: 'Lipstick', country: 'China', value: 9054 },
+      { type: 'Lipstick', country: 'USA', value: 8814 },
+      { type: 'Eyeshadows', country: 'Africa', value: 3308 },
+      { type: 'Eyeshadows', country: 'EU', value: 4572 },
+      { type: 'Eyeshadows', country: 'China', value: 12043 },
+      { type: 'Eyeshadows', country: 'USA', value: 12998 },
+      { type: 'Eyeliner', country: 'Africa', value: 5432 },
+      { type: 'Eyeliner', country: 'EU', value: 3417 },
+      { type: 'Eyeliner', country: 'China', value: 15067 },
+      { type: 'Eyeliner', country: 'USA', value: 12321 },
+      { type: 'Foundation', country: 'Africa', value: 13701 },
+      { type: 'Foundation', country: 'EU', value: 5231 },
+      { type: 'Foundation', country: 'China', value: 10119 },
+      { type: 'Foundation', country: 'USA', value: 10342 },
+      { type: 'Lip gloss', country: 'Africa', value: 4008 },
+      { type: 'Lip gloss', country: 'EU', value: 4572 },
+      { type: 'Lip gloss', country: 'China', value: 12043 },
+      { type: 'Lip gloss', country: 'USA', value: 22998 },
+      { type: 'Mascara', country: 'Africa', value: 18712 },
+      { type: 'Mascara', country: 'EU', value: 6134 },
+      { type: 'Mascara', country: 'China', value: 10419 },
+      { type: 'Mascara', country: 'USA', value: 11261 }
+    ]
+  },
+  percent: true,
+  xField: 'type',
+  yField: 'value',
+  seriesField: 'country',
+  animationAppear: {
+    duration: 1500,
+    easing: 'linear'
+  },
+  point: {
+    style: {
+      opacity: (datum) =&gt; {
+        return datum.type === 'Eyeliner' &amp;&amp; datum.country === 'EU' ? 1 : 0.6
+      },
+      size: (datum) =&gt; {
+        return datum.type === 'Eyeliner' &amp;&amp; datum.country === 'EU' ? 10 : 6
+      },
+      stroke: false
+    }
+  },
+  legends: [{ visible: true, position: 'middle', orient: 'bottom' }],
+  axes: [
+    {
+      orient: 'left',
+      label: {
+        formatMethod(val) {
+          return `${(val * 100).toFixed(2)}%`;
+        }
+      }
+    }
+  ]
+};
+
+const vchart = new VChart(spec, { dom: CONTAINER_ID });
+
+vchart.renderSync();&lt;/br&gt;
+</code></pre>
+
+<h1 id="result"><strong>Result</strong></h1>
+<p>After running the code, the points in the Eyeliner dimension of the EU line segment are emphasized.</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/EqFfbkzosofFfbxh4DHcCh4VnEd.gif' alt='' width='1268' height='1054'></p>
+<p>Online demo: <a href="https%3A%2F%2Fcodesandbox.io%2Fp%2Fsandbox%2Fline-chart-single-selected-forked-4px87p%3Ffile%3D%252Fsrc%252Findex.ts%253A3%252C1">https://codesandbox.io/p/sandbox/line-chart-single-selected-forked-4px87p?file=%2Fsrc%2Findex.ts%3A3%2C1</a></br></p>
+<h1 id="related-documents"><strong>Related Documents</strong></h1>
+<ul>
+<li>VChart mark function configuration: <a href="https%3A%2F%2Fvisactor.io%2Fvchart%2Fguide%2Ftutorial_docs%2FChart_Concepts%2FSeries%2FMark">https://visactor.io/vchart/guide/tutorial_docs/Chart_Concepts/Series/Mark</a></br></li>
+<li>VChart Github: <a href="https%3A%2F%2Fgithub.com%2FVisActor%2FVChart">https://github.com/VisActor/VChart</a></br></li>
+</ul>
+</body>
+</html>

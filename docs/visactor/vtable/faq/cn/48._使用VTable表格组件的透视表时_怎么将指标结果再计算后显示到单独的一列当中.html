@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>26. 使用VTable表格组件的透视表时，怎么将指标结果再计算后显示到单独的一列当中？</br></title>
+    <meta name="keywords" content="VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM">
+    <style>
+        body {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.6;
+            color: #24292e;
+            background-color: #fff;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h3 { font-size: 1.25em; }
+        code {
+            padding: 0.2em 0.4em;
+            margin: 0;
+            font-size: 85%;
+            background-color: rgba(27,31,35,0.05);
+            border-radius: 3px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        pre {
+            padding: 16px;
+            overflow: auto;
+            font-size: 85%;
+            line-height: 1.45;
+            background-color: #f6f8fa;
+            border-radius: 6px;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            box-sizing: content-box;
+            background-color: #fff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            display: block;
+            overflow: auto;
+        }
+        table th, table td {
+            padding: 6px 13px;
+            border: 1px solid #d0d7de;
+        }
+        table th {
+            font-weight: 600;
+            background-color: #f6f8fa;
+        }
+        table tr {
+            background-color: #fff;
+            border-top: 1px solid #d0d7de;
+        }
+        table tr:nth-child(2n) {
+            background-color: #f6f8fa;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        blockquote {
+            padding: 0 1em;
+            color: #656d76;
+            border-left: 0.25em solid #d0d7de;
+            margin: 0 0 16px 0;
+        }
+        hr {
+            height: 0.25em;
+            padding: 0;
+            margin: 24px 0;
+            background-color: #d0d7de;
+            border: 0;
+        }
+        ul, ol {
+            padding-left: 2em;
+        }
+        li + li {
+            margin-top: 0.25em;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="_1">问题标题</h2>
+<p>使用VTable表格组件的透视表时，怎么将指标结果再计算后显示到单独的一列当中？</br></p>
+<h2 id="_2">问题描述</h2>
+<p>有什么配置可以生成派生指标吗，把聚合之后的指标结果再进行计算，然后展示到指标里面</br>
+描述：比如我的行维度是大区-地区，列维度是月份，指标是目标、实际，达成(这个达成的计算为实际/目标)，达成就是我想派生的指标，因为的数据里面没有达成的字段。</br>
+问题截图：</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/Q0DzbVYWpo7M7HxaJgxcrCVfnKa.gif' alt='' width='1347' height='260'></p>
+<h2 id="_3">解决方案</h2>
+<p><strong>最新最好的解决方法：</strong>目前已经有了更好的解决方案，因为VTable又推出了透视表计算字段的功能！！！</br>
+<strong>之前旧的解决方法：</strong></br>
+使用VTable官网的透视分析表为例进行类似目标的修改，我们在原有的demo中增加一个指标为<code>Profit Ratio</code>，显示的值用<code>format</code>函数进行计算，计算逻辑依赖于<code>Sales</code>和<code>Profit</code>两个指标的值。也就是我们计算了一个利润比，其中<code>利润比 = 利润 / 销售额</code>。</br></p>
+<pre class="codehilite"><code>        {
+          indicatorKey: 'Profit Ratio',
+          title: 'Profit Ratio',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          format: (value,col,row,table) =&gt; {
+            const sales=table.getCellOriginValue(col-2,row);
+            const profit=table.getCellOriginValue(col-1,row);
+            const ratio= profit/sales;
+            var percentage = ratio * 100;
+            return percentage.toFixed(2) + &quot;%&quot;;
+          }
+        }&lt;/br&gt;
+</code></pre>
+
+<h2 id="_4">代码示例</h2>
+<pre class="codehilite"><code>let tableInstance;
+fetch('https://lf9-dp-fe-cms-tos.byteorg.com/obj/bit-cloud/VTable/North_American_Superstore_Pivot_data.json')
+  .then(res =&gt; res.json())
+  .then(data =&gt; {
+    const option = {
+      records: data,
+      rows: [
+        {
+          dimensionKey: 'City',
+          title: 'City',
+          headerStyle: {
+            textStick: true
+          },
+          width: 'auto'
+        }
+      ],
+      columns: [
+        {
+          dimensionKey: 'Category',
+          title: 'Category',
+          headerStyle: {
+            textStick: true
+          },
+          width: 'auto'
+        }
+      ],
+      indicators: [
+        {
+          indicatorKey: 'Quantity',
+          title: 'Quantity',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          style: {
+            padding: [16, 28, 16, 28],
+            color(args) {
+              if (args.dataValue &gt;= 0) return 'black';
+              return 'red';
+            }
+          }
+        },
+        {
+          indicatorKey: 'Sales',
+          title: 'Sales',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          format: rec =&gt; {
+            return '$' + Number(rec).toFixed(2);
+          },
+          style: {
+            padding: [16, 28, 16, 28],
+            color(args) {
+              if (args.dataValue &gt;= 0) return 'black';
+              return 'red';
+            }
+          }
+        },
+        {
+          indicatorKey: 'Profit',
+          title: 'Profit',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          format: rec =&gt; {
+            return '$' + Number(rec).toFixed(2);
+          },
+          style: {
+            padding: [16, 28, 16, 28],
+            color(args) {
+              if (args.dataValue &gt;= 0) return 'black';
+              return 'red';
+            }
+          }
+        },
+        {
+          indicatorKey: 'Profit Ratio',
+          title: 'Profit Ratio',
+          width: 'auto',
+          showSort: false,
+          headerStyle: {
+            fontWeight: 'normal'
+          },
+          format: (value,col,row,table) =&gt; {
+            const sales=table.getCellOriginValue(col-2,row);
+            const profit=table.getCellOriginValue(col-1,row);
+            const ratio= profit/sales;
+            var percentage = ratio * 100;
+            return percentage.toFixed(2) + &quot;%&quot;;
+          }
+        }
+      ],
+      corner: {
+        titleOnDimension: 'row',
+        headerStyle: {
+          textStick: true
+        }
+      },
+      dataConfig: {
+        sortRules: [
+          {
+            sortField: 'Category',
+            sortBy: ['Office Supplies', 'Technology', 'Furniture']
+          }
+        ]
+      },
+      widthMode: 'standard'
+    };
+    tableInstance = new VTable.PivotTable(document.getElementById(CONTAINER_ID), option);
+    window['tableInstance'] = tableInstance;
+  });&lt;/br&gt;
+</code></pre>
+
+<h2 id="_5">结果展示</h2>
+<p>直接将示例代码中代码粘贴到官网编辑器中即可呈现。</br>
+<img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/img/PTqsbSor5oxIYbxC6Ckcg69Unpf.gif' alt='' width='853' height='540'></p>
+<h2 id="_6">相关文档</h2>
+<p>透视分析表用法教程：https://visactor.io/vtable/guide/table_type/Pivot_table/pivot_table_useage</br>
+透视分析表用法demo：https://visactor.io/vtable/demo/table-type/pivot-analysis-table</br>
+相关api：https://visactor.io/vtable/option/PivotTable#indicators</br>
+github：https://github.com/VisActor/VTable</br></p>
+</body>
+</html>
