@@ -65,7 +65,7 @@ yarn add @visactor/vchart @visactor/vchart-extension
 
 Import and register the regression line component at your code entry point. This is the key to enabling all related features.
 
-```xml
+```TypeScript
 import VChart from '@visactor/vchart';
 import { registerRegressionLine } from '@visactor/vchart-extension';
 
@@ -79,7 +79,7 @@ registerRegressionLine();
 
 After registration, you can add regression lines in the chart spec through the `append*RegressionLineConfig` series of helper functions. Taking the most common scatter plot as an example:
 
-```xml
+```TypeScript
 import { appendScatterRegressionLineConfig } from '@visactor/vchart-extension';
 
 // Assuming you already have a basic scatter plot spec
@@ -134,7 +134,7 @@ When using the `append*RegressionLineConfig` function, the second parameter `con
 
 The following example will modify the `type` to implement a 3rd-degree polynomial regression line based on the previous scatter plot and customize the regression line style.
 
-```xml
+```TypeScript
 import { appendScatterRegressionLineConfig } from '@visactor/vchart-extension';
 
 // Assuming you already have a basic scatter plot spec
@@ -184,7 +184,7 @@ vchart.renderSync();
 
 The regression line extension can also enhance the expressiveness of histograms. By overlaying KDE curves, you can more smoothly observe the "shape" of data distribution.
 
-```xml
+```TypeScript
 // This is a histogram spec with bin transformation
 const spec = {
   type: 'histogram',

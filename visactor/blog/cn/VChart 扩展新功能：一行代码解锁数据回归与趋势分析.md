@@ -64,7 +64,7 @@ yarn add @visactor/vchart @visactor/vchart-extension
 
 在你的代码入口处，引入并注册回归线组件。这是启用所有相关功能的关键。    
 
-```xml
+```TypeScript
 import VChart from '@visactor/vchart';
 import { registerRegressionLine } from '@visactor/vchart-extension';
 
@@ -77,7 +77,7 @@ registerRegressionLine();
 
 完成注册后，即可在图表 spec 中通过 `append*RegressionLineConfig` 系列辅助函数来添加回归线。以最常见的散点图为例：    
 
-```xml
+```TypeScript
 import { appendScatterRegressionLineConfig } from '@visactor/vchart-extension';
 
 // 假设你已有一个基础的散点图 spec
@@ -132,7 +132,7 @@ VChart 回归线扩展提供了丰富的配置项，让你能够精细控制回�
 
 下面的例子将在前述散点图的基础上，修改 `type` 实现3次多项式回归线，并自定义回归线样式。    
 
-```xml
+```TypeScript
 import { appendScatterRegressionLineConfig } from '@visactor/vchart-extension';
 
 // 假设你已有一个基础的散点图 spec
@@ -182,7 +182,7 @@ vchart.renderSync();
 
 回归线扩展同样能增强直方图的表现力。通过叠加 KDE 曲线，可以更平滑地观察数据分布的“形状”。    
 
-```xml
+```TypeScript
 // 这是一个包含 bin 转换的直方图 spec
 const spec = {
   type: 'histogram',
