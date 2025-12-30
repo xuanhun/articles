@@ -1,38 +1,38 @@
 ---
-title: Powerful and High-Performance: VTable Practice Sharing — The Ultimate Tool for Table Data Visualization    
+title: 功能强大、性能超绝：表格数据可视化利器——VTable 实践分享    
 
 key words: VisActor,VChart,VTable,VStrory,VMind,VGrammar,VRender,Visualization,Chart,Data,Table,Graph,Gis,LLM
 ---
-This article is contributed by VTable user LLmoskk (https://github.com/LLmoskk).    
+本文来自VTable 用户 LLmoskk（ https://github.com/LLmoskk）投稿。    
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/AG51bUcp1otOWnx23U1lJCJKgZ1.gif' alt='' width='397' height='auto' />
 
 ---
-# VTable Overview
+# VTable简介
 
-Quoted from the official website:     
+引用自官网:     
 
-VTable: Not just a high-performance multidimensional analysis table — it’s a grid artist creating between rows and columns!    
+VTable: 不只是高性能的多维数据分析表格，更是行列间创作的方格艺术家！    
 
-In modern applications, table components are indispensable. They can quickly present large volumes of data and provide solid visualization and interactive experiences. VTable is a high-performance table component library based on the visualization rendering engine VRender. It offers excellent performance, powerful multidimensional analysis capabilities, and flexible, robust graphics abilities.    
+在现代应用程序中，表格组件是不可或缺的一部分，它们能够快速展示大量数据，并提供良好的可视化效果和交互体验。VTable是一款基于可视化渲染引擎VRender的高性能表格组件库，为用户提供卓越的性能和强大的多维分析能力，以及灵活强大的图形能力。    
 
-Official site: https://visactor.com/vtable    
+官网链接: https://visactor.com/vtable    
 
-GitHub: https://github.com/VisActor/VTable    
+github地址: https://github.com/VisActor/VTable    
 
-# Create a Project
+# 创建项目
 
-I’ll share a few simple practical cases. I currently mainly use the basic ListTable in a React project, so most examples are for ListTable. I’ll continue sharing additional content as I encounter valuable tips while using other VTable types.    
+准备分享几个简单的实践案例，我目前主要使用的是基础表格ListTable在react项目中，所以案例基本也都是ListTable的，后续在项目中使用到了其他表格的过程中遇到值得分享的内容也会继续分享的。    
 
-Full example code: https://github.com/LLmoskk/vtable-demo     
+全部代码示例: https://github.com/LLmoskk/vtable-demo     
 
-Online preview: https://llmoskk.github.io/vtable-demo/    
+在线预览: https://llmoskk.github.io/vtable-demo/    
 
-Start a React project with Vite. Note: react-vtable does not yet support React 19 — use React 18.    
+先起一个react项目，经典vite起手，注: react-vtable React 19 还不被支持 我们需要使用18版本的react。    
 
-# Use AI + MCP to Drive VTable Quickly and Accurately
+# 指挥 AI + MCP 快速准确的使用 vtable
 
-I currently use AWS’s krio as my AI IDE. First, add the context7 MCP. This MCP lets the AI fetch the latest documentation to avoid outdated APIs. Most mainstream IDEs support adding MCP; no need to list them here.    
+我目前使用的AI IDE是 AWS 的 krio，我们先添加context7 mcp， 这个mcp的作用是让ai获取最新的文档，避免使用过时的api。现在主流的IDE基本都支持添加MCP了，不在此一一举例。    
 
 ```json
 {
@@ -47,44 +47,50 @@ I currently use AWS’s krio as my AI IDE. First, add the context7 MCP. This MCP
       "autoApprove": [
         "resolve-library-id"
       ]
-    }
+    },
   }
-}
+}    
+
 ```
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Sm8nbekaQoAv2BxLCoZl4tMKg4f.gif' alt='' width='484' height='auto' />
 
-You can see MCP was successfully invoked to fetch documentation. I asked it to implement a tree table.    
+可以看到已经成功调用mcp工具去获取文档信息了。我要求他实现一个树形表格。    
 
-Quickly, the AI finished. The effect is pretty good. I won’t paste the code here since it’s mainly to demonstrate using AI + MCP to implement VTable features fast, without manually paging through docs.    
+很快啊！ ai就写完了。效果还不错，这里就不贴代码了，没有太多参考价值，只是用来演示一下使用ai + mcp结合快速的实现vtable的功能，无需自己去翻阅文档了。    
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/UHhzbGnWYoZ10hxKcvrlg1HxgWe.gif' alt='' width='1000' height='auto' />
 
-# Auto-Calculated Column Widths with Persistent Drag-Resize Memory
+# 实现计算数据并持久化记忆修改拖拽列宽度
 
-Project context:    
+**项目场景概述：**    
 
-With large datasets, fixing all column widths to 120px can waste space for columns with short content. The solution: dynamically adjust column widths by measuring values to set a final width per column.    
+在处理数据量较大的表格时，若将所有列的宽度固定为120px，可能会导致某些数据较少的列占据过多的空间。因此，提出了一个解决方案：动态调整列宽，根据数据值自动测量并设置每一列的最终宽度。    
 
-- Column auto-fit: Analyze the first 20 rows to dynamically compute each column’s optimal width for a more reasonable layout.    
-- User drag-resize: Allow users to drag column borders to adjust widths. Store the result in localStorage to improve UX.    
-- Load priority: On table load, set widths by this order:    
-  - Local storage value    
-  - Auto-calculated value    
-  - Default width    
+1. **列宽自适应**：通过分析表格前20行的数据，我们将动态计算各列的最佳宽度，以确保表格布局更加合理。    
 
-We’ll create a file named `use-column-width.ts` to encapsulate a custom Hook. It computes widths per the above logic and remembers user drag-resized widths. We use ahooks’ `useLocalStorageState` to keep state synchronized with localStorage.    
+1. **用户自定义拖拽**：允许用户手动拖动列边界调整列宽。拖拽后的宽度将在本地存储（localStorage）中保存，有效提升用户体验。    
 
-~~Measuring text width — reference: https://juejin.cn/post/7091990279565082655. Full code is in the repo: https://github.com/LLmoskk/vtable-demo/blob/main/src/pages/demo1/utils/calculate-column-width.ts~~    
+1. **加载优先级机制**：表格加载时，将优先考虑以下顺序来设置列宽：    
 
-(No need to write it yourself — VTable provides measureText 😅)    
+*  本地存储中的宽度    
 
-If you don’t have customization needs, you can directly use VTable’s autoWidth mode — it already performs one pass of width calculation.    
+*  自动计算得出的宽度    
 
-Text measure in VTable: https://github.com/VisActor/VUtil/blob/main/packages/vutils/src/graphics/text/measure/textMeasure.ts    
+*  默认宽度设置    
+
+将编写一个名为 `use-column-width.ts` 的文件，封装一个自定义Hook。该Hook的功能是按照上述逻辑计算列宽，并与用户拖拽的宽度进行记忆。我们将利用ahook中的 `useLocalStorageState` 来保持状态信息同步存储到 localStorage 中。    
+
+~~测量文本宽度 ~~~~*参考文章 *~~~~*https://juejin.cn/post/7091990279565082655*~~~~*， *~~~~完整代码不在这里贴出了可访问仓库自取 ~~~~https://github.com/LLmoskk/vtable-demo/blob/main/src/pages/demo1/utils/calculate-column-width.ts~~    
+
+(不需要自己写了，可以用vtable写好的measureText 😅)    
+
+如果没有定制要求的话可以直接使用表格的 `自动列宽模式（autoWidth）` 已经帮忙计算过一遍了。    
+
+vtable文字测量方法: https://github.com/VisActor/VUtil/blob/main/packages/vutils/src/graphics/text/measure/textMeasure.ts    
 
 https://www.npmjs.com/package/@visactor/vutils    
 
-```ts
+```xml
 import { useLocalStorageState } from 'ahooks';
 import { useCallback, useMemo } from 'react';
 import { type ColumnDefine } from '@visactor/vtable';
@@ -92,34 +98,35 @@ import { calculateColumnsWidthMap } from '../utils/calculate-column-width';
 import type { Sort } from '../type';
 
 type UseColumnWidthParams<T extends ColumnDefine> = {
-  /** Column config list */
+  */** 列配置数组 */*
   columns?: T[];
-  /** Key for localStorage */
+  */** localStorage的key */*
   storageKey: string;
-  /** Table data used to calculate column widths */
+  */** 表格数据，用于计算列宽 */*
   data?: any[];
-  /** Default column width */
+  */** 默认列宽 */*
   defaultWidth?: number;
-  /** View ID */
+  */** 视图ID */*
   viewId?: string | number;
-  /** Sort info applied */
+  */** 是否已排序的信息 */*
   sorts?: Sort[];
 };
 
 type UseColumnWidthReturn<T extends ColumnDefine> = {
-  /** Column configs with width applied (priority: localStorage > calculated > default) */
+  */** 应用了列宽的列配置（优先级：本地存储 > 计算值 > 默认值） */*
   columnsWithWidth: T[];
-  /** Function to save column widths */
+  */** 保存列宽的函数 */*
   saveColumnWidths: (colWidths: number[]) => void;
-  /** Column width map */
+  */** 列宽映射对象 */*
   columnWidths: Record<string, number>;
 };
 
-/**
- * Manage persistent column widths for a table
- * Automatically cleans widths for fields no longer present when columns change
- * Priority: localStorage > calculated > default
- */
+*/***
+* * 管理表格列宽持久化的hook*
+* * 当columns的field顺序发生变化时，会自动清理不存在的列宽设置*
+* **
+* * 列宽优先级：本地存储 > 计算值 > 默认值*
+* */*
 const useColumnWidth = <T extends ColumnDefine>({
   columns,
   storageKey,
@@ -142,7 +149,7 @@ const useColumnWidth = <T extends ColumnDefine>({
     [columns, data, sorts],
   );
 
-  // Save column widths to localStorage
+  *// 保存列宽到 localStorage*
   const saveColumnWidths = useCallback(
     (colWidths: number[]) => {
       const widthMap: Record<string, number> = {};
@@ -157,11 +164,11 @@ const useColumnWidth = <T extends ColumnDefine>({
     [columns, setStoredValue],
   );
 
-  // Apply widths to column config
-  // Priority: localStorage > calculated > default
+  *// 应用列宽到列配置*
+  *// 优先级：本地存储 > 计算值 > 默认值*
   const columnsWithWidth = useMemo(() => {
     return columns?.map((col) => {
-      // Fixed width 40 for checkbox; cellType may be a function
+      *// checkbox 固定 40 cellType 可能为函数*
       if (col.cellType === 'checkbox' || col.headerType === 'checkbox') {
         return {
           ...col,
@@ -169,7 +176,7 @@ const useColumnWidth = <T extends ColumnDefine>({
         };
       }
 
-      // Prefer localStorage width
+      *// 优先使用本地存储的宽度*
       if (columnWidths?.[String(col.field)]) {
         return {
           ...col,
@@ -177,7 +184,7 @@ const useColumnWidth = <T extends ColumnDefine>({
         };
       }
 
-      // Otherwise use calculated width
+      *// 其次使用计算的宽度*
       const calculatedWidth = calculatedWidthMap.get(String(col.field));
       if (calculatedWidth) {
         return {
@@ -186,7 +193,7 @@ const useColumnWidth = <T extends ColumnDefine>({
         };
       }
 
-      // Fallback to default width
+      *// 最后使用默认宽度*
       return {
         ...col,
         width: defaultWidth,
@@ -202,107 +209,119 @@ const useColumnWidth = <T extends ColumnDefine>({
 };
 
 export default useColumnWidth;
+    
+
 ```
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/INtCbr51MogF5rxvfjelaqxVgNc.gif' alt='' width='1000' height='auto' />
 
-# Theme Switching
+# 主题切换
 
-VTable provides themes for Arco Design and Dark Mode. My project migrated from Arco Design’s Table to VTable, so I used the official theme package, and since we also needed dark mode, I customized the Dark Mode settings. See docs for base theme config: https://visactor.com/vtable/option/ListTable#theme    
+vtable提供了`Arco design`的主题与 `Dark Mode`的主题，我的项目是由`Arco design`的table切换到vtable的，所以使用自官方提供的主题包，并且我的项目需要适配暗色模式，于是也用到了 `Dark Mode` 来定制修改了下，基本配置信息都可以在文档中查看 https://visactor.com/vtable/option/ListTable#theme    
 
-There are five built-in themes:    
+内置主题有五个    
 
-```ts
+```gherkin
 const builtinThemes = [
-  { key: 'DEFAULT', name: 'Default', theme: themes.DEFAULT },
-  { key: 'DARK', name: 'Dark', theme: themes.DARK },
-  { key: 'BRIGHT', name: 'Bright', theme: themes.BRIGHT },
-  { key: 'ARCO', name: 'Arco', theme: themes.ARCO },
-  { key: 'SIMPLIFY', name: 'Simplify', theme: themes.SIMPLIFY }
-];
+    { key: 'DEFAULT', name: '默认主题', theme: themes.DEFAULT },
+    { key: 'DARK', name: '暗色主题', theme: themes.DARK },
+    { key: 'BRIGHT', name: '明亮主题', theme: themes.BRIGHT },
+    { key: 'ARCO', name: 'Arco主题', theme: themes.ARCO },
+    { key: 'SIMPLIFY', name: '简约主题', theme: themes.SIMPLIFY }
+  ];    
+
 ```
-You can extend themes for customization. After switching to the ARCO theme, I still found differences from the component library’s Table. So I implemented some style overrides.    
+我们还可以extends主题进行扩展定制，我们系统中是由arco design的Table组件迁移至vtable的，切换到ARCO主题后，发现还是和组件库的表格有些不同的，因此我做了些样式覆写。    
 
-```ts
-import { themes } from '@visactor/vtable';
+```xml
+import { themes } from "@visactor/vtable";
 
-/** Get a common VTable theme config */
+*/***
+* * 获取通用的 VTable 主题配置*
+* */*
 export const getCommonVTableTheme = () => {
-  return themes.ARCO.extends({
-    frameStyle: {
-      borderLineWidth: 0,
-    },
-    headerStyle: {
-      bgColor: '#F0F1F5',
-      fontSize: 12,
-      fontWeight: 400,
-      autoWrapText: true,
-      lineClamp: 3,
-    },
-    bodyStyle: {
-      // Use a function to set background color dynamically. Use headerStyle for aggregation rows.
-      bgColor: (args: any) => {
-        // Check whether this is an aggregation row
-        if (args.table && typeof args.table.isAggregation === 'function') {
-          const isAggregationCell = args.table.isAggregation(args.col, args.row);
-          if (isAggregationCell) {
-            return '#F0F1F5';
-          }
-        }
-        return '#FFFFFF';
-      },
-    },
-    bottomFrozenStyle: {
-      bgColor: '#F0F1F5',
-      fontWeight: 600,
-      fontSize: 14,
-    },
-    tooltipStyle: {
-      bgColor: 'black',
-      color: 'white',
-      fontSize: 12,
-      padding: [8, 12, 8, 12],
-    },
-    scrollStyle: {
-      visible: 'always', // Scrollbar always visible
-      hoverOn: false, // Scrollbar does not overlay content; shows independently
-    },
-    selectionStyle: {
-      cellBgColor: 'rgba(133,165,242,0.2)',
-    },
-  });
-};
-```
-For conditional cell styling, traverse column config and set styles per condition.    
-
-```ts
-const salesColumn = baseColumns.find(col => col.field === 'sales');
-if (salesColumn) {
-  (salesColumn as any).style = {
-    color: (args: any) => {
-      const value = args.dataValue;
-      if (value >= 150000) return '#059669'; // Green: high sales
-      if (value >= 100000) return '#0891b2'; // Blue: medium sales
-      return '#dc2626'; // Red: low sales
-    },
-    fontWeight: (args: any) => {
-      return args.dataValue >= 150000 ? 'bold' : 'normal';
+    return themes.ARCO.extends({
+            frameStyle: {
+                borderLineWidth: 0,
+            },
+            headerStyle: {
+                bgColor: '#F0F1F5',
+                fontSize: 12,
+                fontWeight: 400,
+                autoWrapText: true,
+                lineClamp: 3,
+            },
+            bodyStyle: {
+                *// 使用函数动态设置背景色，如果是 aggregation 行则使用 headerStyle 的样式*
+                bgColor: (args: any) => {
+                    *// 检查是否是 aggregation 行*
+                    if (args.table && typeof args.table.isAggregation === 'function') {
+                        const isAggregationCell = args.table.isAggregation(
+                            args.col,
+                            args.row,
+                        );
+                        if (isAggregationCell) {
+                            return '#F0F1F5';
+                        }
+                    }
+                    return '#FFFFFF';
+                },
+            },
+            bottomFrozenStyle: {
+                bgColor: '#F0F1F5',
+                fontWeight: 600,
+                fontSize: 14,
+            },
+            tooltipStyle: {
+                bgColor: 'black',
+                color: 'white',
+                fontSize: 12,
+                padding: [8, 12, 8, 12],
+            },
+            scrollStyle: {
+                visible: 'always', *// 滚动条始终显示*
+                hoverOn: false, *// 滚动条不悬浮在内容上，而是独立显示*
+            },
+            selectionStyle: {
+                cellBgColor: 'rgba(133,165,242,0.2)',
+            },
+        });
     }
-  };
-}
+};
+    
+
+```
+对单元格的条件定制，遍历列配置后可以单独根据条件设置单元格样式    
+
+```xml
+const salesColumn = baseColumns.find(col => col.field === 'sales');
+  if (salesColumn) {
+    (salesColumn as any).style = {
+      color: (args: any) => {
+        const value = args.dataValue;
+        if (value >= 150000) return '#059669'; *// 绿色：高销售额*
+        if (value >= 100000) return '#0891b2'; *// 蓝色：中等销售额*
+        return '#dc2626'; *// 红色：低销售额*
+      },
+      fontWeight: (args: any) => {
+        return args.dataValue >= 150000 ? 'bold' : 'normal';
+      }
+    };
+  }    
+
 ```
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/XUiibbCGDos9uqxcwQHlq8Mgg3e.gif' alt='' width='1000' height='auto' />
 
-# Transpose and Frozen Columns/Rows
+# 表格转置与冻结表格
 
-Frozen columns/rows config: https://visactor.com/vtable/guide/basic_function/frozen_column_row    
+冻结列功能配置: https://visactor.com/vtable/guide/basic_function/frozen_column_row    
 
-Admin tables often need to fix a few columns on the left. VTable supports freezing at top, bottom, left, and right.    
+在后台系统看表的时候一般需要固定左侧的几列。支持顶部、底部、左侧、右侧的冻结设置。    
 
-Issue I encountered: when switching to dark mode, the freeze button icon color didn’t follow the theme. Docs show you can register custom icons. I grabbed the original SVG from source and injected a theme-following `frozen_color`.    
+我在项目中遇到的问题就是切换主题到暗色的时候，表格固定按钮的图标没有跟随主题变化，通过查询文档得知可以注册 icon 自定义图标的一些配置。然后我从源码中获取到原始的 svg 传入跟随主题变化的 `frozen_color`    
 
-Register icon: https://visactor.com/vtable/guide/custom_define/custom_icon    
+注册icon: https://visactor.com/vtable/guide/custom_define/custom_icon    
 
-```ts
+```cplusplus
 export const registerVtableIcon = (isDark?: boolean) => {
   const frozen_size = 22;
   const frozen_size_2 = 22;
@@ -356,73 +375,77 @@ export const registerVtableIcon = (isDark?: boolean) => {
     },
     cursor: 'pointer',
   });
-};
+};    
+
 ```
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/IMOrb1hRVohOI5xpledlUJxUgad.gif' alt='' width='1000' height='auto' />
 
-To transpose the table, set `transpose` — it converts rows to columns. Transposed tables are ideal when there are many data columns but few rows. I haven’t used it in my current project yet.    
+表格转置设置下`transpose` 即可行转列，转置表格特别适合数据列很多但行数较少的场景，虽然目前我的项目中还未使用到。    
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/Br1YbvnjWolKNvxRDm3lcUXogqg.gif' alt='' width='1000' height='auto' />
 
-# Table Size Configuration
+# 表格尺寸配置
 
-Row height & column width docs: https://visactor.com/vtable/guide/basic_function/row_height_column_width    
+行高列宽文档: https://visactor.com/vtable/guide/basic_function/row_height_column_width    
 
-widthMode supports three modes: `'standard' | 'adaptive' | 'autoWidth'`.    
+widthMode有三种模式 `'standard' | 'adaptive' | 'autoWidth'`    
 
-If you don’t have special business requirements for column widths, `autoWidth` is best. It automatically computes widths based on header and body content, ignoring `width` and `defaultColWidth`. The calculation does cost some performance — tradeoffs apply.    
+如果没有业务特别定制的列宽要求的话，设置 `自动列宽模式（autoWidth）`最佳，可以根据列头和 body 单元格中的内容自动计算列宽度，忽略设置的 `width` 属性和 `defaultColWidth`。但计算会浪费一些性能，就看自己的取舍了。    
 
-Also, it’s best to set table `maxWidth + minWidth`. Since we allow users to drag-resize freely, we don’t want unlimited width — add boundaries.    
+还有值得注意的一点是最好设置表格 `maxWidth+minWidth`因为我们允许用户自由拖拽列宽了，但又不希望无限制，所以一般我都会加上边界限制。    
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/WfgcbGH5tol1FxxK7zplP8lBgSb.gif' alt='' width='1000' height='auto' />
 
-# Sticky Header-like Behavior
+# 表头固定悬浮
 
-Traditional DOM tables can use sticky positioning for headers. With VTable, I initially tried making the entire VTable DOM sticky, but the effect wasn’t great. The final approach: keep VTable’s height within one viewport so the header behaves similarly to sticky when scrolling.    
+传统的dom表格可以设置表头粘性定位，但我使用vtable的时候想要实现这个功能，只能让整体vtable的dom粘性了，效果不是很好，最后想到的办法是让vtable的高度尽量保持一屏。就可以实现类似表头粘性定位的交互了。    
 
-```ts
-const [tableHeight, setTableHeight] = useState(500); // Default expanded height
+```xml
+  const [tableHeight, setTableHeight] = useState(500); // 默认撑开的一个高度
+  
+  useEffect(() => {
+    const calculateHeight = () => {
+      *// 计算表格高度：视口高度 - 顶部导航栏(60) - 底部间距(16) - Tabs高度(36) - 分页器高度(32)*
+      *// 目标是让表格高度占满一屏，这样当滚动到底部时，表格正好铺满屏幕*
+      const height = window.innerHeight - 60 - 16 - 36 - 32 - 80;
+      setTableHeight(*Math*.max(height, 400)); *// 设置最小高度*
+    };
 
-useEffect(() => {
-  const calculateHeight = () => {
-    // Table height: viewport height - top nav (60) - bottom spacing (16) - Tabs (36) - pagination (32) - extra (80)
-    // Goal: occupy one full screen so when scrolled to bottom, the table fills the viewport
-    const height = window.innerHeight - 60 - 16 - 36 - 32 - 80;
-    setTableHeight(Math.max(height, 400)); // Minimum height
-  };
+    calculateHeight();
+    window.addEventListener('resize', calculateHeight);
 
-  calculateHeight();
-  window.addEventListener('resize', calculateHeight);
+    return () => {
+      window.removeEventListener('resize', calculateHeight);
+    };
+  }, []);
+  
+  <ListTable
+    // ...
+    height={tableHeight}
+  />
+    
 
-  return () => {
-    window.removeEventListener('resize', calculateHeight);
-  };
-}, []);
-
-<ListTable
-  // ...
-  height={tableHeight}
-/>
 ```
+# 复制表格内容
 
-# Copy Table Content
+vtable支持添加 keyboardOptions copySelected 即可开启表格ctrl + c 复制到能力。    
 
-Enable keyboard copy with `keyboardOptions.copySelected` to support Ctrl + C copying.    
-
-```ts
+```xml
 keyboardOptions={{
-  copySelected: true,
-}}
-```
-However, in my project, some cells use `customRender` to show JSON as icon + text. Copying raw content would be incorrect. Use `formatCopyValue`: https://visactor.com/vtable/option/ListTable#formatCopyValue((value:%20string)%20=%3E%20string)    
+    copySelected: true,
+}}    
 
-```json
+```
+但是项目中的表格有些单元格我使用了 customRender 自定义渲染的能力，我将一个 json的数据转换为icon + 文本的呈现形式，这时候复制到话就会出问题。因此需要`formatCopyValue` https://visactor.com/vtable/option/ListTable#formatCopyValue((value:%20string)%20=%3E%20string)    
+
+```xml
 {
   "icon": "xxxx",
   "text": "Demo"
-}
+}    
+
 ```
-```ts
+```xml
 export const formatCopyValueForVTable = (value: unknown): string => {
   const toStr = (v: unknown) => (v == null ? '' : String(v));
   if (typeof value !== 'string') return toStr(value);
@@ -431,19 +454,19 @@ export const formatCopyValueForVTable = (value: unknown): string => {
     const trimmed = cell.trim();
     if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
       try {
-        const obj = JSON.parse(trimmed);
+        const obj = *JSON*.parse(trimmed);
         if (obj && typeof obj === 'object') {
-          // Prefer the describe field (asset object)
+          *// 优先检查 describe 字段（asset 对象）*
           if ('describe' in obj) {
             return toStr((obj as any).describe ?? '');
           }
-          // Then check text field (icon-text object)
+          *// 其次检查 text 字段（icon-text 对象）*
           if ('text' in obj) {
             return toStr((obj as any).text ?? '');
           }
         }
       } catch (_) {
-        // Not valid JSON — keep original
+        *// 非合法 JSON，保持原样*
       }
     }
     return cell;
@@ -453,30 +476,35 @@ export const formatCopyValueForVTable = (value: unknown): string => {
     .split('\n')
     .map((line) => line.split('\t').map(parseCell).join('\t'))
     .join('\n');
-};
+};    
+
 ```
-Now copied content is correct.    
+这样复制出来的内容就正常了。    
 
-# Conclusion
+# 总结
 
-VTable delivers high-performance table experiences that simplify development. Its open and rich configurable APIs meet most business needs. VTable also responds quickly to issues and iterates efficiently, providing quality support and service.    
+VTable 提供了高性能的表格使用体验，帮助开发者简化操作。其开放的可配置 API 选项丰富，基本满足各种业务开发需求。此外，Vtable 在响应问题和产品迭代方面也展现出快速高效的特点，为用户提供了优质的支持和服务。    
 
-We’re grateful to the VTable open-source project for such a useful tool. Its performance and flexible configuration greatly facilitate our development work. The spirit of open source benefits more developers — may more excellent open-source projects continue to emerge!    
 
-Finally, we warmly welcome everyone interested in data visualization to join VisActor’s open-source efforts:    
 
-**VTable**: [VTable Official Site](https://www.visactor.io/vtable), [VTable GitHub (please star)](https://github.com/VisActor/VTable)    
+感恩 Vtable 开源项目为我们带来了如此好用的工具，它的高性能和灵活配置极大地方便了我们的开发工作。开源的精神让更多的开发者受益，希望能够有更多此类优秀的开源项目继续涌现！开源万岁！    
 
-VisActor official website: [www.visactor.io/](http://www.visactor.io/) or www.viactor.com    
 
-Discord: [discord.gg/3wPyxVyH6m](http://discord.gg/3wPyxVyH6m)    
 
-Feishu group (external): [Open link to scan](https://link.juejin.cn?target=https%3A%2F%2Fp3-juejin.byteimg.com%2Ftos-cn-i-k3u1fbpfcp%2F40dcf4e6722d4925804361a2269991d8~tplv-k3u1fbpfcp-jj-mark%3A0%3A0%3A0%3A0%3Aq75.image%23%3Fw%3D264%26h%3D277%26s%3D35808%26e%3Dpng%26b%3Dfdfdfd)    
+最后，我们诚挚的欢迎所有对数据可视化感兴趣的朋友参与进来，参与 VisActor 的开源建设：    
+
+**VTable**：[VTable 官网](https://www.visactor.io/vtable)、[VTable Github（欢迎 Star）](https://github.com/VisActor/VTable)    
+
+VisActor 官方网站：[www.visactor.io/](http://www.visactor.io/) 或 www.viactor.com    
+
+Discord：[discord.gg/3wPyxVyH6m](http://discord.gg/3wPyxVyH6m)    
+
+飞书群（外网）：[打开链接扫码](https://link.juejin.cn?target=https%3A%2F%2Fp3-juejin.byteimg.com%2Ftos-cn-i-k3u1fbpfcp%2F40dcf4e6722d4925804361a2269991d8~tplv-k3u1fbpfcp-jj-mark%3A0%3A0%3A0%3A0%3Aq75.image%23%3Fw%3D264%26h%3D277%26s%3D35808%26e%3Dpng%26b%3Dfdfdfd)    
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/CF8abTiTCoPAvRxMtOVlwEHFgUg.gif' alt='' width='264' height='auto' />
 
-WeChat official account: [Open link to scan](https://link.juejin.cn?target=https%3A%2F%2Fp3-juejin.byteimg.com%2Ftos-cn-i-k3u1fbpfcp%2Ff28519302ee94940a8159fc52d375aaa~tplv-k3u1fbpfcp-jj-mark%3A0%3A0%3A0%3A0%3Aq75.image%23%3Fw%3D258%26h%3D258%26s%3D8552%26e%3Dwebp%26b%3Dfefefe)    
+微信公众号：[打开链接扫码](https://link.juejin.cn?target=https%3A%2F%2Fp3-juejin.byteimg.com%2Ftos-cn-i-k3u1fbpfcp%2Ff28519302ee94940a8159fc52d375aaa~tplv-k3u1fbpfcp-jj-mark%3A0%3A0%3A0%3A0%3Aq75.image%23%3Fw%3D258%26h%3D258%26s%3D8552%26e%3Dwebp%26b%3Dfefefe)    
 
 <img src='https://cdn.jsdelivr.net/gh/xuanhun/articles/visactor/sourcecode/img/QfWAbVN3booT09xYSfXloPnogbe.gif' alt='' width='258' height='auto' />
 
-GitHub: [github.com/VisActor](https://github.com/VisActor/)
+github：[github.com/VisActor](https://github.com/VisActor/)    
