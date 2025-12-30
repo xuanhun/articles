@@ -37,7 +37,7 @@
 
 #### 🇬🇧 English
 
-**visactor/blog/en/** (9 篇)
+**visactor/blog/en/** (10 篇)
 
 - [Create_a_Dynamic_Infographic_in_10_Minutes.md](visactor/blog/en/Create_a_Dynamic_Infographic_in_10_Minutes.md)
 - [Creating_Cool_Pyramid_Charts_with_VTable.md](visactor/blog/en/Creating_Cool_Pyramid_Charts_with_VTable.md)
@@ -48,6 +48,7 @@
 - [VChart_Official_Website_Launches_AI_Assistant_and_Sharing_Features.md](visactor/blog/en/VChart_Official_Website_Launches_AI_Assistant_and_Sharing_Features.md)
 - [VTable-Sheet_Redefining_Web_Spreadsheet_Open_Source_Solution.md](visactor/blog/en/VTable-Sheet_Redefining_Web_Spreadsheet_Open_Source_Solution.md)
 - [VTable_Gantt_Intelligent_Zoom_Scaling_Development_Practice.md](visactor/blog/en/VTable_Gantt_Intelligent_Zoom_Scaling_Development_Practice.md)
+- [Powerful_and_High_Performance_VTable_Practice_Sharing.md](visactor/blog/en/Powerful_and_High_Performance_VTable_Practice_Sharing.md)
 
 
 ### 🤝 贡献指南 (Contributing)
